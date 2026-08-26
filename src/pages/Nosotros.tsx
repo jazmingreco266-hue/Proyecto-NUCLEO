@@ -36,7 +36,7 @@ export default function Nosotros() {
       </Card>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Card className="bg-lavender-600 text-white">
+        <Card className="bg-gradient-to-br from-lavender-500 to-peach-500 text-white">
           <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/20">
             <Target size={20} />
           </div>

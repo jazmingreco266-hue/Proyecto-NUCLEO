@@ -26,7 +26,7 @@ export function PageHeader({
     <div className="mb-6 flex items-start justify-between gap-4">
       <div className="flex items-start gap-3">
         {icon && (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-lavender-50 text-lavender-600">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-lavender-100 to-peach-100 text-lavender-600">
             {icon}
           </div>
         )}

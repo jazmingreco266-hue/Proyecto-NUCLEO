@@ -120,7 +120,7 @@ function TreatmentInfoTab() {
             </div>
             <div className="h-3 w-full overflow-hidden rounded-full bg-lavender-50">
               <div
-                className="h-full rounded-full bg-lavender-600"
+                className="h-full rounded-full bg-gradient-to-r from-lavender-500 to-peach-500"
                 style={{ width: `${Math.min(100, (form.cyclesDone / form.cyclesTotal) * 100)}%` }}
               />
             </div>

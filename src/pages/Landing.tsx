@@ -73,7 +73,13 @@ export default function Landing() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl px-5 pb-20 pt-8 sm:pt-14">
+      <section className="relative overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-32 right-0 h-[32rem] w-[32rem] rounded-full opacity-25 blur-3xl"
+          style={{ background: 'linear-gradient(135deg, var(--color-lavender-500), var(--color-peach-500))' }}
+        />
+        <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-8 sm:pt-14">
         <div className="grid items-center gap-12 md:grid-cols-2">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-lavender-600">
@@ -107,7 +113,7 @@ export default function Landing() {
             <div className="mt-4 flex justify-between text-2xl">
               <span className="opacity-60">😞</span>
               <span className="opacity-60">😕</span>
-              <span className="rounded-full bg-teal-100 p-1.5">🙂</span>
+              <span className="rounded-full bg-gradient-to-br from-lavender-100 to-peach-100 p-1.5">🙂</span>
               <span className="opacity-60">😄</span>
               <span className="opacity-60">🤩</span>
             </div>
@@ -120,6 +126,7 @@ export default function Landing() {
               <p>Reír 10 minutos puede bajar la percepción del dolor. Hoy, una excusa más.</p>
             </div>
           </div>
+        </div>
         </div>
       </section>
 
@@ -147,7 +154,7 @@ export default function Landing() {
 
       <section className="mx-auto max-w-5xl px-5 py-16">
         <div className="grid gap-6 sm:grid-cols-2">
-          <div className="card-soft bg-lavender-600 p-8 text-white">
+          <div className="card-soft bg-gradient-to-br from-lavender-500 to-peach-500 p-8 text-white">
             <p className="text-xs font-semibold uppercase tracking-widest text-lavender-100">Misión</p>
             <p className="mt-3 font-display text-xl font-semibold leading-snug">
               Reducir la carga mental de atravesar un cáncer, dando orden al tratamiento y

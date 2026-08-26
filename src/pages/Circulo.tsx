@@ -37,7 +37,7 @@ export default function Circulo() {
     <div>
       <PageHeader title="Círculo familiar" subtitle="Sumá a tu familia con un código de acceso." icon={<Users size={22} />} />
 
-      <Card className="bg-lavender-600 text-center text-white">
+      <Card className="bg-gradient-to-br from-lavender-500 to-peach-500 text-center text-white">
         <p className="text-sm font-semibold text-white/80">Código de tu círculo</p>
         <p className="mt-2 font-display text-3xl font-semibold tracking-widest">{currentUser?.circleCode}</p>
         <button

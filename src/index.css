@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Quicksand", "Nunito", ui-rounded, system-ui, sans-serif;
+  --font-body: "Nunito", ui-rounded, system-ui, sans-serif;
+
+  --color-cream: #fffaf3;
+  --color-cream-deep: #fdf1e2;
+  --color-lavender-50: #f4f1fd;
+  --color-lavender-100: #e6dffb;
+  --color-lavender-300: #c3b3f4;
+  --color-lavender-500: #8f74e0;
+  --color-lavender-600: #755dc9;
+  --color-teal-50: #eefaf7;
+  --color-teal-100: #d3f2ea;
+  --color-teal-300: #8fdcc9;
+  --color-teal-500: #3fb99b;
+  --color-teal-600: #2d9c82;
+  --color-peach-50: #fff3ec;
+  --color-peach-100: #ffe2d1;
+  --color-peach-300: #ffbb96;
+  --color-peach-500: #ff8f5e;
+  --color-coral-500: #ff6f6f;
+  --color-coral-600: #f04f4f;
+  --color-ink-900: #2f2a3d;
+  --color-ink-700: #524a68;
+  --color-ink-500: #857c99;
+
+  --radius-blob: 42% 58% 63% 37% / 41% 44% 56% 59%;
+  --shadow-soft: 0 10px 30px -12px rgba(143, 116, 224, 0.25);
+  --shadow-card: 0 4px 18px -6px rgba(47, 42, 61, 0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink-900);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-lavender-300);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/*
+ * Estas clases van dentro de @layer components a propósito: en Tailwind v4
+ * cualquier CSS "sin capa" gana siempre por encima de las utilidades
+ * (@layer utilities), sin importar el orden o la especificidad. Sin este
+ * @layer, una tarjeta como `card-soft bg-gradient-to-br from-x to-y`
+ * terminaba con el degradé pisado por el `background` de acá.
+ */
+@layer components {
+  .blob {
+    border-radius: var(--radius-blob);
+  }
+
+  .card-soft {
+    background-color: white;
+    border-radius: 28px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .btn-primary {
+    background-image: linear-gradient(135deg, var(--color-lavender-500), var(--color-teal-500));
+    color: white;
+    border-radius: 999px;
+    font-weight: 700;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: var(--shadow-soft);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px) scale(1.01);
+  }
+  .btn-primary:active {
+    transform: translateY(0) scale(0.99);
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(3deg); }
+}
+.animate-float {
+  animation: float-slow 7s ease-in-out infinite;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.92) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-pop {
+  animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}

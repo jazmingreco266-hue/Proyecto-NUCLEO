@@ -49,6 +49,7 @@ interface AuthContextValue {
   locked: boolean
   signup: (input: SignupInput) => Promise<User>
   login: (email: string, password: string) => Promise<User>
+  resetPassword: (email: string, newPassword: string) => Promise<void>
   findGoogleUser: (email: string) => User | undefined
   loginWithGoogle: (email: string) => Promise<User>
   completeGoogleSignup: (input: GoogleSignupInput) => Promise<User>
@@ -161,6 +162,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (creds[user.id] !== hash) throw new Error('Contraseña incorrecta.')
     persistSession(user)
     return user
+  }
+
+  async function resetPassword(email: string, newPassword: string): Promise<void> {
+    const users = loadUsers()
+    const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase())
+    if (!user || user.authProvider !== 'password') {
+      throw new Error('No encontramos una cuenta con ese email para restablecer.')
+    }
+    const creds = loadCreds()
+    creds[user.id] = await hashSecret(newPassword)
+    saveCreds(creds)
   }
 
   function findGoogleUser(email: string): User | undefined {
@@ -276,6 +288,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       locked,
       signup,
       login,
+      resetPassword,
       findGoogleUser,
       loginWithGoogle,
       completeGoogleSignup,

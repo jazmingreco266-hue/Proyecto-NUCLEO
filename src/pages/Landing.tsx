@@ -173,16 +173,29 @@ export default function Landing() {
           </div>
         </div>
         <div className="mt-8 text-center">
-          <Link to="/app/nosotros" className="text-sm font-semibold text-lavender-600 hover:underline">
+          <Link to="/nosotros" className="text-sm font-semibold text-lavender-600 hover:underline">
             Conocé la historia detrás de Núcleo →
           </Link>
         </div>
       </section>
 
       <footer className="border-t border-black/5 px-5 py-8 text-center text-xs text-ink-500">
-        Núcleo no diagnostica ni reemplaza la indicación médica. Es una herramienta de
-        organización y acompañamiento. Ante cualquier duda de salud, contactá siempre a tu equipo
-        médico.
+        <p>
+          Núcleo no diagnostica ni reemplaza la indicación médica. Es una herramienta de
+          organización y acompañamiento. Ante cualquier duda de salud, contactá siempre a tu
+          equipo médico.
+        </p>
+        <div className="mt-3 flex justify-center gap-4">
+          <Link to="/privacidad" className="hover:text-lavender-600 hover:underline">
+            Privacidad
+          </Link>
+          <Link to="/soporte" className="hover:text-lavender-600 hover:underline">
+            Soporte
+          </Link>
+          <Link to="/nosotros" className="hover:text-lavender-600 hover:underline">
+            Quiénes somos
+          </Link>
+        </div>
       </footer>
     </div>
   )

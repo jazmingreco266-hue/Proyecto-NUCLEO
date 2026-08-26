@@ -9,6 +9,10 @@ import Landing from '@/pages/Landing'
 import Login from '@/pages/auth/Login'
 import Signup from '@/pages/auth/Signup'
 import GoogleOnboarding from '@/pages/auth/GoogleOnboarding'
+import RecuperarPassword from '@/pages/auth/RecuperarPassword'
+import PrivacyPolicy from '@/pages/legal/PrivacyPolicy'
+import Support from '@/pages/legal/Support'
+import NosotrosPublic from '@/pages/NosotrosPublic'
 import Today from '@/pages/Today'
 import Agenda from '@/pages/Agenda'
 import Registro from '@/pages/Registro'
@@ -20,6 +24,7 @@ import Bienestar from '@/pages/Bienestar'
 import Galeria from '@/pages/Galeria'
 import Nosotros from '@/pages/Nosotros'
 import Privacidad from '@/pages/Privacidad'
+import { initNativeStatusBar, registerAndroidBackButton } from '@/lib/native'
 
 function CircleBootstrap({ children }: { children: React.ReactNode }) {
   const { currentUser } = useAuth()
@@ -81,6 +86,11 @@ function AppShell() {
 }
 
 export default function App() {
+  useEffect(() => {
+    initNativeStatusBar()
+    registerAndroidBackButton()
+  }, [])
+
   return (
     <AuthProvider>
       <Routes>
@@ -88,6 +98,10 @@ export default function App() {
         <Route path="/ingresar" element={<Login />} />
         <Route path="/crear-cuenta" element={<Signup />} />
         <Route path="/completar-perfil" element={<GoogleOnboarding />} />
+        <Route path="/recuperar" element={<RecuperarPassword />} />
+        <Route path="/privacidad" element={<PrivacyPolicy />} />
+        <Route path="/soporte" element={<Support />} />
+        <Route path="/nosotros" element={<NosotrosPublic />} />
         <Route path="/app/*" element={<AppShell />} />
       </Routes>
     </AuthProvider>

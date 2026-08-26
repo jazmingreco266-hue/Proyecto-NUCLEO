@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Users, Copy, Check, Plus, Trash2, ListTodo } from 'lucide-react'
+import { Users, Copy, Check, Plus, Trash2, ListTodo, Share2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { useData } from '@/lib/data'
 import type { CirclePermissions } from '@/lib/types'
+import { shareText } from '@/lib/native'
 import { Badge, Button, Card, Disclaimer, PageHeader } from '@/components/ui'
 
 const PERMISSION_LABELS: { key: keyof CirclePermissions; label: string }[] = [
@@ -26,6 +27,18 @@ export default function Circulo() {
     setTimeout(() => setCopied(false), 1800)
   }
 
+  async function shareCode() {
+    if (!currentUser) return
+    const result = await shareText(
+      'Código de acceso a Núcleo',
+      `Te invito a acompañarme en Núcleo. Creá tu cuenta como "Familiar" con este código: ${currentUser.circleCode}`,
+    )
+    if (result === 'copied') {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    }
+  }
+
   function submitTask(e: React.FormEvent) {
     e.preventDefault()
     if (!taskText.trim()) return
@@ -40,12 +53,20 @@ export default function Circulo() {
       <Card className="bg-gradient-to-br from-lavender-500 to-peach-500 text-center text-white">
         <p className="text-sm font-semibold text-white/80">Código de tu círculo</p>
         <p className="mt-2 font-display text-3xl font-semibold tracking-widest">{currentUser?.circleCode}</p>
-        <button
-          onClick={copyCode}
-          className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/30"
-        >
-          {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copiado' : 'Copiar código'}
-        </button>
+        <div className="mt-4 flex justify-center gap-2">
+          <button
+            onClick={copyCode}
+            className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/30"
+          >
+            {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copiado' : 'Copiar'}
+          </button>
+          <button
+            onClick={shareCode}
+            className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/30"
+          >
+            <Share2 size={16} /> Compartir
+          </button>
+        </div>
         <p className="mt-3 text-xs text-white/80">
           Compartilo con quien quieras invitar. Va a poder crear su cuenta como "Familiar" con este código.
         </p>

@@ -66,7 +66,12 @@ export default function Login() {
           {loadingSubmit ? 'Ingresando…' : 'Ingresar'}
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-ink-500">
+      <p className="mt-3 text-center text-sm">
+        <Link to="/recuperar" className="font-semibold text-lavender-600 hover:underline">
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </p>
+      <p className="mt-3 text-center text-sm text-ink-500">
         ¿Todavía no tenés cuenta?{' '}
         <Link to="/crear-cuenta" className="font-semibold text-lavender-600 hover:underline">
           Creála acá

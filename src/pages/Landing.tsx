@@ -9,6 +9,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui'
+import { Mascot } from '@/components/Mascot'
 
 const FEATURES = [
   {
@@ -107,7 +108,9 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="card-soft mx-auto w-full max-w-sm p-6">
+          <div className="relative mx-auto w-full max-w-sm">
+            <Mascot pose="wave" className="absolute -top-10 -right-6 h-20 w-20 drop-shadow-sm" />
+            <div className="card-soft p-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-lavender-600">Hoy · lunes</p>
             <h3 className="mt-1 font-display text-lg font-semibold text-ink-900">¿Cómo te sentís hoy?</h3>
             <div className="mt-4 flex justify-between text-2xl">
@@ -124,6 +127,7 @@ export default function Landing() {
             <div className="mt-3 flex items-start gap-2 rounded-xl border border-peach-100 bg-peach-50 p-3 text-sm text-ink-700">
               <Sparkles size={16} className="mt-0.5 shrink-0 text-peach-500" />
               <p>Reír 10 minutos puede bajar la percepción del dolor. Hoy, una excusa más.</p>
+            </div>
             </div>
           </div>
         </div>

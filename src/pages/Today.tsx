@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { format, isToday, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { ClipboardList, CalendarHeart, Phone, Sparkles, Pill } from 'lucide-react'
+import { ClipboardList, CalendarHeart, Phone, Sparkles, Pill, Images, Plus } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { useData } from '@/lib/data'
 import { funFactOfTheDay } from '@/lib/funFacts'
 import { APPOINTMENT_LABELS } from '@/lib/labels'
 import { Badge, Card } from '@/components/ui'
+import { Mascot } from '@/components/Mascot'
 
 export default function Today() {
   const { currentUser } = useAuth()
@@ -29,13 +30,16 @@ export default function Today() {
 
   return (
     <div>
-      <div className="mb-6">
-        <p className="text-sm font-semibold text-lavender-600">
-          {format(new Date(), "EEEE d 'de' MMMM", { locale: es })}
-        </p>
-        <h1 className="font-display text-3xl font-semibold text-ink-900">
-          {greeting}, {firstName}
-        </h1>
+      <div className="mb-6 flex items-center gap-3">
+        <Mascot pose="wave" className="h-14 w-14 shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-lavender-600">
+            {format(new Date(), "EEEE d 'de' MMMM", { locale: es })}
+          </p>
+          <h1 className="font-display text-3xl font-semibold text-ink-900">
+            {greeting}, {firstName}
+          </h1>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -124,6 +128,36 @@ export default function Today() {
             <p className="mt-1 text-sm text-ink-700">{funFactOfTheDay()}</p>
           </div>
         </div>
+      </Card>
+
+      <Card className="mt-5">
+        <div className="flex items-center justify-between">
+          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-ink-900">
+            <Images size={18} className="text-lavender-600" /> Por lo que lucho
+          </h2>
+          <Link to="/app/galeria" className="text-sm font-semibold text-lavender-600 hover:underline">
+            {data.gallery.length > 0 ? 'Ver galería →' : 'Subir foto →'}
+          </Link>
+        </div>
+        {data.gallery.length === 0 ? (
+          <Link
+            to="/app/galeria"
+            className="mt-3 flex items-center gap-3 rounded-lg border border-dashed border-ink-500/25 p-4 text-sm text-ink-500 hover:border-lavender-300 hover:text-lavender-600"
+          >
+            <Plus size={18} /> Subí una foto que te recuerde por qué vale la pena cada día.
+          </Link>
+        ) : (
+          <div className="mt-3 flex gap-2 overflow-x-auto">
+            {data.gallery.slice(0, 6).map((p) => (
+              <img
+                key={p.id}
+                src={p.dataUrl}
+                alt={p.caption}
+                className="h-20 w-20 shrink-0 rounded-lg object-cover"
+              />
+            ))}
+          </div>
+        )}
       </Card>
 
       {data.appointments.some((a) => isToday(parseISO(a.date)) && !a.done) && (

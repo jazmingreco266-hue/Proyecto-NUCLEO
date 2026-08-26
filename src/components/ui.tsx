@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { X, Info, ShieldAlert } from 'lucide-react'
+import { Mascot } from './Mascot'
 
 export function Card({
   children,
@@ -99,13 +100,16 @@ export function EmptyState({
   title,
   description,
   action,
+  pose = 'peek',
 }: {
   title: string
   description?: string
   action?: ReactNode
+  pose?: 'wave' | 'peek' | 'sit'
 }) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-ink-500/20 px-6 py-10 text-center">
+      <Mascot pose={pose} className="h-20 w-20" />
       <p className="font-display text-base font-semibold text-ink-900">{title}</p>
       {description && <p className="max-w-sm text-sm text-ink-500">{description}</p>}
       {action}

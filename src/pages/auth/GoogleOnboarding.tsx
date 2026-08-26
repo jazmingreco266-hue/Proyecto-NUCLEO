@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, User, Users } from 'lucide-react'
+import { User, Users } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import type { Role } from '@/lib/types'
 import { Button } from '@/components/ui'
@@ -51,7 +51,6 @@ export default function GoogleOnboarding() {
 
   return (
     <AuthShell
-      icon={<Sparkles size={26} />}
       title={`¡Hola, ${profile.name.split(' ')[0]}!`}
       subtitle="Un último paso para armar tu espacio en Núcleo."
     >

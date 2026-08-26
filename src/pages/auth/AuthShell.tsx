@@ -1,13 +1,12 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { Mascot } from '@/components/Mascot'
 
 export function AuthShell({
-  icon,
   title,
   subtitle,
   children,
 }: {
-  icon: ReactNode
   title: string
   subtitle: string
   children: ReactNode
@@ -21,9 +20,7 @@ export function AuthShell({
         </Link>
         <div className="card-soft p-8">
           <div className="mb-5 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-lavender-100 text-lavender-600">
-              {icon}
-            </div>
+            <Mascot pose="wave" className="mx-auto mb-3 h-16 w-16" />
             <h1 className="font-display text-lg font-semibold text-ink-900">{title}</h1>
             <p className="mt-1 text-sm text-ink-500">{subtitle}</p>
           </div>

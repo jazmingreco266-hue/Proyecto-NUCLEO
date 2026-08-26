@@ -2,10 +2,15 @@ import { useMemo, useState } from 'react'
 import { format, parseISO, subDays } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -240,6 +245,32 @@ function RegistroForm() {
   )
 }
 
+const CHART_COLORS = {
+  pain: '#e11d48',
+  fatigue: '#8b3fe8',
+  nausea: '#2fa662',
+  bad: '#e11d48',
+  neutral: '#f08ae0',
+  good: '#2fa662',
+}
+
+function average(values: number[]): number {
+  if (values.length === 0) return 0
+  return values.reduce((a, b) => a + b, 0) / values.length
+}
+
+function StatTile({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
+  return (
+    <div className="rounded-lg border border-black/5 bg-white p-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">{label}</p>
+      <p className="mt-1 font-display text-2xl font-semibold text-ink-900">
+        {value}
+        {suffix && <span className="text-sm font-medium text-ink-500"> {suffix}</span>}
+      </p>
+    </div>
+  )
+}
+
 function Evolucion({
   symptoms,
   appointments,
@@ -269,6 +300,47 @@ function Evolucion({
     return days
   }, [symptoms, range])
 
+  const inRange = useMemo(() => {
+    const fromStr = format(subDays(new Date(), range - 1), 'yyyy-MM-dd')
+    return symptoms.filter((s) => s.date >= fromStr)
+  }, [symptoms, range])
+
+  const stats = useMemo(() => {
+    let streak = 0
+    const dates = new Set(symptoms.map((s) => s.date))
+    for (let i = 0; i < 365; i++) {
+      const key = format(subDays(new Date(), i), 'yyyy-MM-dd')
+      if (dates.has(key)) streak++
+      else break
+    }
+    return {
+      total: symptoms.length,
+      streak,
+      moodAvg: average(inRange.map((s) => s.mood)).toFixed(1),
+      painAvg: average(inRange.map((s) => s.pain)).toFixed(1),
+    }
+  }, [symptoms, inRange])
+
+  const appetiteData = useMemo(() => {
+    const counts = { bajo: 0, normal: 0, bueno: 0 }
+    inRange.forEach((s) => counts[s.appetite]++)
+    return [
+      { name: 'Bajo', value: counts.bajo, fill: CHART_COLORS.bad },
+      { name: 'Normal', value: counts.normal, fill: CHART_COLORS.neutral },
+      { name: 'Bueno', value: counts.bueno, fill: CHART_COLORS.good },
+    ]
+  }, [inRange])
+
+  const sleepData = useMemo(() => {
+    const counts = { mal: 0, regular: 0, bien: 0 }
+    inRange.forEach((s) => counts[s.sleep]++)
+    return [
+      { name: 'Mal', value: counts.mal, fill: CHART_COLORS.bad },
+      { name: 'Regular', value: counts.regular, fill: CHART_COLORS.neutral },
+      { name: 'Bien', value: counts.bien, fill: CHART_COLORS.good },
+    ].filter((d) => d.value > 0)
+  }, [inRange])
+
   return (
     <div className="flex flex-col gap-5">
       <Card className="border-l-2 border-l-lavender-600 bg-lavender-50">
@@ -290,6 +362,13 @@ function Evolucion({
           </div>
         </div>
       </Card>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatTile label="Días registrados" value={String(stats.total)} />
+        <StatTile label="Racha actual" value={String(stats.streak)} suffix="días" />
+        <StatTile label="Ánimo promedio" value={stats.moodAvg} suffix="/5" />
+        <StatTile label="Dolor promedio" value={stats.painAvg} suffix="/10" />
+      </div>
 
       <Card>
         <div className="mb-4 flex items-center justify-between">
@@ -316,13 +395,86 @@ function Evolucion({
               <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="Dolor" stroke="#ff6f6f" connectNulls strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Cansancio" stroke="#8f74e0" connectNulls strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Náuseas" stroke="#3fb99b" connectNulls strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="Dolor" stroke={CHART_COLORS.pain} connectNulls strokeWidth={2} dot={false} />
+              <Line
+                type="monotone"
+                dataKey="Cansancio"
+                stroke={CHART_COLORS.fatigue}
+                connectNulls
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="Náuseas"
+                stroke={CHART_COLORS.nausea}
+                connectNulls
+                strokeWidth={2}
+                dot={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </Card>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Card>
+          <h3 className="mb-4 font-display text-base font-semibold text-ink-900">Apetito en el período</h3>
+          <div className="h-52 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={appetiteData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#eee" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                  {appetiteData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="mb-4 font-display text-base font-semibold text-ink-900">Sueño en el período</h3>
+          {sleepData.length === 0 ? (
+            <p className="flex h-52 items-center justify-center text-sm text-ink-500">
+              Todavía no hay registros en este período.
+            </p>
+          ) : (
+            <div className="flex items-center gap-4">
+              <PieChart width={176} height={176}>
+                <Pie
+                  data={sleepData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx={88}
+                  cy={88}
+                  innerRadius={45}
+                  outerRadius={72}
+                  paddingAngle={3}
+                  isAnimationActive={false}
+                >
+                  {sleepData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+              <ul className="flex flex-col gap-2 text-sm text-ink-700">
+                {sleepData.map((entry) => (
+                  <li key={entry.name} className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: entry.fill }} />
+                    {entry.name} <span className="text-ink-500">· {entry.value}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </Card>
+      </div>
 
       <Disclaimer>
         Estos gráficos muestran solo lo que vos registraste. Compartirlos con tu equipo médico

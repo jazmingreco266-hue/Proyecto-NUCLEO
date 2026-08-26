@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { HeartHandshake } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui'
 import { GoogleButton } from '@/components/GoogleButton'
@@ -40,11 +39,7 @@ export default function Login() {
   }
 
   return (
-    <AuthShell
-      icon={<HeartHandshake size={26} />}
-      title="Bienvenida de nuevo"
-      subtitle="Tu equipo te está esperando."
-    >
+    <AuthShell title="Bienvenida de nuevo" subtitle="Tu equipo te está esperando.">
       <GoogleButton onProfile={onGoogleProfile} />
       <div className="my-5 flex items-center gap-3 text-xs font-semibold text-ink-500">
         <div className="h-px flex-1 bg-black/10" /> O CON TU EMAIL <div className="h-px flex-1 bg-black/10" />

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { HeartHandshake, User, Users } from 'lucide-react'
+import { User, Users } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import type { Role } from '@/lib/types'
 import { Button } from '@/components/ui'
@@ -41,7 +41,6 @@ export default function Signup() {
 
   return (
     <AuthShell
-      icon={<HeartHandshake size={26} />}
       title="Creá tu cuenta en Núcleo"
       subtitle="Organizá tu proceso o acompañá a alguien que lo está atravesando."
     >

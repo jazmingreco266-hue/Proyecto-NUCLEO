@@ -60,7 +60,7 @@ export default function Privacidad() {
       <Card>
         <div className="flex items-center gap-2">
           <Lock size={18} className="text-lavender-600" />
-          <h3 className="font-display text-base font-bold text-ink-900">PIN de bloqueo</h3>
+          <h3 className="font-display text-base font-semibold text-ink-900">PIN de bloqueo</h3>
         </div>
         <p className="mt-1 text-sm text-ink-500">
           Pedile un PIN a quien abra la app en este dispositivo, además de tu sesión.
@@ -74,18 +74,18 @@ export default function Privacidad() {
             placeholder="Nuevo PIN (4 a 8 dígitos)"
             value={pin}
             onChange={(e) => setPinInput(e.target.value)}
-            className="flex-1 rounded-2xl border border-black/10 px-4 py-3"
+            className="flex-1 rounded-lg border border-black/10 px-4 py-3"
           />
           <Button type="submit">Guardar</Button>
         </form>
-        {pinSaved && <p className="mt-2 text-sm font-bold text-teal-600">PIN actualizado ✓</p>}
+        {pinSaved && <p className="mt-2 text-sm font-semibold text-teal-600">PIN actualizado ✓</p>}
         {currentUser?.pinHash && (
           <button
             onClick={() => {
               clearPin()
               logAccess('Desactivó el PIN de bloqueo')
             }}
-            className="mt-2 text-xs font-bold text-coral-600 hover:underline"
+            className="mt-2 text-xs font-semibold text-coral-600 hover:underline"
           >
             Desactivar PIN
           </button>
@@ -95,7 +95,7 @@ export default function Privacidad() {
       <Card className="mt-5">
         <div className="flex items-center gap-2">
           <Download size={18} className="text-teal-600" />
-          <h3 className="font-display text-base font-bold text-ink-900">Tus datos</h3>
+          <h3 className="font-display text-base font-semibold text-ink-900">Tus datos</h3>
         </div>
         <p className="mt-1 text-sm text-ink-500">
           Descargá una copia completa de todo lo que registraste: agenda, síntomas, medicación,
@@ -107,7 +107,7 @@ export default function Privacidad() {
       </Card>
 
       <Card className="mt-5">
-        <h3 className="font-display text-base font-bold text-ink-900">Registro de accesos</h3>
+        <h3 className="font-display text-base font-semibold text-ink-900">Registro de accesos</h3>
         <p className="mt-1 text-sm text-ink-500">Últimas acciones sensibles en tu cuenta.</p>
         {data.accessLog.length === 0 ? (
           <p className="mt-3 text-sm text-ink-500">Sin actividad registrada todavía.</p>
@@ -132,7 +132,7 @@ export default function Privacidad() {
       <Card className="mt-5 border border-red-100">
         <div className="flex items-center gap-2">
           <AlertTriangle size={18} className="text-coral-600" />
-          <h3 className="font-display text-base font-bold text-ink-900">Eliminar cuenta</h3>
+          <h3 className="font-display text-base font-semibold text-ink-900">Eliminar cuenta</h3>
         </div>
         <p className="mt-1 text-sm text-ink-500">
           Esto borra tu cuenta y, si sos la última persona del círculo, también todos los datos

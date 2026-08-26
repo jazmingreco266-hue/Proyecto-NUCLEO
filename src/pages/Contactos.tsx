@@ -19,7 +19,7 @@ export default function Contactos() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-full px-4 py-2 text-sm font-bold transition ${
+            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
               tab === t ? 'bg-lavender-500 text-white' : 'text-ink-500'
             }`}
           >
@@ -62,7 +62,7 @@ function ContactosTab() {
             <Card key={c.id}>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-display font-bold text-ink-900">{c.name}</p>
+                  <p className="font-display font-semibold text-ink-900">{c.name}</p>
                   <Badge tone="lavender">{CONTACT_LABELS[c.category]}</Badge>
                 </div>
                 <button onClick={() => removeContact(c.id)} className="rounded-full p-2 text-coral-600 hover:bg-red-50">
@@ -73,7 +73,7 @@ function ContactosTab() {
               <div className="mt-3 flex gap-2">
                 <a
                   href={`tel:${c.phone}`}
-                  className="flex flex-1 items-center justify-center gap-1 rounded-full bg-teal-50 py-2 text-xs font-bold text-teal-600"
+                  className="flex flex-1 items-center justify-center gap-1 rounded-full bg-teal-50 py-2 text-xs font-semibold text-teal-600"
                 >
                   <Phone size={14} /> Llamar
                 </a>
@@ -82,7 +82,7 @@ function ContactosTab() {
                     href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-lavender-50 py-2 text-xs font-bold text-lavender-600"
+                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-lavender-50 py-2 text-xs font-semibold text-lavender-600"
                   >
                     <MessageCircle size={14} /> WhatsApp
                   </a>
@@ -100,12 +100,12 @@ function ContactosTab() {
             placeholder="Nombre"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <select
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value as ContactCategory })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           >
             {Object.entries(CONTACT_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
@@ -118,19 +118,19 @@ function ContactosTab() {
             placeholder="Teléfono"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <input
             placeholder="WhatsApp (opcional, con código de país)"
             value={form.whatsapp}
             onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <input
             placeholder="Notas (opcional)"
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <Button type="submit" className="mt-2 w-full">
             Guardar
@@ -176,11 +176,14 @@ function PlanTab() {
               <div className="flex items-start gap-3">
                 <ShieldAlert size={20} className="mt-0.5 shrink-0 text-peach-500" />
                 <div className="flex-1">
-                  <p className="font-bold text-ink-900">Si: {item.condition}</p>
+                  <p className="font-semibold text-ink-900">Si: {item.condition}</p>
                   <p className="text-sm text-ink-700">→ {item.action}</p>
                   {item.phone && (
-                    <a href={`tel:${item.phone}`} className="mt-1 inline-block text-sm font-bold text-teal-600">
-                      📞 {item.phone}
+                    <a
+                      href={`tel:${item.phone}`}
+                      className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-teal-600"
+                    >
+                      <Phone size={14} /> {item.phone}
                     </a>
                   )}
                 </div>
@@ -200,20 +203,20 @@ function PlanTab() {
             placeholder="Si sucede esto… (ej: fiebre mayor a 38°)"
             value={form.condition}
             onChange={(e) => setForm({ ...form, condition: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <input
             required
             placeholder="Hacer esto… (ej: llamar a guardia oncológica)"
             value={form.action}
             onChange={(e) => setForm({ ...form, action: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <input
             placeholder="Teléfono asociado (opcional)"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <Button type="submit" className="mt-2 w-full">
             Guardar
@@ -245,7 +248,7 @@ function PreguntasTab() {
           placeholder="Escribí una pregunta para tu próxima consulta…"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="flex-1 rounded-2xl border border-black/10 px-4 py-3"
+          className="flex-1 rounded-lg border border-black/10 px-4 py-3"
         />
         <Button type="submit">
           <Plus size={18} />
@@ -253,7 +256,7 @@ function PreguntasTab() {
       </form>
 
       <div className="mt-6">
-        <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-bold text-ink-500">
+        <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-semibold text-ink-500">
           <HelpCircle size={16} /> Pendientes ({pending.length})
         </h3>
         {pending.length === 0 ? (
@@ -261,7 +264,7 @@ function PreguntasTab() {
         ) : (
           <ul className="space-y-2">
             {pending.map((q) => (
-              <li key={q.id} className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white p-3">
+              <li key={q.id} className="flex items-center gap-3 rounded-lg border border-black/5 bg-white p-3">
                 <button onClick={() => toggleQuestionAnswered(q.id)} className="text-ink-500">
                   <Circle size={18} />
                 </button>
@@ -277,10 +280,10 @@ function PreguntasTab() {
 
       {answered.length > 0 && (
         <div className="mt-6">
-          <h3 className="mb-2 font-display text-sm font-bold text-ink-500">Respondidas</h3>
+          <h3 className="mb-2 font-display text-sm font-semibold text-ink-500">Respondidas</h3>
           <ul className="space-y-2">
             {answered.map((q) => (
-              <li key={q.id} className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white/60 p-3 opacity-70">
+              <li key={q.id} className="flex items-center gap-3 rounded-lg border border-black/5 bg-white/60 p-3 opacity-70">
                 <button onClick={() => toggleQuestionAnswered(q.id)} className="text-teal-600">
                   <CheckCircle2 size={18} />
                 </button>

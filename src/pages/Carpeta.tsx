@@ -53,7 +53,7 @@ export default function Carpeta() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as DocumentCategory)}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           >
             {Object.entries(DOCUMENT_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
@@ -75,7 +75,7 @@ export default function Carpeta() {
         ) : (
           Object.entries(grouped).map(([cat, docs]) => (
             <div key={cat} className="mb-6">
-              <h3 className="mb-2 font-display text-sm font-bold text-ink-500">
+              <h3 className="mb-2 font-display text-sm font-semibold text-ink-500">
                 {DOCUMENT_LABELS[cat as DocumentCategory]}
               </h3>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -114,7 +114,7 @@ export default function Carpeta() {
       </div>
 
       <Card className="mt-2">
-        <h3 className="font-display text-base font-bold text-ink-900">Resumen para el médico</h3>
+        <h3 className="font-display text-base font-semibold text-ink-900">Resumen para el médico</h3>
         <p className="mt-1 text-sm text-ink-500">
           Generá un PDF con síntomas, medicación y evolución para llevar (o mandar) a tu próxima consulta.
         </p>

@@ -23,7 +23,7 @@ export function PinLockScreen() {
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-lavender-100 text-lavender-600">
           <Lock size={26} />
         </div>
-        <h1 className="font-display text-xl font-bold text-ink-900">Hola de nuevo, {currentUser?.name?.split(' ')[0]}</h1>
+        <h1 className="font-display text-xl font-semibold text-ink-900">Hola de nuevo, {currentUser?.name?.split(' ')[0]}</h1>
         <p className="mt-1 text-sm text-ink-500">Ingresá tu PIN para ver tu información.</p>
         <input
           autoFocus
@@ -35,7 +35,7 @@ export function PinLockScreen() {
             setPin(e.target.value)
             setError('')
           }}
-          className="mt-6 w-full rounded-2xl border border-black/10 px-4 py-3 text-center text-2xl tracking-[0.5em] focus:border-lavender-300 focus:outline-none"
+          className="mt-6 w-full rounded-lg border border-black/10 px-4 py-3 text-center text-2xl tracking-[0.5em] focus:border-lavender-300 focus:outline-none"
           placeholder="····"
         />
         {error && <p className="mt-2 text-sm font-semibold text-coral-600">{error}</p>}

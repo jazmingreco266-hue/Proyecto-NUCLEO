@@ -1,34 +1,44 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Quicksand", "Nunito", ui-rounded, system-ui, sans-serif;
-  --font-body: "Nunito", ui-rounded, system-ui, sans-serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  --color-cream: #fffaf3;
-  --color-cream-deep: #fdf1e2;
-  --color-lavender-50: #f4f1fd;
-  --color-lavender-100: #e6dffb;
-  --color-lavender-300: #c3b3f4;
-  --color-lavender-500: #8f74e0;
-  --color-lavender-600: #755dc9;
-  --color-teal-50: #eefaf7;
-  --color-teal-100: #d3f2ea;
-  --color-teal-300: #8fdcc9;
-  --color-teal-500: #3fb99b;
-  --color-teal-600: #2d9c82;
-  --color-peach-50: #fff3ec;
-  --color-peach-100: #ffe2d1;
-  --color-peach-300: #ffbb96;
-  --color-peach-500: #ff8f5e;
-  --color-coral-500: #ff6f6f;
-  --color-coral-600: #f04f4f;
-  --color-ink-900: #2f2a3d;
-  --color-ink-700: #524a68;
-  --color-ink-500: #857c99;
+  /* Fondo neutro, casi blanco con un dejo frío */
+  --color-cream: #f7f9fa;
+  --color-cream-deep: #eef2f3;
 
-  --radius-blob: 42% 58% 63% 37% / 41% 44% 56% 59%;
-  --shadow-soft: 0 10px 30px -12px rgba(143, 116, 224, 0.25);
-  --shadow-card: 0 4px 18px -6px rgba(47, 42, 61, 0.12);
+  /* Primario: azul petróleo profundo */
+  --color-lavender-50: #eef3f4;
+  --color-lavender-100: #d9e5e7;
+  --color-lavender-300: #8fb3b8;
+  --color-lavender-500: #386a72;
+  --color-lavender-600: #1f4b52;
+
+  /* Secundario: verde salvia apagado, para estados positivos */
+  --color-teal-50: #eef5f1;
+  --color-teal-100: #d9e9e0;
+  --color-teal-300: #93c0a9;
+  --color-teal-500: #4f8f6d;
+  --color-teal-600: #3a7355;
+
+  /* Neutro cálido, para acentos suaves */
+  --color-peach-50: #f7f3ed;
+  --color-peach-100: #ede4d6;
+  --color-peach-300: #d2be9e;
+  --color-peach-500: #a97d4f;
+
+  /* Alerta: terracota apagado */
+  --color-coral-500: #b8543d;
+  --color-coral-600: #98432f;
+
+  /* Texto */
+  --color-ink-900: #1b232d;
+  --color-ink-700: #47515d;
+  --color-ink-500: #737e89;
+
+  --shadow-soft: 0 8px 24px -10px rgba(15, 35, 40, 0.22);
+  --shadow-card: 0 1px 2px rgba(15, 35, 40, 0.04), 0 8px 20px -10px rgba(15, 35, 40, 0.08);
 }
 
 html {
@@ -44,6 +54,7 @@ body {
 
 h1, h2, h3, h4, .font-display {
   font-family: var(--font-display);
+  letter-spacing: -0.01em;
 }
 
 ::-webkit-scrollbar {
@@ -66,44 +77,33 @@ h1, h2, h3, h4, .font-display {
  * terminaba con el degradé pisado por el `background` de acá.
  */
 @layer components {
-  .blob {
-    border-radius: var(--radius-blob);
-  }
-
   .card-soft {
     background-color: white;
-    border-radius: 28px;
+    border: 1px solid rgba(15, 35, 40, 0.06);
+    border-radius: 18px;
     box-shadow: var(--shadow-card);
   }
 
   .btn-primary {
-    background-image: linear-gradient(135deg, var(--color-lavender-500), var(--color-teal-500));
+    background-image: linear-gradient(180deg, var(--color-lavender-500), var(--color-lavender-600));
     color: white;
-    border-radius: 999px;
-    font-weight: 700;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
     box-shadow: var(--shadow-soft);
   }
   .btn-primary:hover {
-    transform: translateY(-2px) scale(1.01);
+    background-image: linear-gradient(180deg, var(--color-lavender-600), var(--color-lavender-600));
   }
   .btn-primary:active {
-    transform: translateY(0) scale(0.99);
+    transform: translateY(1px);
   }
-}
-
-@keyframes float-slow {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-14px) rotate(3deg); }
-}
-.animate-float {
-  animation: float-slow 7s ease-in-out infinite;
 }
 
 @keyframes pop-in {
-  from { opacity: 0; transform: scale(0.92) translateY(6px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .animate-pop {
-  animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: pop-in 0.2s ease-out both;
 }

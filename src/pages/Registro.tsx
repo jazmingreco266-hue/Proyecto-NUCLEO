@@ -46,7 +46,7 @@ export default function Registro() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-full px-4 py-2 text-sm font-bold transition ${
+            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
               tab === t ? 'bg-lavender-500 text-white' : 'text-ink-500'
             }`}
           >
@@ -63,16 +63,16 @@ export default function Registro() {
 
       {tab === 'registro' && (
         <div className="mt-8">
-          <h2 className="mb-3 font-display text-lg font-bold text-ink-900">Historial</h2>
+          <h2 className="mb-3 font-display text-lg font-semibold text-ink-900">Historial</h2>
           {data.symptoms.length === 0 ? (
             <p className="text-sm text-ink-500">Todavía no registraste ningún día.</p>
           ) : (
             <ul className="space-y-2">
               {data.symptoms.slice(0, 12).map((s) => (
-                <li key={s.id} className="flex items-start gap-3 rounded-2xl border border-black/5 bg-white p-3">
+                <li key={s.id} className="flex items-start gap-3 rounded-lg border border-black/5 bg-white p-3">
                   <span className="text-2xl">{MOOD_EMOJIS[s.mood - 1]}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-ink-900">
+                    <p className="text-sm font-semibold text-ink-900">
                       {format(parseISO(s.date), "EEEE d 'de' MMMM", { locale: es })}
                     </p>
                     <p className="text-xs text-ink-500">
@@ -137,7 +137,7 @@ function RegistroForm() {
     <Card>
       <form onSubmit={submit} className="flex flex-col gap-5">
         <div>
-          <p className="mb-2 text-sm font-bold text-ink-700">¿Cómo te sentís hoy?</p>
+          <p className="mb-2 text-sm font-semibold text-ink-700">¿Cómo te sentís hoy?</p>
           <div className="flex justify-between">
             {MOOD_EMOJIS.map((emoji, i) => (
               <button
@@ -159,14 +159,14 @@ function RegistroForm() {
         <ScoreSlider label="Náuseas" value={nausea} onChange={setNausea} />
 
         <div>
-          <p className="mb-2 text-sm font-bold text-ink-700">Apetito</p>
+          <p className="mb-2 text-sm font-semibold text-ink-700">Apetito</p>
           <div className="flex gap-2">
             {APPETITE_OPTS.map((opt) => (
               <button
                 type="button"
                 key={opt.value}
                 onClick={() => setAppetite(opt.value)}
-                className={`flex-1 rounded-xl py-2 text-sm font-bold ${
+                className={`flex-1 rounded-xl py-2 text-sm font-semibold ${
                   appetite === opt.value ? 'bg-lavender-500 text-white' : 'bg-lavender-50 text-ink-700'
                 }`}
               >
@@ -177,7 +177,7 @@ function RegistroForm() {
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-bold text-ink-700">¿Cuánto líquido tomaste? ({fluidsMl} ml)</p>
+          <p className="mb-2 text-sm font-semibold text-ink-700">¿Cuánto líquido tomaste? ({fluidsMl} ml)</p>
           <input
             type="range"
             min={0}
@@ -191,25 +191,25 @@ function RegistroForm() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="mb-2 text-sm font-bold text-ink-700">Temperatura (°C)</p>
+            <p className="mb-2 text-sm font-semibold text-ink-700">Temperatura (°C)</p>
             <input
               type="number"
               step="0.1"
               placeholder="Opcional"
               value={temperature}
               onChange={(e) => setTemperature(e.target.value)}
-              className="w-full rounded-2xl border border-black/10 px-4 py-3"
+              className="w-full rounded-lg border border-black/10 px-4 py-3"
             />
           </div>
           <div>
-            <p className="mb-2 text-sm font-bold text-ink-700">¿Cómo dormiste?</p>
+            <p className="mb-2 text-sm font-semibold text-ink-700">¿Cómo dormiste?</p>
             <div className="flex gap-1">
               {SLEEP_OPTS.map((opt) => (
                 <button
                   type="button"
                   key={opt.value}
                   onClick={() => setSleep(opt.value)}
-                  className={`flex-1 rounded-xl py-3 text-xs font-bold ${
+                  className={`flex-1 rounded-xl py-3 text-xs font-semibold ${
                     sleep === opt.value ? 'bg-teal-500 text-white' : 'bg-teal-50 text-ink-700'
                   }`}
                 >
@@ -221,20 +221,20 @@ function RegistroForm() {
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-bold text-ink-700">Nota (opcional)</p>
+          <p className="mb-2 text-sm font-semibold text-ink-700">Nota (opcional)</p>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={2}
             placeholder="Algo que quieras recordar de hoy…"
-            className="w-full rounded-2xl border border-black/10 px-4 py-3"
+            className="w-full rounded-lg border border-black/10 px-4 py-3"
           />
         </div>
 
         <Button type="submit" className="w-full">
           {existing ? 'Actualizar registro de hoy' : 'Guardar registro de hoy'}
         </Button>
-        {saved && <p className="text-center text-sm font-bold text-teal-600">Guardado ✓</p>}
+        {saved && <p className="text-center text-sm font-semibold text-teal-600">Guardado ✓</p>}
       </form>
     </Card>
   )
@@ -271,13 +271,13 @@ function Evolucion({
 
   return (
     <div className="flex flex-col gap-5">
-      <Card className="bg-gradient-to-br from-lavender-50 to-teal-50">
+      <Card className="border-l-2 border-l-lavender-600 bg-lavender-50">
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-lavender-600">
             <Sparkles size={20} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-display font-bold text-ink-900">Patrones de tus registros</p>
+            <p className="font-display font-semibold text-ink-900">Patrones de tus registros</p>
             <ul className="mt-2 space-y-2 text-sm text-ink-700">
               {insights.map((i) => (
                 <li key={i.id}>• {i.text}</li>
@@ -293,13 +293,13 @@ function Evolucion({
 
       <Card>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-display text-base font-bold text-ink-900">Evolución de síntomas</h3>
+          <h3 className="font-display text-base font-semibold text-ink-900">Evolución de síntomas</h3>
           <div className="flex gap-1">
             {[7, 14, 30].map((r) => (
               <button
                 key={r}
                 onClick={() => setRange(r)}
-                className={`rounded-full px-3 py-1 text-xs font-bold ${
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
                   range === r ? 'bg-lavender-500 text-white' : 'bg-lavender-50 text-ink-700'
                 }`}
               >

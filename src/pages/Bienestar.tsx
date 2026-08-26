@@ -21,7 +21,7 @@ export default function Bienestar() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-full px-4 py-2 text-sm font-bold transition ${
+            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
               tab === t ? 'bg-lavender-500 text-white' : 'text-ink-500'
             }`}
           >
@@ -54,8 +54,8 @@ function Consejos() {
           className="card-soft flex items-start justify-between gap-3 p-5 transition hover:-translate-y-0.5"
         >
           <div>
-            <p className="font-display font-bold text-ink-900">{r.title}</p>
-            <p className="text-xs font-bold text-lavender-600">{r.org}</p>
+            <p className="font-display font-semibold text-ink-900">{r.title}</p>
+            <p className="text-xs font-semibold text-lavender-600">{r.org}</p>
             <p className="mt-1 text-sm text-ink-500">{r.description}</p>
           </div>
           <ExternalLink size={18} className="mt-1 shrink-0 text-ink-500" />
@@ -79,7 +79,7 @@ function Testimonios() {
           <div className="flex items-center gap-2">
             <Badge tone={s.tag === 'dieta' ? 'teal' : 'lavender'}>{s.tag === 'dieta' ? 'Hábito compartido' : 'Testimonio'}</Badge>
           </div>
-          <p className="mt-2 font-display font-bold text-ink-900">{s.title}</p>
+          <p className="mt-2 font-display font-semibold text-ink-900">{s.title}</p>
           <p className="mt-1 text-sm italic text-ink-700">"{s.text}"</p>
           <p className="mt-2 text-xs font-semibold text-ink-500">— {s.author}</p>
         </Card>
@@ -120,7 +120,7 @@ function Suplementos() {
           {data.supplements.map((s) => (
             <Card key={s.id} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-bold text-ink-900">{s.name}</p>
+                <p className="font-semibold text-ink-900">{s.name}</p>
                 <Badge tone={SUPPLEMENT_TONES[s.status]}>{SUPPLEMENT_LABELS[s.status]}</Badge>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -151,7 +151,7 @@ function Suplementos() {
             placeholder="Ej: Vitamina D, jengibre, yoga…"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <Button type="submit" className="w-full">
             Agregar como "pendiente de consultar"
@@ -165,13 +165,18 @@ function Suplementos() {
 function FunFactsArchive() {
   return (
     <div>
-      <Card className="mb-4 bg-gradient-to-br from-peach-50 to-lavender-50">
-        <p className="font-display font-bold text-ink-900">✨ El de hoy</p>
-        <p className="mt-1 text-sm text-ink-700">{funFactOfTheDay()}</p>
+      <Card className="mb-4 border-l-2 border-l-peach-500 bg-peach-50">
+        <div className="flex items-start gap-2">
+          <Sparkles size={16} className="mt-0.5 shrink-0 text-peach-500" />
+          <div>
+            <p className="font-display font-semibold text-ink-900">El de hoy</p>
+            <p className="mt-1 text-sm text-ink-700">{funFactOfTheDay()}</p>
+          </div>
+        </div>
       </Card>
       <div className="grid gap-3 sm:grid-cols-2">
         {FUN_FACTS.map((fact) => (
-          <div key={fact} className="rounded-2xl bg-white p-4 text-sm text-ink-700 shadow-sm">
+          <div key={fact} className="rounded-lg bg-white p-4 text-sm text-ink-700 shadow-sm">
             {fact}
           </div>
         ))}

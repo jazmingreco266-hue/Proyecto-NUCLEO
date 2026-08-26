@@ -16,24 +16,24 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     <nav className="flex flex-col gap-6">
       {sections.map((section) => (
         <div key={section}>
-          <p className="mb-2 px-3 text-xs font-bold uppercase tracking-wide text-ink-500/70">
+          <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-ink-500/70">
             {SECTION_LABELS[section]}
           </p>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-0.5">
             {NAV_ITEMS.filter((i) => i.section === section).map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 onClick={onNavigate}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-bold transition ${
+                  `flex items-center gap-3 rounded-lg border-l-2 px-3 py-2 text-sm font-medium transition ${
                     isActive
-                      ? 'bg-gradient-to-r from-lavender-100 to-teal-100 text-lavender-600'
-                      : 'text-ink-700 hover:bg-black/5'
+                      ? 'border-lavender-600 bg-lavender-50 font-semibold text-lavender-600'
+                      : 'border-transparent text-ink-700 hover:bg-black/5'
                   }`
                 }
               >
-                <item.icon size={19} />
+                <item.icon size={18} />
                 {item.label}
               </NavLink>
             ))}
@@ -56,14 +56,14 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="mx-auto flex max-w-7xl">
         <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-black/5 bg-white/70 px-4 py-6 backdrop-blur md:flex">
           <div className="mb-6 flex items-center gap-2 px-2">
-            <img src="/favicon.svg" className="h-9 w-9" alt="" />
-            <span className="font-display text-xl font-extrabold text-ink-900">Núcleo</span>
+            <img src="/favicon.svg" className="h-8 w-8" alt="" />
+            <span className="font-display text-lg font-semibold text-ink-900">Núcleo</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-1">
             <NavLinks />
           </div>
-          <div className="mt-4 flex items-center gap-2 rounded-2xl bg-lavender-50 p-3">
-            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-lavender-300 font-display font-bold text-white">
+          <div className="mt-4 flex items-center gap-2 rounded-xl bg-lavender-50 p-3">
+            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-lavender-600 font-display font-semibold text-white">
               {currentUser?.avatarDataUrl ? (
                 <img src={currentUser.avatarDataUrl} className="h-full w-full object-cover" alt="" />
               ) : (
@@ -71,7 +71,7 @@ export function Layout({ children }: { children: ReactNode }) {
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-ink-900">{currentUser?.name}</p>
+              <p className="truncate text-sm font-semibold text-ink-900">{currentUser?.name}</p>
               <p className="truncate text-xs text-ink-500">
                 {currentUser?.role === 'paciente' ? 'Paciente' : currentUser?.relationship ?? 'Familiar'}
               </p>
@@ -98,7 +98,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <header className="sticky top-0 z-30 flex items-center justify-between border-b border-black/5 bg-cream/90 px-4 py-3 backdrop-blur md:hidden">
             <div className="flex items-center gap-2">
               <img src="/favicon.svg" className="h-7 w-7" alt="" />
-              <span className="font-display text-lg font-extrabold text-ink-900">Núcleo</span>
+              <span className="font-display text-lg font-semibold text-ink-900">Núcleo</span>
             </div>
             <button
               onClick={() => setDrawerOpen(true)}
@@ -118,7 +118,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="absolute inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
           <div className="animate-pop relative ml-auto flex h-full w-72 flex-col bg-white px-4 py-6 shadow-2xl">
             <div className="mb-4 flex items-center justify-between px-1">
-              <span className="font-display text-lg font-extrabold text-ink-900">Menú</span>
+              <span className="font-display text-lg font-semibold text-ink-900">Menú</span>
               <button onClick={() => setDrawerOpen(false)} className="rounded-full p-2 hover:bg-black/5">
                 <X size={20} />
               </button>
@@ -131,7 +131,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 logout()
                 navigate('/')
               }}
-              className="mt-4 flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-bold text-coral-600 hover:bg-red-50"
+              className="mt-4 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-coral-600 hover:bg-red-50"
             >
               <LogOut size={19} /> Cerrar sesión
             </button>
@@ -145,7 +145,7 @@ export function Layout({ children }: { children: ReactNode }) {
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-bold ${
+              `flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-medium ${
                 isActive ? 'text-lavender-600' : 'text-ink-500'
               }`
             }
@@ -156,7 +156,7 @@ export function Layout({ children }: { children: ReactNode }) {
         ))}
         <button
           onClick={() => setDrawerOpen(true)}
-          className="flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-bold text-ink-500"
+          className="flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-medium text-ink-500"
         >
           <Menu size={20} />
           Más

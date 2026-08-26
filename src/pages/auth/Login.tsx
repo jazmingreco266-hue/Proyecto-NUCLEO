@@ -46,7 +46,7 @@ export default function Login() {
       subtitle="Tu equipo te está esperando."
     >
       <GoogleButton onProfile={onGoogleProfile} />
-      <div className="my-5 flex items-center gap-3 text-xs font-bold text-ink-500">
+      <div className="my-5 flex items-center gap-3 text-xs font-semibold text-ink-500">
         <div className="h-px flex-1 bg-black/10" /> O CON TU EMAIL <div className="h-px flex-1 bg-black/10" />
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
@@ -56,7 +56,7 @@ export default function Login() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded-2xl border border-black/10 px-4 py-3 focus:border-lavender-300 focus:outline-none"
+          className="rounded-lg border border-black/10 px-4 py-3 focus:border-lavender-300 focus:outline-none"
         />
         <input
           type="password"
@@ -64,7 +64,7 @@ export default function Login() {
           placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded-2xl border border-black/10 px-4 py-3 focus:border-lavender-300 focus:outline-none"
+          className="rounded-lg border border-black/10 px-4 py-3 focus:border-lavender-300 focus:outline-none"
         />
         {error && <p className="text-sm font-semibold text-coral-600">{error}</p>}
         <Button type="submit" disabled={loadingSubmit} className="mt-2 w-full">
@@ -73,7 +73,7 @@ export default function Login() {
       </form>
       <p className="mt-6 text-center text-sm text-ink-500">
         ¿Todavía no tenés cuenta?{' '}
-        <Link to="/crear-cuenta" className="font-bold text-lavender-600 hover:underline">
+        <Link to="/crear-cuenta" className="font-semibold text-lavender-600 hover:underline">
           Creála acá
         </Link>
       </p>

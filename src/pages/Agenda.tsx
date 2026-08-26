@@ -98,14 +98,14 @@ export default function Agenda() {
           <button onClick={() => setMonth((m) => subMonths(m, 1))} className="rounded-full p-2 hover:bg-black/5">
             <ChevronLeft size={20} />
           </button>
-          <p className="font-display text-lg font-bold capitalize text-ink-900">
+          <p className="font-display text-lg font-semibold capitalize text-ink-900">
             {format(month, 'MMMM yyyy', { locale: es })}
           </p>
           <button onClick={() => setMonth((m) => addMonths(m, 1))} className="rounded-full p-2 hover:bg-black/5">
             <ChevronRight size={20} />
           </button>
         </div>
-        <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-ink-500">
+        <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-ink-500">
           {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((d) => (
             <div key={d}>{d}</div>
           ))}
@@ -120,7 +120,7 @@ export default function Agenda() {
                 key={key}
                 onClick={() => setSelectedDay(key)}
                 className={`flex h-14 flex-col items-center justify-center rounded-xl text-sm transition sm:h-16 ${
-                  isToday(day) ? 'bg-lavender-100 font-bold text-lavender-600' : 'hover:bg-black/5'
+                  isToday(day) ? 'bg-lavender-100 font-semibold text-lavender-600' : 'hover:bg-black/5'
                 } ${!inMonth ? 'opacity-30' : ''} ${selectedDay === key ? 'ring-2 ring-lavender-400' : ''}`}
               >
                 {format(day, 'd')}
@@ -142,7 +142,7 @@ export default function Agenda() {
       {selectedDay && (
         <Card className="mt-5">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="font-display text-base font-bold capitalize text-ink-900">
+            <h3 className="font-display text-base font-semibold capitalize text-ink-900">
               {format(parseISO(selectedDay), "EEEE d 'de' MMMM", { locale: es })}
             </h3>
             <Button variant="secondary" className="text-xs" onClick={() => openNew(selectedDay)}>
@@ -167,7 +167,7 @@ export default function Agenda() {
       )}
 
       <div className="mt-8">
-        <h2 className="mb-3 font-display text-lg font-bold text-ink-900">Próximos</h2>
+        <h2 className="mb-3 font-display text-lg font-semibold text-ink-900">Próximos</h2>
         {upcoming.length === 0 ? (
           <EmptyState
             title="Todavía no tenés turnos cargados"
@@ -198,7 +198,7 @@ export default function Agenda() {
           <select
             value={form.type}
             onChange={(e) => setForm({ ...form, type: e.target.value as AppointmentType })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           >
             {Object.entries(APPOINTMENT_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
@@ -211,7 +211,7 @@ export default function Agenda() {
             placeholder="Título (ej: Quimio ciclo 4)"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <div className="flex gap-3">
             <input
@@ -219,33 +219,33 @@ export default function Agenda() {
               type="date"
               value={form.date}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
-              className="flex-1 rounded-2xl border border-black/10 px-4 py-3"
+              className="flex-1 rounded-lg border border-black/10 px-4 py-3"
             />
             <input
               required
               type="time"
               value={form.time}
               onChange={(e) => setForm({ ...form, time: e.target.value })}
-              className="flex-1 rounded-2xl border border-black/10 px-4 py-3"
+              className="flex-1 rounded-lg border border-black/10 px-4 py-3"
             />
           </div>
           <input
             placeholder="Lugar / centro"
             value={form.location}
             onChange={(e) => setForm({ ...form, location: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <input
             placeholder="Profesional"
             value={form.professional}
             onChange={(e) => setForm({ ...form, professional: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <textarea
             placeholder="Notas"
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
             rows={2}
           />
           <label className="flex items-center gap-2 text-sm text-ink-700">
@@ -277,11 +277,11 @@ function AppointmentRow({
   onDelete: () => void
 }) {
   return (
-    <li className={`flex items-center gap-3 rounded-2xl border border-black/5 p-3 ${a.done ? 'opacity-50' : ''}`}>
+    <li className={`flex items-center gap-3 rounded-lg border border-black/5 p-3 ${a.done ? 'opacity-50' : ''}`}>
       <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${TYPE_DOT[a.type]}`} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate font-bold text-ink-900">{a.title}</p>
+          <p className="truncate font-semibold text-ink-900">{a.title}</p>
           <Badge tone="gray">{APPOINTMENT_LABELS[a.type]}</Badge>
         </div>
         <p className="text-xs text-ink-500">

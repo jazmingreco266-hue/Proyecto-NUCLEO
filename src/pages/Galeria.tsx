@@ -30,7 +30,7 @@ export default function Galeria() {
             placeholder="Escribí una frase o el nombre de la foto (opcional)"
             value={pendingCaption}
             onChange={(e) => setPendingCaption(e.target.value)}
-            className="flex-1 rounded-2xl border border-black/10 px-4 py-3"
+            className="flex-1 rounded-lg border border-black/10 px-4 py-3"
           />
           <Button onClick={() => fileRef.current?.click()}>
             <Upload size={18} /> Subir foto
@@ -53,10 +53,10 @@ export default function Galeria() {
         ) : (
           <div className="columns-2 gap-3 sm:columns-3 [&>*]:mb-3">
             {data.gallery.map((p) => (
-              <div key={p.id} className="group relative overflow-hidden rounded-3xl shadow-sm">
+              <div key={p.id} className="group relative overflow-hidden rounded-xl shadow-sm">
                 <img src={p.dataUrl} alt={p.caption} className="w-full object-cover" />
                 {p.caption && (
-                  <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3 text-xs font-bold text-white">
+                  <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3 text-xs font-semibold text-white">
                     {p.caption}
                   </p>
                 )}

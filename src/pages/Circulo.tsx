@@ -37,12 +37,12 @@ export default function Circulo() {
     <div>
       <PageHeader title="Círculo familiar" subtitle="Sumá a tu familia con un código de acceso." icon={<Users size={22} />} />
 
-      <Card className="bg-gradient-to-br from-lavender-500 to-teal-500 text-center text-white">
-        <p className="text-sm font-bold text-white/80">Código de tu círculo</p>
-        <p className="mt-2 font-display text-3xl font-extrabold tracking-widest">{currentUser?.circleCode}</p>
+      <Card className="bg-lavender-600 text-center text-white">
+        <p className="text-sm font-semibold text-white/80">Código de tu círculo</p>
+        <p className="mt-2 font-display text-3xl font-semibold tracking-widest">{currentUser?.circleCode}</p>
         <button
           onClick={copyCode}
-          className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-bold hover:bg-white/30"
+          className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/30"
         >
           {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copiado' : 'Copiar código'}
         </button>
@@ -58,13 +58,13 @@ export default function Circulo() {
       </Disclaimer>
 
       <div className="mt-6">
-        <h2 className="mb-3 font-display text-lg font-bold text-ink-900">Miembros del círculo</h2>
+        <h2 className="mb-3 font-display text-lg font-semibold text-ink-900">Miembros del círculo</h2>
         <div className="flex flex-col gap-3">
           {data.circle.map((m) => (
             <Card key={m.id}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-ink-900">{m.name}</p>
+                  <p className="font-semibold text-ink-900">{m.name}</p>
                   <Badge tone={m.role === 'paciente' ? 'lavender' : 'teal'}>
                     {m.role === 'paciente' ? 'Paciente' : m.relationship || 'Familiar'}
                   </Badge>
@@ -94,7 +94,7 @@ export default function Circulo() {
       </div>
 
       <div className="mt-8">
-        <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-bold text-ink-900">
+        <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold text-ink-900">
           <ListTodo size={20} /> Tareas del cuidador
         </h2>
         <form onSubmit={submitTask} className="flex gap-2">
@@ -102,7 +102,7 @@ export default function Circulo() {
             placeholder="Ej: coordinar traslado del jueves"
             value={taskText}
             onChange={(e) => setTaskText(e.target.value)}
-            className="flex-1 rounded-2xl border border-black/10 px-4 py-3"
+            className="flex-1 rounded-lg border border-black/10 px-4 py-3"
           />
           <Button type="submit">
             <Plus size={18} />
@@ -110,7 +110,7 @@ export default function Circulo() {
         </form>
         <ul className="mt-3 space-y-2">
           {data.caregiverTasks.map((t) => (
-            <li key={t.id} className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white p-3">
+            <li key={t.id} className="flex items-center gap-3 rounded-lg border border-black/5 bg-white p-3">
               <input type="checkbox" checked={t.done} onChange={() => toggleCaregiverTask(t.id)} />
               <p className={`flex-1 text-sm ${t.done ? 'text-ink-500 line-through' : 'text-ink-900'}`}>{t.text}</p>
               <button onClick={() => removeCaregiverTask(t.id)} className="rounded-full p-1 text-coral-600 hover:bg-red-50">

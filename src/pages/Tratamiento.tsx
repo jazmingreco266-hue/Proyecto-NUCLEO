@@ -19,7 +19,7 @@ export default function Tratamiento() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-full px-4 py-2 text-sm font-bold transition ${
+            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
               tab === t ? 'bg-lavender-500 text-white' : 'text-ink-500'
             }`}
           >
@@ -56,37 +56,37 @@ function TreatmentInfoTab() {
           placeholder="Nombre del tratamiento"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="rounded-2xl border border-black/10 px-4 py-3"
+          className="rounded-lg border border-black/10 px-4 py-3"
         />
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-xs font-bold text-ink-500">Inicio</label>
+            <label className="mb-1 block text-xs font-semibold text-ink-500">Inicio</label>
             <input
               type="date"
               value={form.startDate}
               onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-              className="w-full rounded-2xl border border-black/10 px-4 py-3"
+              className="w-full rounded-lg border border-black/10 px-4 py-3"
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="mb-1 block text-xs font-bold text-ink-500">Ciclo actual</label>
+              <label className="mb-1 block text-xs font-semibold text-ink-500">Ciclo actual</label>
               <input
                 type="number"
                 min={0}
                 value={form.cyclesDone}
                 onChange={(e) => setForm({ ...form, cyclesDone: Number(e.target.value) })}
-                className="w-full rounded-2xl border border-black/10 px-4 py-3"
+                className="w-full rounded-lg border border-black/10 px-4 py-3"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-bold text-ink-500">Total</label>
+              <label className="mb-1 block text-xs font-semibold text-ink-500">Total</label>
               <input
                 type="number"
                 min={0}
                 value={form.cyclesTotal}
                 onChange={(e) => setForm({ ...form, cyclesTotal: Number(e.target.value) })}
-                className="w-full rounded-2xl border border-black/10 px-4 py-3"
+                className="w-full rounded-lg border border-black/10 px-4 py-3"
               />
             </div>
           </div>
@@ -95,24 +95,24 @@ function TreatmentInfoTab() {
           placeholder="Profesionales a cargo"
           value={form.professionals}
           onChange={(e) => setForm({ ...form, professionals: e.target.value })}
-          className="rounded-2xl border border-black/10 px-4 py-3"
+          className="rounded-lg border border-black/10 px-4 py-3"
         />
         <input
           placeholder="Centro médico"
           value={form.center}
           onChange={(e) => setForm({ ...form, center: e.target.value })}
-          className="rounded-2xl border border-black/10 px-4 py-3"
+          className="rounded-lg border border-black/10 px-4 py-3"
         />
         <textarea
           placeholder="Notas"
           value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })}
           rows={3}
-          className="rounded-2xl border border-black/10 px-4 py-3"
+          className="rounded-lg border border-black/10 px-4 py-3"
         />
         {form.cyclesTotal > 0 && (
           <div>
-            <div className="mb-1 flex justify-between text-xs font-bold text-ink-500">
+            <div className="mb-1 flex justify-between text-xs font-semibold text-ink-500">
               <span>Progreso de ciclos</span>
               <span>
                 {form.cyclesDone}/{form.cyclesTotal}
@@ -120,7 +120,7 @@ function TreatmentInfoTab() {
             </div>
             <div className="h-3 w-full overflow-hidden rounded-full bg-lavender-50">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-lavender-500 to-teal-500"
+                className="h-full rounded-full bg-lavender-600"
                 style={{ width: `${Math.min(100, (form.cyclesDone / form.cyclesTotal) * 100)}%` }}
               />
             </div>
@@ -129,7 +129,7 @@ function TreatmentInfoTab() {
         <Button type="submit" className="mt-2 w-full">
           Guardar
         </Button>
-        {saved && <p className="text-center text-sm font-bold text-teal-600">Guardado ✓</p>}
+        {saved && <p className="text-center text-sm font-semibold text-teal-600">Guardado ✓</p>}
       </form>
     </Card>
   )
@@ -233,27 +233,27 @@ function MedicationTab() {
             placeholder="Nombre"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <input
             required
             placeholder="Dosis (ej: 500mg)"
             value={form.dose}
             onChange={(e) => setForm({ ...form, dose: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <input
             required
             type="time"
             value={form.schedule[0]}
             onChange={(e) => setForm({ ...form, schedule: [e.target.value] })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <input
             placeholder="Motivo (opcional)"
             value={form.reason}
             onChange={(e) => setForm({ ...form, reason: e.target.value })}
-            className="rounded-2xl border border-black/10 px-4 py-3"
+            className="rounded-lg border border-black/10 px-4 py-3"
           />
           <Button type="submit" className="mt-2 w-full">
             Guardar
@@ -279,7 +279,7 @@ function MedicationCard({
     <Card>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-display font-bold text-ink-900">
+          <p className="font-display font-semibold text-ink-900">
             {med.name} <span className="font-normal text-ink-500">· {med.dose}</span>
           </p>
           <p className="text-xs text-ink-500">Horario: {med.schedule.join(', ')}</p>
@@ -292,7 +292,7 @@ function MedicationCard({
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
           onClick={() => onLog('tomada')}
-          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold ${
+          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
             status === 'tomada' ? 'bg-teal-500 text-white' : 'bg-teal-50 text-teal-600'
           }`}
         >
@@ -300,7 +300,7 @@ function MedicationCard({
         </button>
         <button
           onClick={() => onLog('no_tomada')}
-          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold ${
+          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
             status === 'no_tomada' ? 'bg-ink-500 text-white' : 'bg-gray-100 text-ink-500'
           }`}
         >
@@ -308,7 +308,7 @@ function MedicationCard({
         </button>
         <button
           onClick={() => onLog('vomitada')}
-          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold ${
+          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
             status === 'vomitada' ? 'bg-coral-500 text-white' : 'bg-red-50 text-coral-600'
           }`}
         >

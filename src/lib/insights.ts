@@ -54,7 +54,7 @@ export function buildInsights(symptoms: SymptomEntry[], appointments: Appointmen
       } else if (diff <= -1.5) {
         insights.push({
           id: `down-${f.key}`,
-          text: `Tu ${f.label} viene bajando en los últimos días (promedio ${recentAvg.toFixed(1)}/10 vs ${prevAvg.toFixed(1)}/10 antes). 🎉`,
+          text: `Tu ${f.label} viene bajando en los últimos días (promedio ${recentAvg.toFixed(1)}/10 vs ${prevAvg.toFixed(1)}/10 antes).`,
         })
       }
     }

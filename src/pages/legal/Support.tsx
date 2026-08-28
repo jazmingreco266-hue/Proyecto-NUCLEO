@@ -29,8 +29,8 @@ export default function Support() {
     <LegalShell title="Soporte" subtitle="Preguntas frecuentes y cómo contactarnos">
       <p>
         Si tenés un problema técnico, una sugerencia o simplemente querés contarnos algo, escribinos a{' '}
-        <a href="mailto:soporte@nucleoapp.com.ar" className="font-semibold text-lavender-600 hover:underline">
-          soporte@nucleoapp.com.ar
+        <a href="mailto:nucleoweb.ar@gmail.com" className="font-semibold text-lavender-600 hover:underline">
+          nucleoweb.ar@gmail.com
         </a>
         . Intentamos responder en un plazo de 48 a 72 horas hábiles.
       </p>

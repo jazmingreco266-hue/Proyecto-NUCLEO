@@ -82,28 +82,103 @@ evolucionar esto hacia un backend real.
 ## Activar "Continuar con Google"
 
 El botón de Google Sign-In usa Google Identity Services y funciona sin
-ningún paquete extra, pero necesita un Client ID propio:
+ningún paquete extra, pero necesita un Client ID propio. Usá la cuenta
+`nucleoweb.ar@gmail.com` para crearlo, así queda todo centralizado ahí:
 
-1. Andá a [Google Cloud Console → Credenciales](https://console.cloud.google.com/apis/credentials).
-2. Creá un **ID de cliente de OAuth 2.0** de tipo "Aplicación web".
-3. En "Orígenes de JavaScript autorizados" agregá la URL donde corre la app
-   (por ejemplo `http://localhost:5173` en desarrollo, y el dominio real en
-   producción).
-4. Copiá el Client ID y creá un archivo `.env.local` (a partir de
-   `.env.example`) con:
-   ```
-   VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
-   ```
-5. Reiniciá `npm run dev`.
+1. Entrá a [Google Cloud Console](https://console.cloud.google.com/) con
+   `nucleoweb.ar@gmail.com` y creá un proyecto nuevo (por ejemplo "Núcleo").
+2. Andá a **APIs y servicios → Pantalla de consentimiento de OAuth**, elegí
+   tipo "Externo", completá el nombre de la app ("Núcleo") y el mail de
+   soporte (`nucleoweb.ar@gmail.com`). Con eso alcanza para probarlo (queda
+   en modo "Prueba/Testing", que ya permite iniciar sesión).
+3. Andá a **APIs y servicios → Credenciales** y creá un **ID de cliente de
+   OAuth 2.0** de tipo "Aplicación web".
+4. En "Orígenes de JavaScript autorizados" agregá **las dos** URLs donde
+   corre la app:
+   - `http://localhost:5173` (para probar en tu compu)
+   - `https://jazmingreco266-hue.github.io` (el sitio publicado — sin la
+     parte `/Proyecto-NUCLEO/` al final, Google solo pide el dominio)
+5. Copiá el Client ID que te da Google (termina en
+   `.apps.googleusercontent.com`).
 
-Sin esta variable configurada, el botón de Google se reemplaza por un aviso
-y la app sigue funcionando normalmente con email + contraseña.
+**Para que funcione en tu compu (desarrollo):**
+
+Creá un archivo `.env.local` (a partir de `.env.example`) con:
+
+```
+VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
+```
+
+y reiniciá `npm run dev`.
+
+**Para que funcione en el sitio publicado (GitHub Pages):**
+
+El workflow de despliegue (`.github/workflows/deploy-pages.yml`) ya está
+preparado para tomar el Client ID desde un secreto de GitHub. Solo falta
+cargarlo una vez:
+
+1. En GitHub, andá al repo → **Settings → Secrets and variables → Actions**.
+2. Tocá **New repository secret**.
+3. Nombre: `VITE_GOOGLE_CLIENT_ID`. Valor: el Client ID que copiaste arriba.
+4. Guardá, y volvé a correr el workflow "Deploy a GitHub Pages" (pestaña
+   **Actions** → seleccionalo → **Run workflow**), o simplemente hacé un
+   nuevo push — el próximo build ya lo va a incluir.
+
+Sin esta variable configurada (en local o en el secreto), el botón de
+Google se reemplaza por un aviso y la app sigue funcionando normalmente
+con email + contraseña.
 
 **Nota de seguridad:** como esta versión no tiene backend, el token de
 Google se decodifica en el cliente solo para leer nombre/email/foto
 (`src/lib/googleAuth.ts`). En una versión con servidor, ese token debe
 verificarse del lado del backend (firma, audiencia y expiración) antes de
 confiar en sus datos.
+
+## Activar el mail de confirmación (EmailJS)
+
+Al crear una cuenta, la app intenta mandar un mail de bienvenida usando
+[EmailJS](https://www.emailjs.com/), que permite enviar mails reales desde
+el navegador sin necesidad de un servidor propio. Si no está configurado,
+la cuenta se crea igual y solo se salta el envío del mail (no rompe nada).
+
+1. Creá una cuenta gratis en [EmailJS](https://dashboard.emailjs.com/sign-up)
+   usando `nucleoweb.ar@gmail.com`.
+2. En **Email Services → Add New Service**, elegí **Gmail** y conectalo con
+   `nucleoweb.ar@gmail.com` (te va a pedir iniciar sesión y dar permiso).
+   Copiá el **Service ID** que te queda (algo como `service_xxxxxxx`).
+3. En **Email Templates → Create New Template**, armá el mail de bienvenida.
+   Usá estas variables exactas en el asunto/cuerpo (son las que manda el
+   código, en `src/lib/email.ts`):
+   - `{{to_name}}` — nombre de la persona que se registró
+   - `{{to_email}}` — su email (también hay que ponerlo en el campo "To
+     Email" de la configuración del template, arriba a la derecha)
+   - `{{app_name}}` — siempre dice "Núcleo"
+
+   Un ejemplo simple de cuerpo:
+   ```
+   Asunto: ¡Bienvenida/o a {{app_name}}!
+
+   Hola {{to_name}},
+
+   Tu cuenta en {{app_name}} ya está lista. Gracias por sumarte — este
+   espacio está pensado para acompañarte a vos y a tu familia durante el
+   tratamiento.
+
+   Un abrazo,
+   El equipo de Núcleo
+   ```
+   Guardá y copiá el **Template ID** (algo como `template_xxxxxxx`).
+4. En **Account → General**, copiá tu **Public Key**.
+5. Con esos tres valores, cargalos como secretos del repo en GitHub (Settings
+   → Secrets and variables → Actions → New repository secret), uno por uno:
+   - `VITE_EMAILJS_SERVICE_ID`
+   - `VITE_EMAILJS_TEMPLATE_ID`
+   - `VITE_EMAILJS_PUBLIC_KEY`
+6. Volvé a correr el workflow de despliegue (o hacé un push) para que el
+   próximo build ya mande mails de verdad.
+
+Para probarlo en tu compu, agregá las mismas tres variables a tu
+`.env.local` (ver `.env.example`) y reiniciá `npm run dev`.
 
 ## Usarla en celular, tablet y compu (PWA, funciona sin WiFi)
 

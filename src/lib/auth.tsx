@@ -8,6 +8,7 @@ import {
 } from 'react'
 import type { Role, User } from './types'
 import { defaultAppData } from './defaultData'
+import { sendWelcomeEmail } from './email'
 import {
   clearAllNucleoData,
   generateCircleCode,
@@ -148,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     saveUsers([...users, user])
     persistSession(user)
+    sendWelcomeEmail({ toName: user.name, toEmail: user.email }).catch(() => {})
     return user
   }
 
@@ -229,6 +231,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     saveUsers([...users, user])
     persistSession(user)
+    sendWelcomeEmail({ toName: user.name, toEmail: user.email }).catch(() => {})
     return user
   }
 

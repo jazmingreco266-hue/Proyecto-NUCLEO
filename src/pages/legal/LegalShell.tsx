@@ -7,7 +7,7 @@ export function LegalShell({ title, subtitle, children }: { title: string; subti
     <div className="min-h-screen bg-cream">
       <header className="mx-auto flex max-w-3xl items-center justify-between px-5 py-6">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/favicon.svg" className="h-8 w-8" alt="" />
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} className="h-8 w-8" alt="" />
           <span className="font-display text-lg font-semibold text-ink-900">Núcleo</span>
         </Link>
         <Link to="/" className="flex items-center gap-1 text-sm font-medium text-ink-500 hover:text-lavender-600">

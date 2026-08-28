@@ -15,7 +15,7 @@ export function AuthShell({
     <div className="flex min-h-screen items-center justify-center bg-cream px-4 py-10">
       <div className="w-full max-w-md">
         <Link to="/" className="mb-6 flex items-center justify-center gap-2">
-          <img src="/favicon.svg" className="h-8 w-8" alt="" />
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} className="h-8 w-8" alt="" />
           <span className="font-display text-lg font-semibold text-ink-900">Núcleo</span>
         </Link>
         <div className="card-soft p-8">

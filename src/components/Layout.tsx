@@ -56,7 +56,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="mx-auto flex max-w-7xl">
         <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-black/5 bg-white/70 px-4 py-6 backdrop-blur md:flex">
           <div className="mb-6 flex items-center gap-2 px-2">
-            <img src="/favicon.svg" className="h-8 w-8" alt="" />
+            <img src={`${import.meta.env.BASE_URL}favicon.svg`} className="h-8 w-8" alt="" />
             <span className="font-display text-lg font-semibold text-ink-900">Núcleo</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-1">
@@ -97,7 +97,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="min-w-0 flex-1">
           <header className="sticky top-0 z-30 flex items-center justify-between border-b border-black/5 bg-cream/90 px-4 py-3 backdrop-blur md:hidden">
             <div className="flex items-center gap-2">
-              <img src="/favicon.svg" className="h-7 w-7" alt="" />
+              <img src={`${import.meta.env.BASE_URL}favicon.svg`} className="h-7 w-7" alt="" />
               <span className="font-display text-lg font-semibold text-ink-900">Núcleo</span>
             </div>
             <button

@@ -89,8 +89,8 @@ export default function PrivacyPolicy() {
       <h2 className="font-display text-lg font-semibold text-ink-900">10. Contacto</h2>
       <p>
         Ante cualquier consulta sobre privacidad o tus datos, escribinos a{' '}
-        <a href="mailto:soporte@nucleoapp.com.ar" className="font-semibold text-lavender-600 hover:underline">
-          soporte@nucleoapp.com.ar
+        <a href="mailto:nucleoweb.ar@gmail.com" className="font-semibold text-lavender-600 hover:underline">
+          nucleoweb.ar@gmail.com
         </a>
         .
       </p>

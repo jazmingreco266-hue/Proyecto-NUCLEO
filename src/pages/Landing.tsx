@@ -61,7 +61,7 @@ export default function Landing() {
     <div className="bg-cream">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6">
         <div className="flex items-center gap-2">
-          <img src="/favicon.svg" className="h-8 w-8" alt="Núcleo" />
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} className="h-8 w-8" alt="Núcleo" />
           <span className="font-display text-lg font-semibold text-ink-900">Núcleo</span>
         </div>
         <div className="flex items-center gap-2">

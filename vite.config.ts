@@ -3,9 +3,11 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// GH_PAGES=true se setea en el workflow de GitHub Actions para buildear
-// con el base path correcto (el sitio queda en /Proyecto-NUCLEO/, no en la raíz).
-const base = process.env.GH_PAGES === 'true' ? '/Proyecto-NUCLEO/' : '/'
+// GH_PAGES=true se setea en el workflow/build de despliegue para buildear
+// con el base path correcto (el sitio queda en una subruta, no en la raíz).
+// GH_PAGES_BASE permite apuntar a un repo de hosting distinto al del código
+// fuente (ej: un repo público "-demo" cuando el repo del código es privado).
+const base = process.env.GH_PAGES === 'true' ? (process.env.GH_PAGES_BASE ?? '/Proyecto-NUCLEO/') : '/'
 
 // https://vite.dev/config/
 export default defineConfig({

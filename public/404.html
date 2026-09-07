@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Núcleo</title>
+    <script type="text/javascript">
+      // GitHub Pages sirve este archivo para cualquier ruta que no exista
+      // como archivo real (por ejemplo /Proyecto-NUCLEO/privacidad, que solo
+      // existe como ruta de React Router). En vez de mostrar un 404, la
+      // codificamos en la URL y redirigimos a index.html, que la decodifica
+      // y deja que la app cargue la página correcta.
+      // (técnica: https://github.com/rafgraph/spa-github-pages)
+      var pathSegmentsToKeep = 1 // mantiene "/Proyecto-NUCLEO"
+      var l = window.location
+      l.replace(
+        l.protocol +
+          '//' +
+          l.hostname +
+          (l.port ? ':' + l.port : '') +
+          l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') +
+          '/?/' +
+          l.pathname
+            .slice(1)
+            .split('/')
+            .slice(pathSegmentsToKeep)
+            .join('/')
+            .replace(/&/g, '~and~') +
+          (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+          l.hash,
+      )
+    </script>
+  </head>
+  <body></body>
+</html>

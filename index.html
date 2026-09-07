@@ -9,6 +9,7 @@
       name="description"
       content="Núcleo: la app que acompaña a pacientes oncológicos y a su familia a organizar el tratamiento, registrar síntomas y sostener el ánimo, todo en un solo lugar."
     />
+    <link rel="canonical" href="https://jazmingreco266-hue.github.io/Proyecto-NUCLEO/" />
 
     <!-- Vista previa al compartir el link (WhatsApp, Facebook, etc.) -->
     <meta property="og:type" content="website" />
@@ -49,6 +50,29 @@
     <title>Núcleo · Tu equipo, en un solo lugar</title>
   </head>
   <body>
+    <!--
+      GitHub Pages no sabe de rutas de React Router: si alguien entra directo
+      a /Proyecto-NUCLEO/privacidad (o Google lo intenta), el servidor no
+      encuentra ese archivo y muestra un 404. El 404.html de public/
+      redirige acá codificando la ruta real; este script la decodifica y
+      la reescribe en la barra de direcciones antes de que arranque React
+      Router, para que la app cargue la página correcta.
+      (técnica: https://github.com/rafgraph/spa-github-pages)
+    -->
+    <script type="text/javascript">
+      (function (l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) {
+              return s.replace(/~and~/g, '&')
+            })
+            .join('?')
+          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash)
+        }
+      })(window.location)
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

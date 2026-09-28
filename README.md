@@ -9,7 +9,7 @@ sensible antes de que ocurra.
 
 **Para publicarlo e instalarlo en tu computadora o tablet, seguí [docs/06-publicar.md](docs/06-publicar.md).**
 
-## Qué hay hoy (etapa 2)
+## Qué hay hoy (etapa 3, bloque A)
 
 - Pipeline comercial de 25 estados, con historial imposible de editar.
 - Cada dato de una empresa lleva fuente, URL, fecha, confianza y estado
@@ -19,8 +19,15 @@ sensible antes de que ocurra.
 - Roles: propietario, operador y solo lectura.
 - Configuración de límites para los agentes, con historial.
 - Registro de actividad completo.
+- **Auditoría web técnica** desde la ficha de cada prospecto: lee el sitio respetando `robots.txt`,
+  mide seguridad, experiencia móvil, velocidad, SEO técnico, accesibilidad, contacto, actualización,
+  integraciones y enlaces rotos. Solo puntúa lo medible; lo que requiere criterio queda "no evaluado".
+  Cada auditoría es una versión nueva, nunca se sobrescribe.
+- Contactos y tecnología encontrados en el sitio se guardan como datos con fuente y fecha.
+- **Cola de agentes** con reintentos, control de presupuesto, horario y nivel de autonomía,
+  y la página **Tareas** para ver, reintentar o cancelar trabajos.
 
-Los agentes automáticos llegan en la etapa 3. Ver [`docs/05-plan-implementacion.md`](docs/05-plan-implementacion.md).
+Lo que falta y lo que necesita tu decisión: [`docs/05-plan-implementacion.md`](docs/05-plan-implementacion.md).
 
 ## Puesta en marcha
 
@@ -32,6 +39,7 @@ cp .env.example .env          # completá DATABASE_URL
 npm run db:migrate            # crea las tablas
 npm run user:create -- --email vos@empresa.com --name "Tu nombre" --role owner
 npm run dev                   # http://localhost:3000
+npm run worker                # opcional: agentes en segundo plano (ver docs/06-publicar.md)
 ```
 
 Para producción:

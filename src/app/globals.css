@@ -365,3 +365,44 @@ dialog.confirm p { color: var(--muted); margin-bottom: 1rem; }
 .login { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem; }
 .login-card { width: min(400px, 100%); display: grid; gap: 1.3rem; }
 .login-card .wordmark { font-size: 1.8rem; }
+
+/* ───────────── Auditoría web y tareas ───────────── */
+
+.grid-2 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); align-items: start; }
+.grid-2 > .panel { align-content: start; height: 100%; }
+.audit-head { display: flex; flex-wrap: wrap; gap: 1.2rem 2rem; align-items: flex-start; justify-content: space-between; }
+.audit-head > div:first-child { display: grid; gap: 0.3rem; }
+.rec { display: grid; gap: 0.3rem; max-width: 46ch; padding-left: 0.9rem; border-left: 3px solid var(--line); }
+.rec-contactar { border-left-color: var(--ok); }
+.rec-observar { border-left-color: var(--warn); }
+.rec-descartar { border-left-color: var(--g-cerrado); }
+
+.cat-list { display: grid; }
+.cat { border-top: 1px solid var(--line); }
+.cat:first-child { border-top: 0; }
+.cat > summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.65rem 0; cursor: pointer; list-style: none; }
+.cat > summary::-webkit-details-marker { display: none; }
+.cat > summary .cat-name::before { content: "+ "; color: var(--faint); }
+.cat[open] > summary .cat-name::before { content: "− "; }
+.cat[open] { padding-bottom: 0.8rem; }
+
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; font-size: 0.88rem; }
+.check { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr); gap: 0.6rem; overflow-wrap: anywhere; }
+.check-status { font-size: 0.78rem; font-weight: 600; }
+.check-pass .check-status { color: var(--ok); }
+.check-warn .check-status { color: var(--warn); }
+.check-fail .check-status { color: var(--danger); }
+.check-info .check-status { color: var(--faint); }
+@media (max-width: 520px) { .check { grid-template-columns: 1fr; gap: 0.1rem; } }
+
+.versions { margin: 0; padding-left: 1.1rem; font-size: 0.9rem; }
+
+.run { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+.run-succeeded { color: var(--ok); }
+.run-failed, .run-blocked { color: var(--danger); }
+.run-queued, .run-running { color: var(--g-prospeccion); }
+.run-cancelled { color: var(--faint); }
+.text-danger { color: var(--danger); overflow-wrap: anywhere; }
+.row-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.inline-form { display: grid; gap: 0.3rem; }
+.inline-form .form-actions { margin: 0; }

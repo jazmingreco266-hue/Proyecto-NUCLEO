@@ -67,6 +67,32 @@ Un agente o un operador puede **pedirlas**; solo el propietario las **decide**.
 | Errores | Los mensajes al usuario nunca exponen detalles internos |
 | Dependencias | `npm audit`: 0 vulnerabilidades al 28/09/2026 |
 
+## Lectura de sitios de terceros (sección 4.3)
+
+Implementado en `src/agents/http.ts` y probado en `tests/http.test.ts`.
+
+| Regla | Cómo se cumple |
+|---|---|
+| Respetar robots.txt | Se lee antes de cada sitio y en cada redirección (RFC 9309). Si no se puede leer por error del servidor, no se lee el sitio |
+| Identificarse | User-agent `NucleoBot/0.3`; con `BOT_CONTACT_URL` agrega un contacto |
+| No hacer scraping agresivo | Mínimo 1,5 s entre pedidos al mismo dominio; respeta `Crawl-delay` (tope 10 s); como máximo 1 página + robots.txt + 8 enlaces por auditoría |
+| No evadir bloqueos | 401, 403, 407, 429 y 451 se registran como bloqueo y **no se reintentan**. No envía cookies, no inicia sesión, no completa formularios |
+| No llegar a la red interna (SSRF) | Solo http/https, sin credenciales en la URL, sin IPs directas. La IP resuelta se valida **al conectar**, lo que también frena un DNS que apunte a direcciones privadas |
+| Límites de recursos | 15 s por pedido, 3 MB por respuesta, 5 redirecciones |
+| Datos personales | Se guardan solo contactos empresariales publicados en el sitio. De LinkedIn solo páginas de empresa (`/company/`), nunca perfiles personales. No se guarda el HTML completo |
+
+Los contactos encontrados quedan como **probables** (confianza 70): podrían ser, por ejemplo, del
+diseñador del sitio. Una persona los confirma antes de usarlos.
+
+## Agentes, costos y autonomía
+
+- Un trabajo pedido por una persona desde el panel corre al momento. Uno automático respeta el nivel
+  de autonomía (en **manual** no corre nada solo) y el horario configurado.
+- Antes de cada trabajo con costo estimado se compara contra el presupuesto mensual. Con presupuesto 0
+  (valor inicial) no corre ningún trabajo con costo. La auditoría técnica no usa APIs pagas: costo 0.
+- El endpoint `/api/cron/agentes` exige `Authorization: Bearer <CRON_SECRET>` (comparación en tiempo
+  constante). Sin la variable configurada responde 401 siempre.
+
 ## Limitaciones conocidas
 
 1. El límite por IP vive en memoria: con varias instancias del servidor, cada una cuenta por separado.
@@ -76,3 +102,7 @@ Un agente o un operador puede **pedirlas**; solo el propietario las **decide**.
    se usa la consola. Se agrega cuando haya un proveedor de email aprobado.
 4. La zona horaria de las fechas en pantalla está fija en Buenos Aires. La de "encontradas hoy"
    sí sale de la configuración.
+5. El tiempo de respuesta de la auditoría es una sola medición desde el servidor de Núcleo. No
+   reemplaza una prueba de Core Web Vitals con navegador.
+6. La espera entre pedidos al mismo dominio vive en memoria de cada proceso: dos workers en paralelo
+   sobre el mismo sitio no se coordinan. Con un solo worker (lo previsto) no aplica.

@@ -234,4 +234,35 @@ export const agentRuns = pgTable("agent_runs", {
   createdAt: ts("created_at").notNull().defaultNow(),
   startedAt: ts("started_at"),
   finishedAt: ts("finished_at"),
+  requestedByType: actorType("requested_by_type").notNull().default("system"),
+  requestedById: text("requested_by_id"),
+  dedupeKey: text("dedupe_key"),
+  lockedBy: text("locked_by"),
+  lockedAt: ts("locked_at"),
+  estimatedCostUsd: numeric("estimated_cost_usd", { precision: 10, scale: 4 }).notNull().default("0"),
+});
+
+export const siteAudits = pgTable("site_audits", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  prospectId: uuid("prospect_id")
+    .notNull()
+    .references(() => prospects.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  runId: uuid("run_id").references(() => agentRuns.id, { onDelete: "set null" }),
+  requestedUrl: text("requested_url").notNull(),
+  finalUrl: text("final_url").notNull(),
+  httpStatus: smallint("http_status").notNull(),
+  responseMs: integer("response_ms").notNull(),
+  htmlBytes: integer("html_bytes").notNull(),
+  fetchedAt: ts("fetched_at").notNull(),
+  siteScore: smallint("site_score"),
+  categories: jsonb("categories").notNull(),
+  checks: jsonb("checks").notNull(),
+  issues: text("issues").array().notNull().default([]),
+  strengths: text("strengths").array().notNull().default([]),
+  recommendation: jsonb("recommendation").notNull(),
+  tool: text("tool").notNull(),
+  createdByType: actorType("created_by_type").notNull(),
+  createdById: text("created_by_id"),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });

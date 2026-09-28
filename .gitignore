@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secretos: nunca al repositorio
+.env
+.env.*
+!.env.example
+
+# Capturas y artefactos locales
+/artifacts/
+.DS_Store

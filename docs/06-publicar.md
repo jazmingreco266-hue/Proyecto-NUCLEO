@@ -49,6 +49,19 @@ Entrá a la dirección que te da Vercel. Como no hay usuarios, el login muestra
 **Crear la cuenta de propietario**. Poné el `SETUP_TOKEN`, tu nombre, email y contraseña.
 Apenas se crea la cuenta, esa página deja de existir. Después podés borrar `SETUP_TOKEN`.
 
+## Agentes en segundo plano (opcional)
+
+Las auditorías pedidas desde el panel se ejecutan al momento, sin nada extra. Para que los agentes
+trabajen solos (reintentos y auditorías automáticas de prospectos calificados) hay dos caminos:
+
+| Opción | Cómo | Nota |
+|---|---|---|
+| Servidor propio o VPS | `npm run worker` como servicio | Corre sin parar y respeta el horario configurado |
+| Vercel Cron | Cargá `CRON_SECRET` (16+ caracteres) y programá una llamada a `/api/cron/agentes` | Cada llamada trabaja hasta 45 s. Revisá la frecuencia que permite tu plan en https://vercel.com/docs/cron-jobs |
+
+En ambos casos, en **Configuración** subí la autonomía de "Manual" a "Asistido" para que el
+orquestador encole trabajo por su cuenta. Mientras esté en manual, solo corre lo que pidas vos.
+
 ## Instalarlo como app
 
 | Dispositivo | Cómo |

@@ -18,7 +18,8 @@ La fuente de verdad es [`migrations/0001_nucleo.sql`](../migrations/0001_nucleo.
 | `settings` | Configuración vigente (una sola fila) | `id = 1` fijo |
 | `settings_history` | Cada versión de la configuración | **Solo agregado** |
 | `audit_log` | Registro de todo lo que pasa | **Solo agregado**; los metadatos se limpian de secretos antes de guardarse |
-| `agent_runs` | Cola y registro de ejecuciones de agentes (etapa 3): modelo, herramienta, costo, tokens, intentos, error | Costo no negativo |
+| `agent_runs` | Cola y registro de ejecuciones de agentes: modelo, herramienta, costo estimado y real, tokens, intentos, error, quién lo pidió | Costo no negativo; intentos entre 1 y 10; el mismo trabajo (`dedupe_key`) no puede estar dos veces en cola o ejecutándose |
+| `site_audits` | Auditorías técnicas de sitios, versionadas: URL leída, respuesta, puntajes por categoría, verificaciones, problemas, fortalezas y recomendación preliminar | Versión única por prospecto. **Solo agregado**: una auditoría nunca se sobrescribe |
 
 ## Veracidad en la base (sección 4.1)
 
@@ -32,7 +33,7 @@ Así, aunque un agente futuro tenga un error, no puede guardar un dato inventado
 
 ## Tablas de solo agregado
 
-`pipeline_events`, `audit_log`, `approval_decisions` y `settings_history` tienen un trigger
+`pipeline_events`, `audit_log`, `approval_decisions`, `settings_history` y `site_audits` tienen un trigger
 que rechaza cualquier `UPDATE` o `DELETE`. Como consecuencia, un prospecto con historial
 **no se puede borrar físicamente**: solo se retira con borrado lógico. Borrar datos de
 producción de verdad queda reservado a un procedimiento con doble aprobación.

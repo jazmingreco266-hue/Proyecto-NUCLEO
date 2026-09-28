@@ -11,6 +11,7 @@ import {
   prospects,
   settings,
   settingsHistory,
+  siteAudits,
   users,
 } from "@/db/schema";
 import { audit } from "../audit";
@@ -35,6 +36,7 @@ export async function exportAll(db: Db, who: Principal) {
     settingsRows,
     historyRows,
     runRows,
+    siteAuditRows,
     auditRows,
   ] = await Promise.all([
     db
@@ -58,6 +60,7 @@ export async function exportAll(db: Db, who: Principal) {
     db.select().from(settings),
     db.select().from(settingsHistory).orderBy(asc(settingsHistory.id)),
     db.select().from(agentRuns).orderBy(asc(agentRuns.createdAt)),
+    db.select().from(siteAudits).orderBy(asc(siteAudits.createdAt)),
     db.select().from(auditLog).orderBy(asc(auditLog.id)),
   ]);
 
@@ -73,6 +76,7 @@ export async function exportAll(db: Db, who: Principal) {
       eventos: eventRows.length,
       aprobaciones: approvalRows.length,
       notas: noteRows.length,
+      auditoriasWeb: siteAuditRows.length,
       actividad: auditRows.length,
     },
     usuarios: userRows,
@@ -85,6 +89,7 @@ export async function exportAll(db: Db, who: Principal) {
     configuracion: settingsRows,
     historialConfiguracion: historyRows,
     ejecucionesAgentes: runRows,
+    auditoriasWeb: siteAuditRows,
     actividad: auditRows,
   };
   await audit(db, who, { action: "data.export", metadata: data.cantidades });

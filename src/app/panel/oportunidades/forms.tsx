@@ -16,6 +16,7 @@ import {
   createProspectAction,
   pauseAction,
   removeFactAction,
+  requestAuditAction,
   transitionAction,
 } from "./actions";
 
@@ -309,6 +310,21 @@ export function NoteForm({ prospectId }: { prospectId: string }) {
           </label>
         </>
       )}
+    </ActionForm>
+  );
+}
+
+// ─────────────────────────── Auditoría ───────────────────────────
+
+export function AuditRequestForm({ prospectId, again }: { prospectId: string; again: boolean }) {
+  return (
+    <ActionForm
+      action={requestAuditAction}
+      submitLabel={again ? "Regenerar auditoría" : "Generar auditoría"}
+      submitClass={again ? "btn" : "btn btn-primary"}
+      pendingLabel="Auditando… puede tardar hasta un minuto"
+    >
+      {() => <input type="hidden" name="prospectId" value={prospectId} />}
     </ActionForm>
   );
 }

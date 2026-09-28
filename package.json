@@ -1,6 +1,6 @@
 {
   "name": "nucleo-panel",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Panel operativo de Núcleo",
   "scripts": {
     "dev": "next dev",
@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "db:migrate": "node --env-file-if-exists=.env --import tsx scripts/migrate.ts",
     "user:create": "node --env-file-if-exists=.env --import tsx scripts/create-user.ts",
+    "worker": "node --env-file-if-exists=.env --import tsx scripts/worker.ts",
     "seed:ejemplo": "node --env-file-if-exists=.env --import tsx scripts/seed-ejemplo.ts",
     "vercel-build": "node --import tsx scripts/migrate.ts && next build"
   },
@@ -28,6 +29,7 @@
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.3",
     "next": "^16.3.6",
+    "node-html-parser": "^9.0.4",
     "pg": "^8.23.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

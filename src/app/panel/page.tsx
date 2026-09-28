@@ -105,8 +105,9 @@ export default async function Overview({ searchParams }: { searchParams: Promise
           <div className="empty">
             <h3>Todavía no hay prospectos reales</h3>
             <p>
-              Los agentes de búsqueda automática llegan en la etapa 3. Mientras tanto podés cargar empresas a mano:
-              cada dato que agregues queda con su fuente, fecha y nivel de verificación.
+              La búsqueda automática de empresas se habilita cuando elijas una fuente de datos. Mientras tanto podés
+              cargar empresas a mano y pedir su auditoría web: cada dato queda con su fuente, fecha y nivel de
+              verificación.
             </p>
             {can(me, "prospects.write") && (
               <Link className="btn" href="/panel/oportunidades/nuevo">
@@ -163,7 +164,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
         <h2 id="operacion">Operación</h2>
         <div className="metrics">
           <Metric n={o.pendingApprovals} label="Aprobaciones pendientes" tone="attention" href="/panel/aprobaciones" />
-          <Metric n={o.blockedTasks} label="Tareas bloqueadas" tone="attention" />
+          <Metric n={o.blockedTasks} label="Tareas fallidas o bloqueadas" tone="attention" href="/panel/tareas?status=problemas" />
           <Metric
             n={o.securityAlerts}
             label="Alertas de seguridad (7 días)"
@@ -172,8 +173,8 @@ export default async function Overview({ searchParams }: { searchParams: Promise
           />
         </div>
         <p className="faint">
-          &ldquo;Encontradas hoy&rdquo; usa la zona horaria {o.timezone}. Las tareas bloqueadas cuentan cuando existan
-          agentes automáticos (etapa 3).
+          &ldquo;Encontradas hoy&rdquo; usa la zona horaria {o.timezone}. Las tareas fallidas o bloqueadas son trabajos de
+          agentes que necesitan que alguien los revise.
         </p>
       </section>
     </>

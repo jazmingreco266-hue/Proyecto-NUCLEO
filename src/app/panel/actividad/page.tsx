@@ -27,6 +27,14 @@ const ACTION_TEXT: Record<string, string> = {
   "user.activate": "Reactivó un usuario",
   "user.deactivate": "Desactivó un usuario",
   "data.export": "Descargó una copia de seguridad",
+  "run.enqueue": "Encoló una tarea de agente",
+  "run.succeeded": "Completó una tarea",
+  "run.retry_scheduled": "Programó un reintento",
+  "run.failed": "Una tarea falló",
+  "run.blocked": "Una tarea quedó bloqueada",
+  "run.retry": "Reintentó una tarea",
+  "run.cancel": "Canceló una tarea",
+  "audit.create": "Guardó una auditoría web",
 };
 
 export default async function ActivityPage() {

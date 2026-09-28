@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { getDb } from "@/db/client";
 import { currentPrincipal } from "@/server/auth/current";
 import { publicMessage } from "@/server/principal";
+import { processNow } from "@/agents/orchestrator";
+import { requestAudit } from "@/server/services/audits";
 import {
   addFact,
   addNote,
@@ -144,4 +146,32 @@ export async function addNoteAction(_: ActionState, form: FormData): Promise<Act
   }
   revalidatePath("/panel", "layout");
   return { ok: "Nota guardada." };
+}
+
+export async function requestAuditAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const who = await me();
+  const db = getDb();
+  let message: string;
+  try {
+    const { run, created } = await requestAudit(db, who, str(form, "prospectId"));
+    if (!created) {
+      message = "Ya hay una auditoría en curso para este prospecto.";
+    } else {
+      // Se ejecuta al momento. Si falla, queda en la cola con sus reintentos.
+      const status = await processNow(db, run.id);
+      message =
+        status === "succeeded"
+          ? "Auditoría completada."
+          : status === "blocked"
+            ? "La auditoría quedó bloqueada. El motivo figura abajo."
+            : status === "failed"
+              ? "La auditoría falló. El detalle figura en Tareas."
+              : "El sitio no respondió. La auditoría quedó en cola para reintentar.";
+    }
+  } catch (err) {
+    logUnexpected(err);
+    return { error: publicMessage(err) };
+  }
+  revalidatePath("/panel", "layout");
+  return { ok: message };
 }

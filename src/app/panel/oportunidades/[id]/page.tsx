@@ -15,16 +15,21 @@ import {
 import { requireUser } from "@/server/auth/current";
 import { can, NotFoundError } from "@/server/principal";
 import { getProspect, listEvents, listFacts, listNotes } from "@/server/services/prospects";
+import { AUDIT_AGENT, getAudit, listAudits } from "@/server/services/audits";
+import { latestRunFor, RUN_STATUS_LABELS } from "@/server/services/agent-runs";
+import { AUDIT_CATEGORIES, type CategoryKey, type CategoryResult, type Check, type Recommendation } from "@/domain/site-audit";
 import { notFound } from "next/navigation";
 import { Country, ExternalLink, formatMoney, Score, Status, When } from "../../../ui/format";
-import { FactForm, NoteForm, PauseForm, RemoveFactForm, TransitionForm } from "../forms";
+import { AuditRequestForm, FactForm, NoteForm, PauseForm, RemoveFactForm, TransitionForm } from "../forms";
 
 export const metadata: Metadata = { title: "Prospecto" };
+// La auditoría pedida desde esta página se ejecuta al momento: puede tardar hasta un minuto.
+export const maxDuration = 60;
 
 const TABS = [
   { key: "empresa", label: "Empresa" },
   { key: "investigacion", label: "Investigación" },
-  { key: "auditoria", label: "Auditoría web", stage: 3 },
+  { key: "auditoria", label: "Auditoría web" },
   { key: "capturas", label: "Capturas", stage: 3 },
   { key: "demo", label: "Demo", stage: 4 },
   { key: "contactos", label: "Contactos" },
@@ -39,17 +44,12 @@ const TABS = [
 type TabKey = (typeof TABS)[number]["key"];
 
 const UPCOMING: Record<string, { title: string; items: string[] }> = {
-  auditoria: {
-    title: "La auditoría automática llega en la etapa 3",
-    items: [
-      "Puntaje de 0 a 100 en diseño, experiencia móvil, velocidad, SEO técnico, accesibilidad, conversión y más",
-      "Principales problemas y fortalezas, redactados sin lenguaje despectivo",
-      "Nivel de urgencia, esfuerzo estimado y recomendación: contactar, observar o descartar",
-    ],
-  },
   capturas: {
-    title: "Las capturas llegan en la etapa 3",
-    items: ["Captura del sitio actual en escritorio y celular", "Fecha y hora de cada captura"],
+    title: "Las capturas llegan en el próximo bloque de la etapa 3",
+    items: [
+      "Captura del sitio actual en escritorio y celular, con fecha y hora",
+      "Requieren un navegador en el servidor: se habilitan cuando se defina dónde corre el worker",
+    ],
   },
   demo: {
     title: "El generador de demos llega en la etapa 4",
@@ -135,10 +135,14 @@ export default async function ProspectPage({
     throw err;
   }
   const { p, ownerName } = data;
-  const [events, facts, notes] = await Promise.all([
+  const auditVersion = Number(sp.v) > 0 ? Math.floor(Number(sp.v)) : undefined;
+  const [events, facts, notes, auditData] = await Promise.all([
     listEvents(db, me, p.id),
     listFacts(db, me, p.id),
     listNotes(db, me, p.id),
+    tab === "auditoria"
+      ? Promise.all([getAudit(db, me, p.id, auditVersion), listAudits(db, me, p.id), latestRunFor(db, me, p.id, AUDIT_AGENT)])
+      : null,
   ]);
   const visited = new Set(events.map((e) => e.toStatus));
   const targets = can(me, "prospects.transition")
@@ -390,21 +394,16 @@ export default async function ProspectPage({
             </section>
           )}
 
-          {tab === "auditoria" && (
-            <section className="panel stack" aria-labelledby="t-aud">
-              <h2 id="t-aud">Auditoría web</h2>
-              {p.mainIssues.length > 0 && (
-                <div className="stack">
-                  <h3>Problemas registrados</h3>
-                  <ul className="issues">
-                    {p.mainIssues.map((i) => (
-                      <li key={i}>{i}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <Upcoming k="auditoria" />
-            </section>
+          {tab === "auditoria" && auditData && (
+            <AuditTab
+              prospectId={p.id}
+              hasWebsite={!!p.websiteUrl}
+              isSample={p.isSample}
+              canRequest={can(me, "prospects.write")}
+              audit={auditData[0]}
+              versions={auditData[1]}
+              run={auditData[2]}
+            />
           )}
 
           {["capturas", "demo", "propuesta", "mensajes", "proyecto", "seguridad"].includes(tab) && (
@@ -474,5 +473,200 @@ function FactItem({ f, canEdit }: { f: Fact; canEdit: boolean }) {
         </details>
       )}
     </article>
+  );
+}
+
+// ─────────────────────────── Auditoría ───────────────────────────
+
+const CHECK_LABEL: Record<Check["status"], string> = { pass: "Bien", warn: "Mejorable", fail: "Problema", info: "Dato" };
+const REC_LABEL: Record<Recommendation["action"], string> = { contactar: "Contactar", observar: "Observar", descartar: "Descartar" };
+
+type AuditRow = NonNullable<Awaited<ReturnType<typeof getAudit>>>;
+
+function AuditTab({
+  prospectId,
+  hasWebsite,
+  isSample,
+  canRequest,
+  audit,
+  versions,
+  run,
+}: {
+  prospectId: string;
+  hasWebsite: boolean;
+  isSample: boolean;
+  canRequest: boolean;
+  audit: AuditRow | null;
+  versions: Awaited<ReturnType<typeof listAudits>>;
+  run: Awaited<ReturnType<typeof latestRunFor>>;
+}) {
+  const latest = versions[0]?.version;
+  const showRun = run && run.status !== "succeeded" && (!audit || run.createdAt > audit.createdAt);
+  return (
+    <section className="stack" aria-labelledby="t-aud">
+      <div className="section-head">
+        <h2 id="t-aud">Auditoría web</h2>
+        {canRequest && hasWebsite && !isSample && <AuditRequestForm prospectId={prospectId} again={!!audit} />}
+      </div>
+      <p className="muted">
+        Mediciones técnicas objetivas, sin IA. Solo se puntúa lo que se puede medir; diseño, claridad comercial, contenido
+        y potencial de automatización quedan para revisión humana o del agente de investigación.
+      </p>
+
+      {!hasWebsite && <p className="notice">El prospecto no tiene sitio web cargado.</p>}
+      {isSample && <p className="notice">Es un prospecto de ejemplo con dominio ficticio: no se audita.</p>}
+
+      {showRun && run && (
+        <p className={`notice ${run.status === "failed" || run.status === "blocked" ? "notice-error" : ""}`} role="status">
+          Última tarea: <strong>{RUN_STATUS_LABELS[run.status]}</strong> (intento {run.attempt}/{run.maxAttempts})
+          {run.error ? ` · ${run.error}` : ""} · <Link href="/panel/tareas">Ver tareas</Link>
+        </p>
+      )}
+
+      {!audit ? (
+        hasWebsite && !isSample && (
+          <div className="empty">
+            <h3>Todavía no hay auditoría</h3>
+            <p>
+              Se lee la página principal respetando robots.txt, se revisan hasta 8 enlaces internos y se guarda el
+              resultado como versión 1. Las siguientes nunca reemplazan a las anteriores.
+            </p>
+          </div>
+        )
+      ) : (
+        <>
+          <div className="panel stack">
+            <div className="audit-head">
+              <div>
+                <span className="faint">Puntaje técnico</span>
+                <Score value={audit.siteScore} label="Puntaje técnico del sitio" />
+              </div>
+              <Recommendation rec={audit.recommendation as Recommendation} />
+            </div>
+            <dl className="dl">
+              <dt>Versión</dt>
+              <dd>
+                {audit.version}
+                {audit.version !== latest && (
+                  <>
+                    {" "}
+                    · <Link href="?tab=auditoria">ver la última (v{latest})</Link>
+                  </>
+                )}
+              </dd>
+              <dt>Leído</dt>
+              <dd>
+                <When date={audit.fetchedAt} />
+              </dd>
+              <dt>Dirección</dt>
+              <dd>
+                <ExternalLink href={audit.finalUrl} />
+                {audit.finalUrl !== audit.requestedUrl && <span className="faint"> (pedida: {audit.requestedUrl})</span>}
+              </dd>
+              <dt>Respuesta</dt>
+              <dd>
+                HTTP {audit.httpStatus} · {audit.responseMs} ms · {Math.round(audit.htmlBytes / 1024)} KB de HTML
+              </dd>
+              <dt>Herramienta</dt>
+              <dd>{audit.tool}</dd>
+            </dl>
+          </div>
+
+          <div className="grid-2">
+            <div className="panel stack">
+              <h3>Principales problemas</h3>
+              {audit.issues.length ? (
+                <ul className="issues">
+                  {audit.issues.slice(0, 8).map((i) => (
+                    <li key={i}>{i}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="faint">No se detectaron problemas en lo medible.</p>
+              )}
+            </div>
+            <div className="panel stack">
+              <h3>Fortalezas</h3>
+              {audit.strengths.length ? (
+                <ul className="issues">
+                  {audit.strengths.map((i) => (
+                    <li key={i}>{i}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="faint">Ninguna destacada en lo medible.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="panel stack">
+            <h3>Por categoría</h3>
+            <div className="cat-list">
+              {AUDIT_CATEGORIES.map((c) => {
+                const r = (audit.categories as Record<CategoryKey, CategoryResult>)[c.key];
+                const checks = (audit.checks as Check[]).filter((k) => k.category === c.key);
+                return (
+                  <details key={c.key} className="cat" open={false}>
+                    <summary>
+                      <span className="cat-name">{c.label}</span>
+                      {r?.score != null ? <Score value={r.score} label={c.label} /> : <span className="score-none">No evaluado</span>}
+                    </summary>
+                    {checks.length === 0 ? (
+                      <p className="faint">{r?.note}</p>
+                    ) : (
+                      <ul className="checks">
+                        {checks.map((k) => (
+                          <li key={k.id} className={`check check-${k.status}`}>
+                            <span className="check-status">{CHECK_LABEL[k.status]}</span>
+                            <span>
+                              <strong>{k.label}.</strong> {k.detail}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </details>
+                );
+              })}
+            </div>
+          </div>
+
+          {versions.length > 1 && (
+            <div className="panel stack">
+              <h3>Versiones</h3>
+              <ol className="versions">
+                {versions.map((v) => (
+                  <li key={v.id}>
+                    {v.version === audit.version ? (
+                      <strong>v{v.version}</strong>
+                    ) : (
+                      <Link href={`?tab=auditoria&v=${v.version}`}>v{v.version}</Link>
+                    )}{" "}
+                    · <When date={v.createdAt} /> · puntaje {v.siteScore ?? "—"}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
+function Recommendation({ rec }: { rec: Recommendation }) {
+  return (
+    <div className={`rec rec-${rec.action}`}>
+      <span className="faint">Recomendación preliminar</span>
+      <strong>
+        {REC_LABEL[rec.action]} · urgencia {rec.urgency}
+      </strong>
+      <ul className="issues">
+        {rec.reasons.map((r) => (
+          <li key={r}>{r}</li>
+        ))}
+      </ul>
+      <span className="faint">El esfuerzo y el valor comercial se estiman con la investigación, no acá.</span>
+    </div>
   );
 }

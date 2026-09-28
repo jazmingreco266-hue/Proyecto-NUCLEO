@@ -10,14 +10,16 @@ import { Nav } from "./nav";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const me = await requireUser();
-  const pending = await getDb().execute<{ n: number }>(
-    sql`SELECT count(*)::int AS n FROM approvals WHERE status = 'pending'`,
+  const counts = await getDb().execute<{ pending: number; problems: number }>(
+    sql`SELECT (SELECT count(*)::int FROM approvals WHERE status = 'pending') AS pending,
+               (SELECT count(*)::int FROM agent_runs WHERE status IN ('failed', 'blocked')) AS problems`,
   );
 
   const items = [
     { href: "/panel", label: "Vista general" },
     { href: "/panel/oportunidades", label: "Oportunidades" },
-    { href: "/panel/aprobaciones", label: "Aprobaciones", count: pending.rows[0]?.n ?? 0 },
+    { href: "/panel/aprobaciones", label: "Aprobaciones", count: counts.rows[0]?.pending ?? 0 },
+    { href: "/panel/tareas", label: "Tareas", count: counts.rows[0]?.problems ?? 0 },
     { href: "/panel/configuracion", label: "Configuración" },
     ...(can(me, "users.manage") ? [{ href: "/panel/usuarios", label: "Usuarios" }] : []),
     ...(can(me, "audit.read") ? [{ href: "/panel/actividad", label: "Actividad" }] : []),

@@ -11,7 +11,8 @@
 | Validación | Zod | Toda entrada de usuario o de agente se valida en el servidor. |
 | Contraseñas | bcrypt (costo 12) | Estándar probado. |
 | Tests | Vitest contra una base Postgres real | Los tests de integración usan la misma base que producción, no mocks. |
-| Colas (etapa 3) | Tabla `agent_runs` + worker Node con `SELECT … FOR UPDATE SKIP LOCKED` | No suma otra infraestructura (Redis) mientras el volumen sea chico. |
+| Colas | Tabla `agent_runs` + worker Node con `SELECT … FOR UPDATE SKIP LOCKED` | No suma otra infraestructura (Redis) mientras el volumen sea chico. |
+| Lectura de HTML | node-html-parser | Parser liviano y probado; evita analizar HTML con expresiones regulares. |
 
 ## Capas del código
 
@@ -21,7 +22,7 @@ src/
   db/         Esquema Drizzle, conexión, migrador.
   server/     Servicios (acceso a datos + auditoría en la misma transacción), autenticación.
   app/        Panel: páginas, Server Actions y componentes.
-  agents/     (etapa 3+) Orquestador y agentes especializados.
+  agents/     Orquestador, lector respetuoso de sitios y agentes especializados.
 migrations/   SQL versionado.
 tests/        Unitarios (domain) e integración (server, contra Postgres).
 ```
@@ -57,7 +58,7 @@ aprobación**. La acción se ejecuta cuando el propietario la aprueba en el pane
 | Orchestrator | 3 | Configuración, cola | Tareas encoladas, resumen diario | — | Aprobar nada, superar el presupuesto |
 | Lead Discovery | 3 | Filtros de configuración | Prospectos `DISCOVERED` | `DISCOVERED` | Usar fuentes bloqueadas, evadir restricciones |
 | Business Research | 3 | Prospecto | Hechos con fuente, URL, fecha y confianza | `RESEARCHING`, `QUALIFIED`, `REJECTED` | Guardar un dato "verificado" sin URL de fuente |
-| Website Audit | 3 | URL del sitio | Puntajes 0–100, problemas, fortalezas, captura | `AUDITED` | Usar lenguaje despectivo |
+| Website Audit | 3 ✔ | URL del sitio | Auditoría versionada: puntajes 0–100 por categoría medible, problemas, fortalezas, recomendación preliminar; contactos y tecnología como datos con fuente (captura: pendiente) | `AUDITED` | Usar lenguaje despectivo, puntuar lo que no midió, evadir robots.txt o bloqueos |
 | Opportunity Scoring | 3 | Hechos + auditoría | Puntaje con explicación por criterio | `QUALIFIED`, `REJECTED` | Presentar probabilidades como certezas |
 | Concept & Demo | 4 | Prospecto calificado | Demo versionada con `noindex` y aviso de propuesta no oficial | `DEMO_GENERATING`, `DEMO_READY` | Inventar testimonios, usar datos reales |
 | Outreach | 4 | Prospecto + demo | Asuntos, textos por canal, sugerencia de horario | `OUTREACH_READY` | Enviar nada |

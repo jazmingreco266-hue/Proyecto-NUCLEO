@@ -6,7 +6,7 @@
 |---|---|
 | 1 · Auditoría | ✔ Hecha: repositorio vacío, sin sistema previo (ver `01-auditoria.md`) |
 | 2 · Núcleo operativo | ✔ Hecha, con tests (detalle abajo) |
-| 3 · Prospección | Pendiente: necesita decisiones del propietario (ver "Preguntas agrupadas") |
+| 3 · Prospección | **En curso.** Bloque A hecho (cola, costos, lectura respetuosa, auditoría técnica). Falta lo que depende de decisiones tuyas |
 | 4 · Demos y comunicación | Pendiente |
 | 5 · Ejecución de proyectos | Pendiente |
 | 6 · Seguridad, migración y SEO | Pendiente |
@@ -26,34 +26,40 @@
 - [x] Panel: vista general, tabla de oportunidades con filtros, ficha con 13 pestañas,
       aprobaciones, configuración, usuarios y actividad
 - [x] Adaptado a celular, modo oscuro y claro
-- [x] 77 tests automáticos + recorrido en navegador real
 
-Las pestañas de la ficha que dependen de etapas futuras (auditoría, capturas, demo,
-propuesta, mensajes, presupuesto detallado, proyecto técnico, seguridad y SEO) muestran qué
-van a contener y en qué etapa llegan. No muestran datos inventados.
+## Etapa 3: estado por tarea
 
-## Etapa 3: tareas pequeñas y verificables
+| # | Tarea | Estado | Dónde |
+|---|---|---|---|
+| 1 | Worker y cola (`SKIP LOCKED`, reintentos con espera creciente, recuperación de trabajos colgados, deduplicación) | ✔ | `src/server/services/agent-runs.ts`, `scripts/worker.ts`, `/api/cron/agentes` |
+| 2 | Control de costos, horario y autonomía | ✔ | `src/domain/agent-guards.ts`, `src/agents/orchestrator.ts` |
+| 3 | Lectura respetuosa de sitios (robots.txt, SSRF, límites) | ✔ | `src/agents/http.ts`, `src/domain/robots.ts` |
+| 4 | Auditoría técnica objetiva sin IA, versionada | ✔ | `src/domain/site-audit.ts`, `src/agents/website-audit.ts` |
+| 5 | Capturas escritorio/celular | Pendiente | Necesita un navegador en el servidor: depende de dónde corra el worker (pregunta 1) |
+| 6 | Investigación con IA (hechos solo de páginas leídas, cada uno con URL) | Pendiente | Necesita proveedor y presupuesto de IA (pregunta 2) |
+| 7 | Puntaje de oportunidad con explicación por criterio | Pendiente | Hoy hay puntaje **técnico** del sitio. El de oportunidad necesita la investigación (tarea 6) para no inventar criterios |
+| 8 | Descubrimiento de empresas | Pendiente | Necesita elegir fuente (pregunta 3) |
+| 9 | Deduplicación por nombre + ciudad | Pendiente | Por dominio ya existe |
+| 10 | Panel: pestaña Auditoría, página Tareas, contador de tareas con problemas | ✔ | `src/app/panel/…` |
 
-Cada tarea se da por terminada con sus tests y su integración al panel.
+**Verificación del bloque A:** 131 tests automáticos (51 nuevos) contra PostgreSQL real, typecheck,
+build de producción, `npm audit` sin vulnerabilidades, y recorrido en navegador real: alta de
+prospecto → "Generar auditoría" sobre `example.com` → resultado guardado, sin errores de consola y sin
+desborde horizontal en celular.
 
-1. **Worker y cola.** Proceso separado que toma trabajos de `agent_runs` con
-   `FOR UPDATE SKIP LOCKED`, reintenta con espera creciente y respeta horario y topes.
-   *Verificación:* tests de concurrencia (dos workers no toman el mismo trabajo) y de topes.
-2. **Control de costos.** Antes de cada trabajo, sumar el gasto del mes y frenar si supera
-   el presupuesto. *Verificación:* test con presupuesto 0 → no corre nada.
-3. **Lectura respetuosa de sitios.** Cliente HTTP que lee `robots.txt`, se identifica, limita
-   la velocidad por dominio y no evade logins, CAPTCHAs ni bloqueos.
-   *Verificación:* tests con un servidor local que prohíbe rutas.
-4. **Auditoría técnica objetiva.** Métricas medibles sin IA: HTTPS, viewport móvil, tiempos,
-   títulos y meta descripciones, enlaces rotos, peso de imágenes.
-   *Verificación:* contra sitios de prueba locales con problemas conocidos.
-5. **Capturas.** Navegador headless en el servidor para escritorio y celular.
-6. **Investigación con IA.** El agente extrae hechos **solo** de las páginas leídas y cita la
-   URL de cada uno. Todo lo que no salga de una página queda como inferencia o hipótesis.
-7. **Puntaje de oportunidad.** Por criterio, con explicación, guardado en `score_explanation`.
-8. **Descubrimiento de empresas.** Depende de la fuente elegida (ver preguntas).
-9. **Deduplicación** por dominio (ya existe) y por nombre + ciudad.
-10. **Panel:** pestañas de Auditoría y Capturas, y la sección "Tareas bloqueadas".
+### Qué hace hoy la auditoría (y qué no)
+
+- **Mide:** HTTPS, HSTS, contenido mixto, encabezados de seguridad, viewport, zoom, anchos fijos,
+  tiempo de descarga, peso, compresión, scripts que bloquean, imágenes, título, descripción, H1,
+  canónica, noindex, Open Graph, datos estructurados, sitemap, idioma, texto alternativo, etiquetas de
+  formularios, enlaces vacíos, medios de contacto, WhatsApp, llamados a la acción, año del pie,
+  jQuery antiguo, Flash, etiquetas obsoletas, analítica, redes, mapa y hasta 8 enlaces internos.
+- **No puntúa:** diseño, claridad comercial, calidad del contenido ni potencial de automatización.
+  Aparecen como "No evaluado" hasta que exista el agente de investigación con IA.
+- **Recomendación:** preliminar (contactar / observar / descartar) según el puntaje técnico, el
+  umbral de descarte configurado y si hay contacto público. No estima esfuerzo ni valor comercial.
+- Un prospecto **Calificado** pasa solo a **Auditado** al terminar. En otro estado, o pausado, la
+  auditoría se guarda sin mover nada.
 
 ## Preguntas agrupadas para el propietario
 
@@ -76,5 +82,6 @@ Estas decisiones afectan dinero, terceros o credenciales, así que no las tomo s
 | Qué | Por qué | Alternativas | Requiere aprobación |
 |---|---|---|---|
 | Operación 24/7 | Hace falta un servidor desplegado | Hosting administrado (paga) o un VPS propio | Sí: contratar hosting |
-| Agentes con IA | Hace falta una API key con presupuesto | Arrancar con auditoría técnica sin IA (tareas 1–5) | Sí: gasto |
+| Agentes con IA | Hace falta una API key con presupuesto | Ya funciona la auditoría técnica sin IA | Sí: gasto |
+| Capturas de sitios | Hace falta un navegador headless en el servidor; en Vercel no viene incluido | Worker en un VPS con Chromium, o un servicio de capturas pago | Sí: hosting o servicio pago |
 | Descubrimiento automático | Hace falta elegir una fuente legítima | Carga manual (ya funciona) | Sí si la fuente es paga |

@@ -13,6 +13,8 @@ import { ActionForm } from "../../ui/action-form";
 import {
   addFactAction,
   addNoteAction,
+  editMessagesAction,
+  generateMessagesAction,
   createProspectAction,
   pauseAction,
   removeFactAction,
@@ -306,6 +308,121 @@ export function NoteForm({ prospectId }: { prospectId: string }) {
           <label className="field">
             <span>Nota</span>
             <textarea name="body" required maxLength={5000} rows={3} defaultValue={v.body} />
+          </label>
+        </>
+      )}
+    </ActionForm>
+  );
+}
+
+// ─────────────────────────── Mensajes ───────────────────────────
+
+export function GenerateMessagesForm({
+  prospectId,
+  defaults,
+  submitLabel = "Preparar mensajes",
+}: {
+  prospectId: string;
+  defaults: { positive?: string; opportunity?: string; benefit?: string; demoUrl?: string; contactName?: string };
+  submitLabel?: string;
+}) {
+  return (
+    <ActionForm action={generateMessagesAction} submitLabel={submitLabel} pendingLabel="Preparando…">
+      {(v) => (
+        <>
+          <input type="hidden" name="prospectId" value={prospectId} />
+          <label className="field">
+            <span>Algo positivo y concreto de la empresa *</span>
+            <textarea
+              name="positive"
+              rows={2}
+              required
+              minLength={10}
+              maxLength={400}
+              defaultValue={v.positive ?? defaults.positive}
+              placeholder="Ej.: Tienen más de 20 años de trayectoria y muy buenas reseñas por la atención."
+            />
+            <small>Tiene que ser verdad y salir de tu investigación. Es lo que hace que el mensaje no sea genérico.</small>
+          </label>
+          <label className="field">
+            <span>Oportunidad concreta que viste *</span>
+            <textarea
+              name="opportunity"
+              rows={2}
+              required
+              minLength={10}
+              maxLength={300}
+              defaultValue={v.opportunity ?? defaults.opportunity}
+              placeholder="Ej.: el sitio no se adapta al celular y el formulario de turnos no confirma el envío"
+            />
+            <small>Describila sin criticar el trabajo actual.</small>
+          </label>
+          <label className="field">
+            <span>Beneficio para la empresa *</span>
+            <textarea
+              name="benefit"
+              rows={2}
+              required
+              minLength={10}
+              maxLength={300}
+              defaultValue={v.benefit ?? defaults.benefit}
+              placeholder="Ej.: Resolverlo haría que más pacientes pidan turno desde el celular sin tener que llamar."
+            />
+          </label>
+          <div className="form-grid">
+            <label className="field">
+              <span>Nombre de la persona (opcional)</span>
+              <input name="contactName" maxLength={80} defaultValue={v.contactName ?? defaults.contactName} />
+              <small>Solo si figura públicamente como contacto de la empresa.</small>
+            </label>
+            <label className="field">
+              <span>Enlace a la demo (opcional)</span>
+              <input name="demoUrl" type="url" maxLength={2000} defaultValue={v.demoUrl ?? defaults.demoUrl} placeholder="https://" />
+            </label>
+          </div>
+        </>
+      )}
+    </ActionForm>
+  );
+}
+
+export function EditMessagesForm({
+  prospectId,
+  version,
+  current,
+}: {
+  prospectId: string;
+  version: number;
+  current: { subjects: string[]; emailText: string; whatsappText: string; formText: string; socialText: string };
+}) {
+  return (
+    <ActionForm action={editMessagesAction} submitLabel="Guardar como versión nueva">
+      {(v) => (
+        <>
+          <input type="hidden" name="prospectId" value={prospectId} />
+          <input type="hidden" name="basedOnVersion" value={version} />
+          {[1, 2, 3].map((i) => (
+            <label key={i} className="field">
+              <span>Asunto {i}</span>
+              <input name={`subject${i}`} required maxLength={150} defaultValue={v[`subject${i}`] ?? current.subjects[i - 1] ?? ""} />
+            </label>
+          ))}
+          <label className="field">
+            <span>Email (texto)</span>
+            <textarea name="emailText" rows={14} required defaultValue={v.emailText ?? current.emailText} />
+            <small>Separá los párrafos con una línea en blanco. El email HTML se arma a partir de este texto.</small>
+          </label>
+          <label className="field">
+            <span>WhatsApp</span>
+            <textarea name="whatsappText" rows={5} required defaultValue={v.whatsappText ?? current.whatsappText} />
+          </label>
+          <label className="field">
+            <span>Formulario web</span>
+            <textarea name="formText" rows={7} required defaultValue={v.formText ?? current.formText} />
+          </label>
+          <label className="field">
+            <span>Instagram o LinkedIn</span>
+            <textarea name="socialText" rows={4} required defaultValue={v.socialText ?? current.socialText} />
           </label>
         </>
       )}

@@ -14,6 +14,7 @@ import { prospects, users } from "../src/db/schema";
 import type { PipelineStatus } from "../src/domain/pipeline";
 import type { Principal } from "../src/server/principal";
 import { addFact, createProspect, transitionProspect } from "../src/server/services/prospects";
+import { generateMessages } from "../src/server/services/outreach";
 
 const { values } = parseArgs({ options: { borrar: { type: "boolean", default: false } } });
 
@@ -35,61 +36,71 @@ type Sample = {
   site?: number;
   issues?: string[];
   value?: number;
+  message?: { positive: string; opportunity: string; benefit: string };
 };
 
 const samples: Sample[] = [
   {
-    name: "Panadería Aurora (ejemplo)",
-    city: "Rosario",
-    region: "Santa Fe",
-    industry: "Gastronomía",
-    domain: "panaderia-aurora.example",
-    opportunity: 78,
-    site: 34,
-    issues: ["Sitio no adaptado a celulares", "Sin botón de WhatsApp", "Catálogo en PDF"],
-    value: 850000,
-    path: [
-      { to: "RESEARCHING", by: "agent", reason: "Ejemplo: comienza la investigación" },
-      { to: "QUALIFIED", by: "agent", reason: "Ejemplo: supera el puntaje mínimo" },
-      { to: "AUDITED", by: "agent", reason: "Ejemplo: auditoría completada" },
-    ],
-  },
-  {
-    name: "Estudio Contable Delta (ejemplo)",
+    name: "Estudio Jurídico Ribera (ejemplo)",
     city: "Córdoba",
     region: "Córdoba",
-    industry: "Servicios profesionales",
-    domain: "estudio-delta.example",
-    opportunity: 64,
-    site: 51,
-    issues: ["Formulario de contacto sin confirmación", "Sin HTTPS"],
-    value: 1200000,
+    industry: "Estudios jurídicos",
+    domain: "ribera-abogados.example",
+    opportunity: 82,
+    site: 38,
+    issues: [
+      "El sitio no se adapta al celular",
+      "El formulario de consultas no confirma el envío",
+      "No hay un llamado a la acción claro para pedir una consulta",
+    ],
+    value: 4500,
     path: [
       { to: "RESEARCHING", by: "agent", reason: "Ejemplo: comienza la investigación" },
-      { to: "QUALIFIED", by: "agent", reason: "Ejemplo: supera el puntaje mínimo" },
+      { to: "QUALIFIED", by: "agent", reason: "Ejemplo: rubro objetivo y supera el puntaje mínimo" },
       { to: "AUDITED", by: "agent", reason: "Ejemplo: auditoría completada" },
       { to: "DEMO_GENERATING", by: "agent", reason: "Ejemplo: se genera la demo" },
       { to: "DEMO_READY", by: "agent", reason: "Ejemplo: demo lista" },
       { to: "OUTREACH_READY", by: "agent", reason: "Ejemplo: mensajes preparados" },
     ],
+    message: {
+      positive: "tienen más de 25 años de trayectoria y una especialización clara en derecho laboral y societario",
+      opportunity: "el sitio no se adapta al celular y el formulario de consultas no confirma si el mensaje llegó",
+      benefit: "resolverlo haría que más empresas pidan una consulta desde el teléfono, con la seguridad de que su pedido fue recibido",
+    },
   },
   {
-    name: "Ferretería Norte (ejemplo)",
-    city: "Salta",
-    region: "Salta",
-    industry: "Comercio minorista",
-    domain: "ferreteria-norte.example",
+    name: "Clínica Norte Salud (ejemplo)",
+    city: "Rosario",
+    region: "Santa Fe",
+    industry: "Clínicas y centros médicos privados",
+    domain: "clinica-norte.example",
+    opportunity: 77,
+    site: 45,
+    issues: ["Los turnos se piden solo por teléfono", "Carga lenta en celulares", "Sin información por especialidad"],
+    value: 6000,
+    path: [
+      { to: "RESEARCHING", by: "agent", reason: "Ejemplo: comienza la investigación" },
+      { to: "QUALIFIED", by: "agent", reason: "Ejemplo: rubro objetivo con potencial de sistema de turnos" },
+      { to: "AUDITED", by: "agent", reason: "Ejemplo: auditoría completada" },
+    ],
+  },
+  {
+    name: "Desarrolladora Altos del Sur (ejemplo)",
+    city: "Mendoza",
+    region: "Mendoza",
+    industry: "Desarrolladoras inmobiliarias",
+    domain: "altos-del-sur.example",
     path: [],
   },
   {
-    name: "Clínica Veterinaria Sur (ejemplo)",
-    city: "Mar del Plata",
-    region: "Buenos Aires",
-    industry: "Salud animal",
-    domain: "vet-sur.example",
-    opportunity: 41,
-    site: 72,
-    issues: ["El sitio ya cumple su función comercial"],
+    name: "Hotel Mirador Andino (ejemplo)",
+    city: "San Carlos de Bariloche",
+    region: "Río Negro",
+    industry: "Hoteles y turismo",
+    domain: "mirador-andino.example",
+    opportunity: 35,
+    site: 84,
+    issues: ["El sitio actual ya cumple bien su función comercial"],
     path: [
       { to: "RESEARCHING", by: "agent", reason: "Ejemplo: comienza la investigación" },
       { to: "REJECTED", by: "agent", reason: "Ejemplo: el sitio actual ya funciona bien; baja oportunidad" },
@@ -123,7 +134,7 @@ try {
           language: "es-AR",
           industry: s.industry,
           websiteUrl: `https://${s.domain}`,
-          currency: s.value ? "ARS" : null,
+          currency: s.value ? "USD" : null,
           estimatedValue: s.value ?? null,
         },
         { isSample: true },
@@ -134,7 +145,7 @@ try {
           opportunityScore: s.opportunity ?? null,
           siteScore: s.site ?? null,
           mainIssues: s.issues ?? [],
-          recommendedSolution: s.opportunity ? "Ejemplo: sitio responsive con catálogo y WhatsApp" : null,
+          recommendedSolution: s.opportunity && s.opportunity > 60 ? "Ejemplo: sitio responsive con sistema de consultas y turnos en línea" : null,
         })
         .where(eq(prospects.id, p.id));
 
@@ -153,7 +164,7 @@ try {
         prospectId: p.id,
         category: "business",
         field: "Público objetivo",
-        value: "Ejemplo: clientes locales que consultan desde el celular",
+        value: "Ejemplo: empresas y particulares que buscan el servicio desde el celular",
         kind: "inference",
         verification: "unconfirmed",
         confidence: 40,
@@ -170,6 +181,13 @@ try {
           expectedVersion: version,
         });
         version = updated.version;
+      }
+      if (s.message) {
+        try {
+          await generateMessages(db, agentP, p.id, s.message);
+        } catch (e) {
+          console.log(`  (sin mensajes de ejemplo: ${(e as Error).message})`);
+        }
       }
       console.log(`✔ ${s.name}`);
     }

@@ -215,6 +215,20 @@ export const settingsSchema = z
       skipIfSiteScoreAbove: z.coerce.number().int().min(0).max(100),
       excludedIndustries: list(200),
     }),
+    /** Perfil de cliente ideal: a qué tamaño y valor de empresa apuntar. */
+    targeting: z.object({
+      minEmployees: z.coerce.number().int().min(0).max(100000),
+      minProjectValueUsd: z.coerce.number().min(0).max(10_000_000),
+      requireOwnWebsite: z.boolean(),
+    }),
+    /** Firma de los mensajes comerciales. */
+    sender: z.object({
+      name: z.string().trim().max(120),
+      role: z.string().trim().max(120),
+      email: z.union([z.literal(""), z.string().trim().toLowerCase().email("Email de la firma inválido").max(254)]),
+      phone: z.string().trim().max(40),
+      website: z.union([z.literal(""), sourceUrlSchema]),
+    }),
   })
   .refine((s) => s.schedule.endHour > s.schedule.startHour, {
     path: ["schedule", "endHour"],
@@ -238,7 +252,6 @@ export type Settings = z.infer<typeof settingsSchema>;
 export const DEFAULT_SETTINGS: Settings = {
   countries: ["AR"],
   cities: [],
-  industries: [],
   languages: ["es"],
   maxLeadsPerDay: 20,
   maxDemosPerDay: 3,
@@ -253,11 +266,37 @@ export const DEFAULT_SETTINGS: Settings = {
   allowedSources: [],
   blockedSources: [],
   autonomy: "manual",
-  channels: ["email", "whatsapp", "form"],
+  channels: ["email", "whatsapp", "form", "linkedin"],
+  // Rubros sugeridos como punto de partida: empresas con presupuesto para un proyecto digital serio.
+  // Son una sugerencia editable, no un dato de mercado.
+  industries: [
+    "Estudios jurídicos",
+    "Clínicas y centros médicos privados",
+    "Desarrolladoras inmobiliarias",
+    "Industria y manufactura",
+    "Concesionarias",
+    "Colegios e institutos privados",
+    "Hoteles y turismo",
+    "Consultoras y estudios contables",
+    "Logística y transporte",
+    "Empresas de tecnología B2B",
+  ],
   discard: {
     requirePublicContact: true,
     skipIfSiteScoreAbove: 80,
-    excludedIndustries: [],
+    excludedIndustries: ["Kioscos", "Panaderías", "Almacenes", "Verdulerías", "Comercios de barrio"],
+  },
+  targeting: {
+    minEmployees: 10,
+    minProjectValueUsd: 1500,
+    requireOwnWebsite: true,
+  },
+  sender: {
+    name: "",
+    role: "",
+    email: "",
+    phone: "",
+    website: "https://nucleo-tau.vercel.app",
   },
 };
 

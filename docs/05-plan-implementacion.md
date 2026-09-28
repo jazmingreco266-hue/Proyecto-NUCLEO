@@ -26,10 +26,18 @@
 - [x] Panel: vista general, tabla de oportunidades con filtros, ficha con 13 pestañas,
       aprobaciones, configuración, usuarios y actividad
 - [x] Adaptado a celular, modo oscuro y claro
-- [x] 77 tests automáticos + recorrido en navegador real
+- [x] Mensajes a la empresa (adelantado de la etapa 4): tres asuntos, email en texto y HTML,
+      WhatsApp, formulario y redes, canal y horario sugeridos, versiones que no se sobrescriben,
+      copiar y descargar. Se marcan como enviados al pasar el prospecto a "Enviado manualmente"
+- [x] Perfil de cliente ideal en Configuración: rubros objetivo, empleados y valor mínimo del proyecto
+- [x] 90 tests automáticos + recorrido en navegador real
+
+Los mensajes hoy se arman con lo que escribís de tu investigación (algo positivo real,
+la oportunidad concreta y el beneficio). En la etapa 3, el agente de IA va a completar
+esos mismos campos citando sus fuentes, y vos solo revisás.
 
 Las pestañas de la ficha que dependen de etapas futuras (auditoría, capturas, demo,
-propuesta, mensajes, presupuesto detallado, proyecto técnico, seguridad y SEO) muestran qué
+propuesta, presupuesto detallado, proyecto técnico, seguridad y SEO) muestran qué
 van a contener y en qué etapa llegan. No muestran datos inventados.
 
 ## Etapa 3: tareas pequeñas y verificables

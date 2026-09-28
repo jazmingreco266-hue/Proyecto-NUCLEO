@@ -13,6 +13,7 @@ import {
   setPaused,
   transitionProspect,
 } from "@/server/services/prospects";
+import { generateMessages, saveEditedMessages } from "@/server/services/outreach";
 
 export type ActionState = { error?: string; ok?: string; values?: Record<string, string> };
 
@@ -144,4 +145,44 @@ export async function addNoteAction(_: ActionState, form: FormData): Promise<Act
   }
   revalidatePath("/panel", "layout");
   return { ok: "Nota guardada." };
+}
+
+export async function generateMessagesAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const who = await me();
+  const prospectId = str(form, "prospectId");
+  try {
+    const row = await generateMessages(getDb(), who, prospectId, {
+      positive: str(form, "positive"),
+      opportunity: str(form, "opportunity"),
+      benefit: str(form, "benefit"),
+      demoUrl: str(form, "demoUrl"),
+      contactName: str(form, "contactName"),
+    });
+    revalidatePath("/panel", "layout");
+    return { ok: `Mensajes preparados (versión ${row.version}).` };
+  } catch (err) {
+    logUnexpected(err);
+    return { error: publicMessage(err), values: formValues(form) };
+  }
+}
+
+export async function editMessagesAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const who = await me();
+  try {
+    const row = await saveEditedMessages(getDb(), who, str(form, "prospectId"), {
+      subject1: str(form, "subject1"),
+      subject2: str(form, "subject2"),
+      subject3: str(form, "subject3"),
+      emailText: str(form, "emailText"),
+      whatsappText: str(form, "whatsappText"),
+      formText: str(form, "formText"),
+      socialText: str(form, "socialText"),
+      basedOnVersion: str(form, "basedOnVersion"),
+    });
+    revalidatePath("/panel", "layout");
+    return { ok: `Guardado como versión ${row.version}. La anterior quedó intacta.` };
+  } catch (err) {
+    logUnexpected(err);
+    return { error: publicMessage(err), values: formValues(form) };
+  }
 }

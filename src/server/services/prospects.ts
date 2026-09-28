@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, gte, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import { approvals, notes, pipelineEvents, prospectFacts, prospects, users } from "@/db/schema";
+import { approvals, notes, outreachMessages, pipelineEvents, prospectFacts, prospects, users } from "@/db/schema";
 import {
   canTransition,
   PIPELINE_STATUSES,
@@ -305,6 +305,24 @@ export async function transitionProspect(db: Db, who: Principal, input: unknown)
       .returning();
     if (!updated) throw new ConflictError("El prospecto cambió mientras se guardaba. Probá de nuevo.");
 
+    // Al marcar como enviado, la última versión de los mensajes queda registrada como la enviada.
+    let sentVersion: number | null = null;
+    if (data.to === "SENT_MANUALLY") {
+      const [last] = await tx
+        .select({ id: outreachMessages.id, version: outreachMessages.version })
+        .from(outreachMessages)
+        .where(eq(outreachMessages.prospectId, current.id))
+        .orderBy(desc(outreachMessages.version))
+        .limit(1);
+      if (last) {
+        await tx
+          .update(outreachMessages)
+          .set({ status: "sent", sentAt: new Date() })
+          .where(eq(outreachMessages.id, last.id));
+        sentVersion = last.version;
+      }
+    }
+
     await tx.insert(pipelineEvents).values({
       prospectId: current.id,
       fromStatus: current.status,
@@ -314,7 +332,9 @@ export async function transitionProspect(db: Db, who: Principal, input: unknown)
       actorLabel: actor.label,
       reason: data.reason,
       action: "prospect.transition",
-      result: `${STATUS_LABELS[current.status]} → ${STATUS_LABELS[data.to]}`,
+      result:
+        `${STATUS_LABELS[current.status]} → ${STATUS_LABELS[data.to]}` +
+        (sentVersion ? ` (mensajes versión ${sentVersion})` : ""),
       nextStep: data.nextStep ?? null,
     });
     await audit(tx, who, {

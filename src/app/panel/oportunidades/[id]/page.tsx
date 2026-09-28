@@ -15,9 +15,13 @@ import {
 import { requireUser } from "@/server/auth/current";
 import { can, NotFoundError } from "@/server/principal";
 import { getProspect, listEvents, listFacts, listNotes } from "@/server/services/prospects";
+import { listMessages } from "@/server/services/outreach";
+import { getSettings } from "@/server/services/settings";
+import { CHANNEL_LABELS, type Channel } from "@/domain/outreach";
+import { CopyBlock } from "../../../ui/copy-block";
 import { notFound } from "next/navigation";
 import { Country, ExternalLink, formatMoney, Score, Status, When } from "../../../ui/format";
-import { FactForm, NoteForm, PauseForm, RemoveFactForm, TransitionForm } from "../forms";
+import { EditMessagesForm, FactForm, GenerateMessagesForm, NoteForm, PauseForm, RemoveFactForm, TransitionForm } from "../forms";
 
 export const metadata: Metadata = { title: "Prospecto" };
 
@@ -29,7 +33,7 @@ const TABS = [
   { key: "demo", label: "Demo", stage: 4 },
   { key: "contactos", label: "Contactos" },
   { key: "propuesta", label: "Propuesta", stage: 4 },
-  { key: "mensajes", label: "Mensajes", stage: 4 },
+  { key: "mensajes", label: "Mensajes" },
   { key: "historial", label: "Historial" },
   { key: "notas", label: "Notas" },
   { key: "presupuesto", label: "Presupuesto", stage: 5 },
@@ -62,14 +66,6 @@ const UPCOMING: Record<string, { title: string; items: string[] }> = {
   propuesta: {
     title: "Las propuestas llegan en la etapa 4",
     items: ["Tres mejoras principales", "Beneficio comercial explicado", "Enlace a la demo"],
-  },
-  mensajes: {
-    title: "Los mensajes llegan en la etapa 4",
-    items: [
-      "Tres asuntos posibles, email HTML y texto plano",
-      "Versiones para WhatsApp, formulario web, Instagram y LinkedIn",
-      "Sugerencia de canal y horario. El sistema nunca envía: vos copiás y enviás",
-    ],
   },
   presupuesto: {
     title: "El presupuesto detallado llega en la etapa 5",
@@ -135,11 +131,16 @@ export default async function ProspectPage({
     throw err;
   }
   const { p, ownerName } = data;
-  const [events, facts, notes] = await Promise.all([
+  const [events, facts, notes, messages, settingsRes] = await Promise.all([
     listEvents(db, me, p.id),
     listFacts(db, me, p.id),
     listNotes(db, me, p.id),
+    listMessages(db, me, p.id),
+    getSettings(db, me),
   ]);
+  const sender = settingsRes.data.sender;
+  const shownVersion = Number(sp.v) || messages[0]?.version;
+  const msg = messages.find((m) => m.version === shownVersion) ?? messages[0];
   const visited = new Set(events.map((e) => e.toStatus));
   const targets = can(me, "prospects.transition")
     ? allowedTargets(p.status, { type: "user", role: me.role })
@@ -407,7 +408,149 @@ export default async function ProspectPage({
             </section>
           )}
 
-          {["capturas", "demo", "propuesta", "mensajes", "proyecto", "seguridad"].includes(tab) && (
+          {tab === "mensajes" && (
+            <section className="stack" aria-labelledby="t-msg">
+              <div className="section-head">
+                <h2 id="t-msg">Mensajes</h2>
+                {msg && (
+                  <span className="faint">
+                    Versión {msg.version} de {messages.length}
+                  </span>
+                )}
+              </div>
+              <p className="muted">
+                Mensajes preparados para contactar a la empresa. El sistema nunca los envía: los copiás y los mandás vos.
+                Después marcá el prospecto como &ldquo;Enviado manualmente&rdquo; en Cambiar estado.
+              </p>
+              {(!sender.name || !sender.email) && (
+                <p className="notice">
+                  Antes de preparar mensajes, completá tu nombre y email en{" "}
+                  <Link href="/panel/configuracion">Configuración → Firma de los mensajes</Link>.
+                </p>
+              )}
+
+              {!msg ? (
+                can(me, "prospects.write") ? (
+                  <div className="panel stack">
+                    <h3>Preparar mensajes</h3>
+                    <p className="faint">
+                      Completá lo que encontraste en la investigación. Con eso se arman el email, el email HTML, WhatsApp,
+                      formulario y redes, más el canal y el horario sugeridos.
+                    </p>
+                    <GenerateMessagesForm
+                      prospectId={p.id}
+                      defaults={{ opportunity: p.mainIssues[0] ?? "" }}
+                    />
+                  </div>
+                ) : (
+                  <div className="empty">
+                    <h3>Todavía no hay mensajes preparados</h3>
+                  </div>
+                )
+              ) : (
+                <>
+                  <div className="panel stack">
+                    <div className="msg-status">
+                      {msg.status === "sent" ? (
+                        <span className="tag">
+                          Enviada el <When date={msg.sentAt} />
+                        </span>
+                      ) : (
+                        <span className="tag">Borrador listo para enviar</span>
+                      )}
+                      <span className="faint">
+                        Preparado <When date={msg.createdAt} /> ·{" "}
+                        {msg.createdByType === "agent" ? `agente ${msg.createdById}` : "persona del equipo"}
+                      </span>
+                    </div>
+                    <dl className="dl">
+                      <dt>Canal sugerido</dt>
+                      <dd>
+                        <strong>{CHANNEL_LABELS[msg.suggestedChannel as Channel] ?? msg.suggestedChannel}</strong>
+                        <div className="faint">{msg.channelReason}</div>
+                      </dd>
+                      <dt>Mejor horario</dt>
+                      <dd>{msg.bestTime}</dd>
+                    </dl>
+                  </div>
+
+                  <div className="panel stack">
+                    <h3>Asuntos para el email</h3>
+                    {msg.subjects.map((subj, i) => (
+                      <CopyBlock key={i} label={`Asunto ${i + 1}`} text={subj} rows={subj.length > 60 ? 2 : 1} />
+                    ))}
+                  </div>
+
+                  <div className="panel stack">
+                    <h3>Email</h3>
+                    <div className="form-actions">
+                      <a className="btn btn-small" href={`/api/mensajes/${msg.id}/email`} target="_blank" rel="noopener">
+                        Ver email HTML
+                      </a>
+                      <a className="btn btn-small" href={`/api/mensajes/${msg.id}/email?descargar=1`}>
+                        Descargar email HTML
+                      </a>
+                    </div>
+                    <CopyBlock label="Texto del email" text={msg.emailText} rows={14} />
+                  </div>
+
+                  <div className="panel stack">
+                    <h3>Otros canales</h3>
+                    <CopyBlock label="WhatsApp" text={msg.whatsappText} rows={5} />
+                    <CopyBlock label="Formulario web" text={msg.formText} rows={7} />
+                    <CopyBlock label="Instagram o LinkedIn" text={msg.socialText} rows={4} />
+                  </div>
+
+                  {can(me, "prospects.write") && (
+                    <>
+                      <details className="panel disclose">
+                        <summary>Editar y guardar como versión nueva</summary>
+                        <EditMessagesForm
+                          key={msg.id}
+                          prospectId={p.id}
+                          version={msg.version}
+                          current={{
+                            subjects: msg.subjects,
+                            emailText: msg.emailText,
+                            whatsappText: msg.whatsappText,
+                            formText: msg.formText,
+                            socialText: msg.socialText,
+                          }}
+                        />
+                      </details>
+                      <details className="panel disclose">
+                        <summary>Volver a prepararlos desde la investigación</summary>
+                        <GenerateMessagesForm
+                          key={`g-${msg.id}`}
+                          prospectId={p.id}
+                          submitLabel="Preparar versión nueva"
+                          defaults={msg.inputs as Record<string, string>}
+                        />
+                      </details>
+                    </>
+                  )}
+
+                  {messages.length > 1 && (
+                    <div className="panel stack">
+                      <h3>Versiones</h3>
+                      <ul className="issues">
+                        {messages.map((m) => (
+                          <li key={m.id}>
+                            <Link href={`?tab=mensajes&v=${m.version}`}>Versión {m.version}</Link>
+                            {m.version === msg.version ? " (viendo)" : ""} · <When date={m.createdAt} />
+                            {m.status === "sent" ? " · enviada" : ""}
+                            {(m.inputs as { origen?: string }).origen === "editado" ? " · editada a mano" : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+          )}
+
+          {["capturas", "demo", "propuesta", "proyecto", "seguridad"].includes(tab) && (
             <section className="panel">
               <Upcoming k={tab} />
             </section>

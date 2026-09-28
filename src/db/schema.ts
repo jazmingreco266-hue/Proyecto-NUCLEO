@@ -235,3 +235,28 @@ export const agentRuns = pgTable("agent_runs", {
   startedAt: ts("started_at"),
   finishedAt: ts("finished_at"),
 });
+
+export const messageStatus = pgEnum("message_status", ["draft", "sent"]);
+
+export const outreachMessages = pgTable("outreach_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  prospectId: uuid("prospect_id")
+    .notNull()
+    .references(() => prospects.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  status: messageStatus("status").notNull().default("draft"),
+  subjects: text("subjects").array().notNull(),
+  emailText: text("email_text").notNull(),
+  emailHtml: text("email_html").notNull(),
+  whatsappText: text("whatsapp_text").notNull(),
+  formText: text("form_text").notNull(),
+  socialText: text("social_text").notNull(),
+  suggestedChannel: text("suggested_channel").notNull(),
+  channelReason: text("channel_reason").notNull(),
+  bestTime: text("best_time").notNull(),
+  inputs: jsonb("inputs").notNull().default({}),
+  createdByType: actorType("created_by_type").notNull(),
+  createdById: text("created_by_id"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  sentAt: ts("sent_at"),
+});

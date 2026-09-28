@@ -10,7 +10,12 @@ export async function getSettings(db: Db, who: Principal): Promise<{ data: Setti
   const [row] = await db.select().from(settings).where(eq(settings.id, 1)).limit(1);
   if (!row) return { data: DEFAULT_SETTINGS, version: 0, updatedAt: null };
   // Si una versión vieja guardada ya no cumple el esquema, se completa con los valores por defecto.
-  const parsed = settingsSchema.safeParse({ ...DEFAULT_SETTINGS, ...(row.data as object) });
+  const stored = row.data as Partial<Settings>;
+  const merged = { ...DEFAULT_SETTINGS, ...stored };
+  for (const k of ["schedule", "discard", "targeting", "sender"] as const) {
+    (merged as Record<string, unknown>)[k] = { ...DEFAULT_SETTINGS[k], ...(stored[k] ?? {}) };
+  }
+  const parsed = settingsSchema.safeParse(merged);
   return { data: parsed.success ? parsed.data : DEFAULT_SETTINGS, version: row.version, updatedAt: row.updatedAt };
 }
 

@@ -18,6 +18,7 @@ La fuente de verdad es [`migrations/0001_nucleo.sql`](../migrations/0001_nucleo.
 | `settings` | Configuración vigente (una sola fila) | `id = 1` fijo |
 | `settings_history` | Cada versión de la configuración | **Solo agregado** |
 | `audit_log` | Registro de todo lo que pasa | **Solo agregado**; los metadatos se limpian de secretos antes de guardarse |
+| `outreach_messages` | Mensajes preparados por prospecto, por versión: asuntos, email texto y HTML, WhatsApp, formulario, redes, canal y horario sugeridos, y lo que se usó para escribirlos | Versión única por prospecto. El contenido no se edita ni se borra: solo puede pasar a "enviado" |
 | `agent_runs` | Cola y registro de ejecuciones de agentes (etapa 3): modelo, herramienta, costo, tokens, intentos, error | Costo no negativo |
 
 ## Veracidad en la base (sección 4.1)

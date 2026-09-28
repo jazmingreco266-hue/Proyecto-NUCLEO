@@ -73,6 +73,18 @@ export async function saveSettingsAction(_: ActionState, form: FormData): Promis
       skipIfSiteScoreAbove: s(form, "skipIfSiteScoreAbove"),
       excludedIndustries: list(form, "excludedIndustries"),
     },
+    targeting: {
+      minEmployees: s(form, "minEmployees"),
+      minProjectValueUsd: s(form, "minProjectValueUsd"),
+      requireOwnWebsite: form.get("requireOwnWebsite") === "on",
+    },
+    sender: {
+      name: s(form, "senderName"),
+      role: s(form, "senderRole"),
+      email: s(form, "senderEmail"),
+      phone: s(form, "senderPhone"),
+      website: s(form, "senderWebsite"),
+    },
   };
   try {
     await updateSettings(getDb(), who, data, Number(s(form, "version")));

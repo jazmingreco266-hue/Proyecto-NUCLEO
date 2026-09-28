@@ -111,9 +111,9 @@ export function SettingsForm({ data, version, readOnly }: { data: Settings; vers
                 <small>Vacío = todas.</small>
               </label>
               <label className="field">
-                <span>Rubros</span>
-                <textarea name="industries" rows={3} defaultValue={lines(data.industries)} />
-                <small>Vacío = todos.</small>
+                <span>Rubros objetivo</span>
+                <textarea name="industries" rows={6} defaultValue={lines(data.industries)} />
+                <small>Uno por línea. Vacío = todos.</small>
               </label>
               <label className="field">
                 <span>Idiomas</span>
@@ -168,6 +168,54 @@ export function SettingsForm({ data, version, readOnly }: { data: Settings; vers
                   {CHANNEL_LABELS[c]}
                 </label>
               ))}
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Perfil de cliente ideal</legend>
+            <p className="faint">
+              Apuntá a empresas con presupuesto para un proyecto serio. Los valores iniciales son una sugerencia: ajustalos a tu estrategia.
+            </p>
+            <div className="form-grid">
+              <label className="field">
+                <span>Empleados mínimos (estimado)</span>
+                <input name="minEmployees" type="number" min={0} defaultValue={data.targeting.minEmployees} />
+              </label>
+              <label className="field">
+                <span>Valor mínimo del proyecto (USD)</span>
+                <input name="minProjectValueUsd" type="number" min={0} step="100" defaultValue={data.targeting.minProjectValueUsd} />
+              </label>
+            </div>
+            <label className="check">
+              <input type="checkbox" name="requireOwnWebsite" defaultChecked={data.targeting.requireOwnWebsite} />
+              Solo empresas que ya tienen sitio web propio
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Firma de los mensajes</legend>
+            <p className="faint">Aparece al final de cada mensaje preparado. Hace falta nombre y email para generar mensajes.</p>
+            <div className="form-grid">
+              <label className="field">
+                <span>Nombre</span>
+                <input name="senderName" maxLength={120} defaultValue={data.sender.name} autoComplete="name" />
+              </label>
+              <label className="field">
+                <span>Cargo</span>
+                <input name="senderRole" maxLength={120} defaultValue={data.sender.role} placeholder="Ej.: Directora" />
+              </label>
+              <label className="field">
+                <span>Email</span>
+                <input name="senderEmail" type="email" maxLength={254} defaultValue={data.sender.email} autoComplete="email" />
+              </label>
+              <label className="field">
+                <span>Teléfono o WhatsApp</span>
+                <input name="senderPhone" maxLength={40} defaultValue={data.sender.phone} autoComplete="tel" />
+              </label>
+              <label className="field">
+                <span>Sitio web</span>
+                <input name="senderWebsite" type="url" maxLength={2000} defaultValue={data.sender.website} />
+              </label>
             </div>
           </fieldset>
 

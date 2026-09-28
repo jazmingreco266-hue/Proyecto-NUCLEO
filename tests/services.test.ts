@@ -298,3 +298,39 @@ describe("vista general", () => {
     expect(o.confirmedRevenue).toEqual([]);
   });
 });
+
+describe("configuración inicial y copia de seguridad", () => {
+  it("crea el primer propietario solo si no hay usuarios", async () => {
+    const { createFirstOwner, countUsers } = await import("@/server/services/users");
+    expect(await countUsers(db())).toBe(0);
+    const u = await createFirstOwner(db(), { name: "Dueña", email: "duena@prueba.test", password: "clave-segura-123" });
+    expect(u.role).toBe("owner");
+    await expect(
+      createFirstOwner(db(), { name: "Otra", email: "otra@prueba.test", password: "clave-segura-123" }),
+    ).rejects.toThrow(/ya tiene usuarios/);
+    expect(await countUsers(db())).toBe(1);
+  });
+
+  it("dos pedidos simultáneos no crean dos propietarios", async () => {
+    const { createFirstOwner, countUsers } = await import("@/server/services/users");
+    const results = await Promise.allSettled([
+      createFirstOwner(db(), { name: "Uno", email: "uno@prueba.test", password: "clave-segura-123" }),
+      createFirstOwner(db(), { name: "Dos", email: "dos@prueba.test", password: "clave-segura-123" }),
+    ]);
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    expect(await countUsers(db())).toBe(1);
+  });
+
+  it("la copia incluye los datos, nunca contraseñas, y solo la descarga el propietario", async () => {
+    const { exportAll } = await import("@/server/services/backup");
+    const owner = await makeUser("owner");
+    const op = await makeUser("operator");
+    const p = await createProspect(db(), owner, { name: "Copia SA", country: "AR" });
+    await addNote(db(), owner, p.id, "Nota para la copia");
+    const copy = await exportAll(db(), owner);
+    expect(copy.cantidades).toMatchObject({ usuarios: 2, prospectos: 1, notas: 1, eventos: 1 });
+    const text = JSON.stringify(copy);
+    expect(text).not.toMatch(/password|passwordHash|\$2[aby]\$/);
+    await expect(exportAll(db(), op)).rejects.toBeInstanceOf(ForbiddenError);
+  });
+});

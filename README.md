@@ -1,11 +1,13 @@
-# Claude Workers · Panel operativo
+# Núcleo · Panel operativo
 
 Panel privado para encontrar empresas con oportunidades de modernización digital, registrar
 todo lo que se sabe de ellas **con su fuente**, seguir el proceso comercial y aprobar cada acción
 sensible antes de que ocurra.
 
-> Este repositorio contiene solo el panel operativo. La web promocional pública no está acá
+> Este repositorio contiene solo el panel operativo. La web pública de Núcleo no está acá
 > y no se modifica.
+
+**Para publicarlo e instalarlo en tu computadora o tablet, seguí [docs/06-publicar.md](docs/06-publicar.md).**
 
 ## Qué hay hoy (etapa 2)
 
@@ -65,3 +67,4 @@ npm run typecheck
 | [03 · Esquema de datos](docs/03-esquema-datos.md) | Tablas y reglas de la base |
 | [04 · Permisos y seguridad](docs/04-permisos-y-seguridad.md) | Roles, aprobaciones, OWASP y limitaciones |
 | [05 · Plan](docs/05-plan-implementacion.md) | Etapas, tareas y preguntas pendientes |
+| [06 · Publicar e instalar](docs/06-publicar.md) | Vercel, base de datos, primera cuenta e instalación como app |

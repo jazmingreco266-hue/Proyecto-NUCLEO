@@ -34,6 +34,17 @@ export default async function SettingsPage() {
           <SettingsForm key={version} data={data} version={version} readOnly={!canWrite} />
         </div>
         <aside className="side">
+          {can(me, "users.manage") && (
+            <section className="panel stack">
+              <h2>Copia de seguridad</h2>
+              <p className="faint">
+                Descarga todos los datos del panel en un archivo. No incluye contraseñas. Guardalo en un lugar privado.
+              </p>
+              <a className="btn" href="/api/exportar">
+                Descargar copia
+              </a>
+            </section>
+          )}
           <section className="panel stack">
             <h2>Historial</h2>
             {version === 0 ? (

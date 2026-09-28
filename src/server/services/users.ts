@@ -15,35 +15,67 @@ const newUserSchema = z.object({
   password: passwordSchema,
 });
 
+type NewUser = z.infer<typeof newUserSchema>;
+
+function parseNewUser(input: unknown): NewUser {
+  const r = newUserSchema.safeParse(input);
+  if (!r.success) throw new UserFacingError(r.error.issues.map((i) => i.message).join(" · "));
+  return r.data;
+}
+
+async function insertUser(tx: Parameters<Parameters<Db["transaction"]>[0]>[0], data: NewUser, passwordHash: string, via: string, who: Principal | "system") {
+  const [dup] = await tx
+    .select({ id: users.id })
+    .from(users)
+    .where(sql`lower(${users.email}) = ${data.email}`)
+    .limit(1);
+  if (dup) throw new ConflictError("Ya existe un usuario con ese email.");
+  const [u] = await tx
+    .insert(users)
+    .values({ email: data.email, name: data.name, role: data.role, passwordHash })
+    .returning({ id: users.id, email: users.email, name: users.name, role: users.role });
+  await audit(tx, who, {
+    action: "user.create",
+    entityType: "user",
+    entityId: u!.id,
+    metadata: { email: u!.email, rol: u!.role, via },
+  });
+  return u!;
+}
+
 /**
  * Alta de usuario. `who = "bootstrap"` solo lo usa el script de consola para crear
  * el primer propietario; desde el panel siempre hay una persona con users.manage.
  */
 export async function createUser(db: Db, who: Principal | "bootstrap", input: unknown) {
   if (who !== "bootstrap") assertCan(who, "users.manage");
-  const r = newUserSchema.safeParse(input);
-  if (!r.success) throw new UserFacingError(r.error.issues.map((i) => i.message).join(" · "));
-  const data = r.data;
+  const data = parseNewUser(input);
   const passwordHash = await hashPassword(data.password);
+  return db.transaction((tx) =>
+    insertUser(tx, data, passwordHash, who === "bootstrap" ? "consola" : "panel", who === "bootstrap" ? "system" : who),
+  );
+}
 
+export async function countUsers(db: Db): Promise<number> {
+  const r = await db.execute<{ n: number }>(sql`SELECT count(*)::int AS n FROM users`);
+  return r.rows[0]?.n ?? 0;
+}
+
+/**
+ * Configuración inicial desde la web: crea el primer propietario.
+ * Solo funciona mientras no exista ningún usuario, y un candado evita que
+ * dos pedidos simultáneos creen dos propietarios.
+ */
+export async function createFirstOwner(db: Db, input: { name: string; email: string; password: string }) {
+  const data = parseNewUser({ ...input, role: "owner" });
+  const passwordHash = await hashPassword(data.password);
   return db.transaction(async (tx) => {
-    const [dup] = await tx
-      .select({ id: users.id })
-      .from(users)
-      .where(sql`lower(${users.email}) = ${data.email}`)
-      .limit(1);
-    if (dup) throw new ConflictError("Ya existe un usuario con ese email.");
-    const [u] = await tx
-      .insert(users)
-      .values({ email: data.email, name: data.name, role: data.role, passwordHash })
-      .returning({ id: users.id, email: users.email, name: users.name, role: users.role });
-    await audit(tx, who === "bootstrap" ? "system" : who, {
-      action: "user.create",
-      entityType: "user",
-      entityId: u!.id,
-      metadata: { email: u!.email, rol: u!.role, via: who === "bootstrap" ? "consola" : "panel" },
-    });
-    return u!;
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(727002)`);
+    const r = await tx.execute<{ n: number }>(sql`SELECT count(*)::int AS n FROM users`);
+    if ((r.rows[0]?.n ?? 0) > 0) {
+      throw new ConflictError("El panel ya tiene usuarios. Entrá con tu cuenta.");
+    }
+    return insertUser(tx, data, passwordHash, "configuracion-inicial", "system");
   });
 }
 

@@ -2,30 +2,31 @@
 @import "@fontsource-variable/source-serif-4/wght.css";
 
 /* ───────────── Tokens ─────────────
-   Estilo claro y cálido: fondo blanco hueso, serif para títulos y cifras,
-   terracota solo para lo que requiere tu decisión. */
+   Estética de la web de Núcleo: fondo #fbfbfa, neutros, serif para títulos y cifras,
+   tinta oscura para las acciones principales. */
 
 :root {
   color-scheme: light;
-  --bg: #faf9f5;
+  --bg: #fbfbfa;
   --surface: #ffffff;
-  --surface-2: #f2f0e9;
-  --line: #e5e1d6;
-  --text: #1f1e1c;
-  --muted: #5f5b53;
-  --faint: #8a857b;
+  --surface-2: #f3f3f1;
+  --line: #e4e4e0;
+  --text: #1c1c1b;
+  --muted: #5d5d59;
+  --faint: #8b8b86;
 
-  --signal: #c2603d;      /* terracota: requiere tu decisión */
+  --signal: #1c1c1b;      /* tinta: acciones principales y lo que requiere tu decisión */
   --signal-ink: #ffffff;
-  --danger: #b0392a;
-  --ok: #3d7a4e;
+  --danger: #b3261e;
+  --ok: #2f7a4b;
+  --warn: #a8761c;
 
   /* Tramos del pipeline, apagados para no competir con el contenido */
   --g-prospeccion: #4f8797;
   --g-contacto: #5f72b8;
-  --g-venta: #93689f;
+  --g-venta: #8c6aa0;
   --g-proyecto: #5a8a5f;
-  --g-cerrado: #a39e93;
+  --g-cerrado: #a3a39d;
 
   --radius-s: 8px;
   --radius-m: 12px;
@@ -51,7 +52,7 @@ h1, h2, h3 { line-height: 1.2; margin: 0; font-family: var(--serif); font-weight
 h1 { font-size: 2rem; }
 h2 { font-size: 1.3rem; }
 h3 { font-size: 1.08rem; }
-.metric-n, .stop-n, .brand { font-family: var(--serif); }
+.metric-n, .stop-n, .wordmark { font-family: var(--serif); }
 p { margin: 0; }
 a { color: inherit; text-underline-offset: 3px; }
 a:hover { color: var(--signal); }
@@ -121,9 +122,9 @@ legend { padding: 0 0.4rem; font-weight: 650; }
   display: flex; flex-direction: column; gap: 1.5rem;
   padding: 1.5rem 1rem; border-right: 1px solid var(--line); background: var(--bg);
 }
-.brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; font-size: 1.08rem; text-decoration: none; }
-.brand-mark { width: 26px; height: 26px; flex: none; }
-.brand small { display: block; font-family: var(--font); font-weight: 400; color: var(--faint); font-size: 0.78rem; }
+.brand { display: flex; align-items: center; text-decoration: none; }
+.wordmark { font-size: 1.45rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1; }
+.wordmark small { display: block; font-family: var(--font); font-weight: 400; color: var(--faint); font-size: 0.78rem; letter-spacing: 0; margin-top: 0.15rem; }
 .nav { display: grid; gap: 2px; }
 .nav a {
   display: flex; align-items: center; justify-content: space-between;
@@ -155,7 +156,8 @@ legend { padding: 0 0.4rem; font-weight: 650; }
     padding: 0.6rem 1rem; border-right: 0; border-bottom: 1px solid var(--line);
     overflow-x: auto;
   }
-  .brand > span, .sidebar-foot .who { display: none; }
+  .wordmark small, .sidebar-foot .who { display: none; }
+  .wordmark { font-size: 1.2rem; }
   .nav { display: flex; gap: 2px; }
   .nav a { padding: 0.45rem 0.6rem; gap: 0.4rem; white-space: nowrap; }
   .sidebar-foot { margin: 0 0 0 auto; }
@@ -165,7 +167,7 @@ legend { padding: 0 0.4rem; font-weight: 650; }
 
 /* ───────────── Línea del pipeline (elemento distintivo) ───────────── */
 
-.track { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; padding-top: 0.5rem; }
+.track { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); align-items: start; gap: 0; padding-top: 0.5rem; }
 .track::before {
   content: ""; position: absolute; left: 10%; right: 10%; top: calc(0.5rem + 12px); height: 2px; border-radius: 2px;
   background: linear-gradient(90deg, var(--g-prospeccion), var(--g-contacto), var(--g-venta), var(--g-proyecto), var(--g-cerrado));
@@ -218,7 +220,7 @@ legend { padding: 0 0.4rem; font-weight: 650; }
 .metric { background: var(--surface); padding: 0.9rem 1rem; display: grid; gap: 0.15rem; align-content: start; }
 .metric-n { font-size: 1.9rem; font-weight: 500; line-height: 1.15; }
 .metric-l { color: var(--muted); font-size: 0.86rem; }
-.metric.attention .metric-n { color: var(--signal); }
+.metric.attention .metric-n { color: var(--warn); }
 .metric.alert .metric-n { color: var(--danger); }
 .metric a { text-decoration: none; display: grid; gap: 0.15rem; }
 .money-list { display: grid; gap: 0.1rem; }
@@ -234,21 +236,21 @@ legend { padding: 0 0.4rem; font-weight: 650; }
   display: inline-block; padding: 0.05rem 0.45rem; border-radius: 4px;
   font-size: 0.75rem; font-weight: 650; border: 1px solid var(--line); color: var(--muted);
 }
-.tag-sample { border-color: var(--signal); color: var(--signal); }
+.tag-sample { border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); color: var(--warn); }
 .tag-paused { border-color: var(--g-contacto); color: var(--g-contacto); }
 .v-verified { color: var(--ok); }
-.v-probable { color: var(--signal); }
+.v-probable { color: var(--warn); }
 .v-unconfirmed { color: var(--faint); }
 
 .score { display: inline-flex; align-items: center; gap: 0.45rem; }
 .score meter { width: 56px; height: 6px; border: 0; border-radius: 3px; background: var(--surface-2); }
 .score meter::-webkit-meter-bar { background: var(--surface-2); border: 0; border-radius: 3px; height: 6px; }
 .score meter::-webkit-meter-optimum-value { background: var(--ok); border-radius: 3px; }
-.score meter::-webkit-meter-suboptimum-value { background: #c79a3e; border-radius: 3px; }
-.score meter::-webkit-meter-even-less-good-value { background: var(--signal); border-radius: 3px; }
+.score meter::-webkit-meter-suboptimum-value { background: var(--warn); border-radius: 3px; }
+.score meter::-webkit-meter-even-less-good-value { background: var(--danger); border-radius: 3px; }
 .score meter:-moz-meter-optimum::-moz-meter-bar { background: var(--ok); }
-.score meter:-moz-meter-sub-optimum::-moz-meter-bar { background: #c79a3e; }
-.score meter:-moz-meter-sub-sub-optimum::-moz-meter-bar { background: var(--signal); }
+.score meter:-moz-meter-sub-optimum::-moz-meter-bar { background: var(--warn); }
+.score meter:-moz-meter-sub-sub-optimum::-moz-meter-bar { background: var(--danger); }
 .score-none { color: var(--faint); }
 
 /* ───────────── Tabla de oportunidades ───────────── */
@@ -322,7 +324,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparen
 .fact-meta { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; font-size: 0.8rem; color: var(--faint); }
 .fact.k-observed { --c: var(--ok); }
 .fact.k-inference { --c: var(--g-contacto); }
-.fact.k-hypothesis { --c: var(--signal); }
+.fact.k-hypothesis { --c: var(--warn); }
 
 .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
 .timeline li { position: relative; padding: 0 0 1.1rem 1.6rem; }
@@ -337,7 +339,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparen
 
 details.disclose > summary { cursor: pointer; font-weight: 600; list-style: none; }
 details.disclose > summary::-webkit-details-marker { display: none; }
-details.disclose > summary::before { content: "+ "; color: var(--signal); }
+details.disclose > summary::before { content: "+ "; color: var(--faint); }
 details.disclose[open] > summary::before { content: "− "; }
 details.disclose[open] > summary { margin-bottom: 0.8rem; }
 
@@ -353,8 +355,8 @@ dialog.confirm p { color: var(--muted); margin-bottom: 1rem; }
 
 /* ───────────── Aprobaciones ───────────── */
 
-.approval { display: grid; gap: 0.7rem; border-left: 4px solid var(--signal); }
-.approval.resolved { border-left-color: var(--line); }
+.approval { display: grid; gap: 0.7rem; }
+.approval.resolved { opacity: 0.85; }
 .approval-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; }
 .payload { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-s); padding: 0.6rem; font-size: 0.8rem; overflow-x: auto; margin: 0; white-space: pre-wrap; }
 
@@ -362,4 +364,4 @@ dialog.confirm p { color: var(--muted); margin-bottom: 1rem; }
 
 .login { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem; }
 .login-card { width: min(400px, 100%); display: grid; gap: 1.3rem; }
-.login-card .brand { font-size: 1.1rem; }
+.login-card .wordmark { font-size: 1.8rem; }

@@ -26,6 +26,7 @@ const ACTION_TEXT: Record<string, string> = {
   "user.create": "Creó un usuario",
   "user.activate": "Reactivó un usuario",
   "user.deactivate": "Desactivó un usuario",
+  "data.export": "Descargó una copia de seguridad",
 };
 
 export default async function ActivityPage() {

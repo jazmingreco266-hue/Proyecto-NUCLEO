@@ -1,5 +1,5 @@
 /**
- * Pipeline comercial de Claude Workers.
+ * Pipeline comercial de Núcleo.
  *
  * Define los 25 estados, qué transiciones son válidas y quién puede hacerlas.
  * Regla central: los agentes solo mueven prospectos en las etapas internas

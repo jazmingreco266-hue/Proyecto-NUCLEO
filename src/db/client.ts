@@ -14,7 +14,13 @@ function databaseUrl(): string {
 }
 
 export function getPool(): Pool {
-  pool ??= new Pool({ connectionString: databaseUrl(), max: 10 });
+  // En Vercel cada función abre su propio pool: se mantiene chico para no agotar conexiones.
+  pool ??= new Pool({
+    connectionString: databaseUrl(),
+    max: process.env.VERCEL ? 3 : 10,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 10_000,
+  });
   return pool;
 }
 

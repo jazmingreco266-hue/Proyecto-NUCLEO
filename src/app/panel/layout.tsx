@@ -5,7 +5,7 @@ import { ROLE_LABELS } from "@/domain/permissions";
 import { requireUser } from "@/server/auth/current";
 import { can } from "@/server/principal";
 import { logoutAction } from "../login/actions";
-import { BrandMark } from "../ui/brand";
+import { Wordmark } from "../ui/brand";
 import { Nav } from "./nav";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
@@ -27,11 +27,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     <div className="shell">
       <aside className="sidebar">
         <Link href="/panel" className="brand">
-          <BrandMark />
-          <span>
-            Claude Workers
-            <small>Panel operativo</small>
-          </span>
+          <Wordmark />
         </Link>
         <Nav items={items} />
         <div className="sidebar-foot">

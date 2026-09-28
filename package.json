@@ -1,7 +1,7 @@
 {
-  "name": "claude-workers-panel",
+  "name": "nucleo-panel",
   "version": "0.2.0",
-  "description": "Panel operativo de Claude Workers",
+  "description": "Panel operativo de Núcleo",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "db:migrate": "node --env-file-if-exists=.env --import tsx scripts/migrate.ts",
     "user:create": "node --env-file-if-exists=.env --import tsx scripts/create-user.ts",
-    "seed:ejemplo": "node --env-file-if-exists=.env --import tsx scripts/seed-ejemplo.ts"
+    "seed:ejemplo": "node --env-file-if-exists=.env --import tsx scripts/seed-ejemplo.ts",
+    "vercel-build": "node --import tsx scripts/migrate.ts && next build"
   },
   "repository": {
     "type": "git",

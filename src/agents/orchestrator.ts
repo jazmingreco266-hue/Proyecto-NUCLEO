@@ -25,6 +25,7 @@ import {
   type SpentOnAttempt,
 } from "@/server/services/agent-runs";
 import { AUDIT_AGENT } from "@/server/services/audits";
+import { recomputeOpportunity } from "@/server/services/opportunity";
 import { RESEARCH_AGENT } from "@/server/services/research";
 import { RESEARCH_ESTIMATED_COST_USD } from "@/domain/research";
 import { aiConfigured } from "./ai";
@@ -106,6 +107,10 @@ export async function processRun(db: Db, run: AgentRun, deps: Deps = {}): Promis
 
   if (result.kind === "done") {
     await completeRun(db, run, result);
+    // La auditoría y la investigación cambian los insumos del puntaje de oportunidad.
+    if (run.prospectId && (run.agent === AUDIT_AGENT || run.agent === RESEARCH_AGENT)) {
+      await recomputeOpportunity(db, run.prospectId);
+    }
     log(`[${run.agent}] ${run.id} completado`);
     return "succeeded";
   }

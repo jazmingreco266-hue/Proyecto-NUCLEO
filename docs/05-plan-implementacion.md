@@ -6,7 +6,7 @@
 |---|---|
 | 1 · Auditoría | ✔ Hecha: repositorio vacío, sin sistema previo (ver `01-auditoria.md`) |
 | 2 · Núcleo operativo | ✔ Hecha, con tests (detalle abajo) |
-| 3 · Prospección | **En curso.** Bloques A (cola, costos, lectura respetuosa, auditoría técnica) y B (investigación con IA) hechos. Faltan capturas, puntaje de oportunidad y descubrimiento |
+| 3 · Prospección | **En curso.** Hechos: cola, costos, lectura respetuosa, auditoría técnica, investigación con IA y puntaje de oportunidad. Faltan capturas, descubrimiento y deduplicación por nombre + ciudad |
 | 4 · Demos y comunicación | Pendiente |
 | 5 · Ejecución de proyectos | Pendiente |
 | 6 · Seguridad, migración y SEO | Pendiente |
@@ -37,7 +37,7 @@
 | 4 | Auditoría técnica objetiva sin IA, versionada | ✔ | `src/domain/site-audit.ts`, `src/agents/website-audit.ts` |
 | 5 | Capturas escritorio/celular | Pendiente | Necesita un navegador en el servidor: depende de dónde corra el worker (pregunta 1) |
 | 6 | Investigación con IA (hechos solo de páginas leídas, cada uno con URL) | ✔ Claude Opus 5.5 | `src/domain/research.ts`, `src/agents/business-research.ts`. Falta probarla con una clave real (ver abajo) |
-| 7 | Puntaje de oportunidad con explicación por criterio | Pendiente, **próximo** | Ya hay insumos reales: auditoría técnica + datos de la investigación |
+| 7 | Puntaje de oportunidad con explicación por criterio | ✔ | `src/domain/opportunity.ts`. Se recalcula solo al terminar una auditoría o investigación y al cargar o retirar un dato |
 | 8 | Descubrimiento de empresas | Pendiente | Necesita elegir fuente (pregunta 3) |
 | 9 | Deduplicación por nombre + ciudad | Pendiente | Por dominio ya existe |
 | 10 | Panel: pestaña Auditoría, página Tareas, contador de tareas con problemas | ✔ | `src/app/panel/…` |
@@ -68,6 +68,14 @@ desborde horizontal en celular.
 el agente se probó con una IA simulada (12 tests) y la forma del pedido se comprobó contra los tipos del
 SDK oficial (`@anthropic-ai/sdk` 0.129.0). La primera investigación real conviene hacerla sobre un
 prospecto conocido y revisar el resultado.
+
+### Puntaje de oportunidad
+
+Promedio ponderado de los criterios **que tienen datos**: necesidad de modernización (peso 3, sale del
+puntaje técnico), mejora visible en una demo (2), facilidad de contacto (2), negocio activo según la
+investigación (2) y calidad de la información (1). Capacidad de pago, competencia y probabilidad de
+respuesta figuran como "sin datos": no se estiman para no inventar. Con menos de 3 criterios medidos no
+hay puntaje. El desglose se ve en la ficha, pestaña Empresa → "Cómo se calcula".
 
 ### Qué hace hoy la auditoría (y qué no)
 

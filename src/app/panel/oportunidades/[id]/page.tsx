@@ -21,6 +21,7 @@ import { latestResearch, RESEARCH_AGENT } from "@/server/services/research";
 import { getSettings } from "@/server/services/settings";
 import { aiConfigured } from "@/agents/ai";
 import { RESEARCH_ESTIMATED_COST_USD } from "@/domain/research";
+import type { Opportunity } from "@/domain/opportunity";
 import { AUDIT_CATEGORIES, type CategoryKey, type CategoryResult, type Check, type Recommendation } from "@/domain/site-audit";
 import { notFound } from "next/navigation";
 import { Country, ExternalLink, formatMoney, Score, Status, When } from "../../../ui/format";
@@ -263,6 +264,7 @@ export default async function ProspectPage({
                 <dt>Puntaje de oportunidad</dt>
                 <dd>
                   <Score value={p.opportunityScore} label="Puntaje de oportunidad" />
+                  <OpportunityBreakdown explanation={p.scoreExplanation as Opportunity | null} />
                 </dd>
                 <dt>Puntaje del sitio</dt>
                 <dd>
@@ -812,5 +814,30 @@ function ResearchPanel({
         </>
       )}
     </div>
+  );
+}
+
+// ─────────────────────────── Puntaje de oportunidad ───────────────────────────
+
+function OpportunityBreakdown({ explanation }: { explanation: Opportunity | null }) {
+  if (!explanation?.criteria) {
+    return <p className="faint">Se calcula solo cuando hay auditoría, investigación o datos cargados.</p>;
+  }
+  return (
+    <details className="disclose">
+      <summary className="faint">Cómo se calcula</summary>
+      <ul className="checks">
+        {explanation.criteria.map((c) => (
+          <li key={c.key} className={`check ${c.score == null ? "check-info" : c.score >= 60 ? "check-pass" : c.score >= 30 ? "check-warn" : "check-fail"}`}>
+            <span className="check-status">{c.score == null ? "Sin datos" : `${c.score}/100`}</span>
+            <span>
+              <strong>{c.label}</strong>
+              {c.weight > 0 ? ` (peso ${c.weight})` : ""}. {c.detail}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="faint">{explanation.note}</p>
+    </details>
   );
 }

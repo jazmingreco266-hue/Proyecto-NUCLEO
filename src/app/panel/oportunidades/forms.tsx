@@ -10,6 +10,7 @@ import {
   FACT_VERIFICATIONS,
 } from "@/domain/validation";
 import { ActionForm } from "../../ui/action-form";
+import type { DemoContent } from "@/domain/demo";
 import {
   addFactAction,
   addNoteAction,
@@ -18,6 +19,9 @@ import {
   removeFactAction,
   requestAuditAction,
   requestResearchAction,
+  createDemoAction,
+  prepareMessagesAction,
+  revokeDemoAction,
   transitionAction,
 } from "./actions";
 
@@ -345,6 +349,135 @@ export function ResearchRequestForm({ prospectId, again, maxCostUsd }: { prospec
         confirmLabel: "Investigar",
       })}
     >
+      {() => <input type="hidden" name="prospectId" value={prospectId} />}
+    </ActionForm>
+  );
+}
+
+// ─────────────────────────── Demo ───────────────────────────
+
+export function DemoForm({ prospectId, draft, again }: { prospectId: string; draft: DemoContent; again: boolean }) {
+  const d = draft;
+  return (
+    <ActionForm action={createDemoAction} submitLabel={again ? "Generar nueva versión" : "Generar demo"} pendingLabel="Generando…">
+      {(v) => (
+        <>
+          <input type="hidden" name="prospectId" value={prospectId} />
+          <fieldset>
+            <legend>Negocio</legend>
+            <div className="form-grid">
+              <label className="field">
+                <span>Nombre *</span>
+                <input name="businessName" required maxLength={120} defaultValue={v.businessName ?? d.businessName} />
+              </label>
+              <label className="field">
+                <span>Rubro</span>
+                <input name="industry" maxLength={120} defaultValue={v.industry ?? d.industry} />
+              </label>
+              <label className="field">
+                <span>Ciudad</span>
+                <input name="city" maxLength={120} defaultValue={v.city ?? d.city} />
+              </label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Portada</legend>
+            <label className="field">
+              <span>Título principal *</span>
+              <input name="headline" required maxLength={140} defaultValue={v.headline ?? d.headline} />
+            </label>
+            <label className="field">
+              <span>Propuesta de valor</span>
+              <textarea name="subheadline" rows={2} maxLength={400} defaultValue={v.subheadline ?? d.subheadline} />
+            </label>
+            <label className="field">
+              <span>Texto del botón *</span>
+              <input name="ctaLabel" required maxLength={40} defaultValue={v.ctaLabel ?? d.ctaLabel} />
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend>Contenido</legend>
+            <label className="field">
+              <span>Servicios o productos (uno por línea; opcional: «Título | descripción»)</span>
+              <textarea name="services" rows={4} defaultValue={v.services ?? d.services.map((x) => (x.text ? `${x.title} | ${x.text}` : x.title)).join("\n")} />
+            </label>
+            <label className="field">
+              <span>Diferenciales (uno por línea)</span>
+              <textarea name="highlights" rows={3} defaultValue={v.highlights ?? d.highlights.join("\n")} />
+            </label>
+            <label className="field">
+              <span>Sobre la empresa</span>
+              <textarea name="about" rows={4} maxLength={1500} defaultValue={v.about ?? d.about} />
+            </label>
+            <label className="field">
+              <span>Testimonios públicos (uno por línea: «cita | autor | URL de donde se tomó»)</span>
+              <textarea name="testimonials" rows={2} defaultValue={v.testimonials ?? d.testimonials.map((t) => `${t.quote} | ${t.author} | ${t.sourceUrl}`).join("\n")} />
+              <small>Solo reseñas reales y públicas, con su URL. Si no hay, dejalo vacío: la demo no muestra testimonios.</small>
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend>Contacto que se muestra</legend>
+            <div className="form-grid">
+              <label className="field">
+                <span>Teléfono</span>
+                <input name="phone" maxLength={60} defaultValue={v.phone ?? d.contact.phone} />
+              </label>
+              <label className="field">
+                <span>WhatsApp</span>
+                <input name="whatsapp" maxLength={60} defaultValue={v.whatsapp ?? d.contact.whatsapp} />
+              </label>
+              <label className="field">
+                <span>Email</span>
+                <input name="email" maxLength={254} defaultValue={v.email ?? d.contact.email} />
+              </label>
+              <label className="field">
+                <span>Dirección</span>
+                <input name="address" maxLength={200} defaultValue={v.address ?? d.contact.address} />
+              </label>
+              <label className="field">
+                <span>Horarios</span>
+                <input name="hours" maxLength={200} defaultValue={v.hours ?? d.contact.hours} />
+              </label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Colores de la marca</legend>
+            <div className="form-grid">
+              <label className="field">
+                <span>Principal</span>
+                <input name="primary" type="color" defaultValue={v.primary ?? d.colors.primary} />
+              </label>
+              <label className="field">
+                <span>Acento</span>
+                <input name="accent" type="color" defaultValue={v.accent ?? d.colors.accent} />
+              </label>
+            </div>
+            <small className="faint">Usá los colores reconocibles de la empresa para conservar su identidad.</small>
+          </fieldset>
+        </>
+      )}
+    </ActionForm>
+  );
+}
+
+export function RevokeDemoForm({ demoId }: { demoId: string }) {
+  return (
+    <ActionForm
+      action={revokeDemoAction}
+      submitLabel="Revocar enlace"
+      submitClass="btn btn-danger btn-small"
+      pendingLabel="Revocando…"
+      className="inline-form"
+      confirm={() => ({ title: "Revocar enlace", body: "La demo deja de poder abrirse con este enlace. No se puede deshacer; podés generar una versión nueva.", confirmLabel: "Revocar" })}
+    >
+      {() => <input type="hidden" name="demoId" value={demoId} />}
+    </ActionForm>
+  );
+}
+
+export function PrepareMessagesForm({ prospectId, again }: { prospectId: string; again: boolean }) {
+  return (
+    <ActionForm action={prepareMessagesAction} submitLabel={again ? "Preparar de nuevo" : "Preparar mensajes"} submitClass={again ? "btn" : "btn btn-primary"} pendingLabel="Preparando…">
       {() => <input type="hidden" name="prospectId" value={prospectId} />}
     </ActionForm>
   );

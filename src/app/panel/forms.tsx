@@ -99,6 +99,33 @@ export function SettingsForm({ data, version, readOnly }: { data: Settings; vers
           </fieldset>
 
           <fieldset>
+            <legend>Firma de los mensajes</legend>
+            <div className="form-grid">
+              <label className="field">
+                <span>Nombre de la agencia</span>
+                <input name="agencyName" maxLength={120} defaultValue={data.sender.agencyName} />
+              </label>
+              <label className="field">
+                <span>Tu nombre</span>
+                <input name="senderName" maxLength={120} defaultValue={data.sender.senderName} />
+              </label>
+              <label className="field">
+                <span>Email para respuestas</span>
+                <input name="replyEmail" type="email" maxLength={254} defaultValue={data.sender.replyEmail} />
+              </label>
+              <label className="field">
+                <span>WhatsApp de contacto</span>
+                <input name="senderWhatsapp" maxLength={40} defaultValue={data.sender.whatsapp} placeholder="+54 9 11 …" />
+              </label>
+              <label className="field">
+                <span>Sitio de la agencia</span>
+                <input name="senderWebsite" type="url" maxLength={2000} defaultValue={data.sender.website} placeholder="https://" />
+              </label>
+            </div>
+            <small className="faint">Se usan para firmar los mensajes preparados. El sistema nunca envía nada por su cuenta.</small>
+          </fieldset>
+
+          <fieldset>
             <legend>Dónde buscar</legend>
             <div className="form-grid">
               <label className="field">

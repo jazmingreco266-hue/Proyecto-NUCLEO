@@ -36,6 +36,9 @@ const ACTION_TEXT: Record<string, string> = {
   "run.cancel": "Canceló una tarea",
   "audit.create": "Guardó una auditoría web",
   "research.facts": "Guardó datos de una investigación con IA",
+  "demo.create": "Generó una demo",
+  "demo.revoke": "Revocó el enlace de una demo",
+  "outreach.prepare": "Preparó mensajes de contacto",
 };
 
 export default async function ActivityPage() {

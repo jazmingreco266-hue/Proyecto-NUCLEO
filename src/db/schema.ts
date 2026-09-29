@@ -266,3 +266,31 @@ export const siteAudits = pgTable("site_audits", {
   createdById: text("created_by_id"),
   createdAt: ts("created_at").notNull().defaultNow(),
 });
+
+export const demos = pgTable("demos", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  prospectId: uuid("prospect_id")
+    .notNull()
+    .references(() => prospects.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  token: text("token").notNull(),
+  content: jsonb("content").notNull(),
+  createdByType: actorType("created_by_type").notNull(),
+  createdById: text("created_by_id"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  expiresAt: ts("expires_at").notNull(),
+  revokedAt: ts("revoked_at"),
+});
+
+export const outreachMessages = pgTable("outreach_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  prospectId: uuid("prospect_id")
+    .notNull()
+    .references(() => prospects.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  demoId: uuid("demo_id").references(() => demos.id),
+  content: jsonb("content").notNull(),
+  createdByType: actorType("created_by_type").notNull(),
+  createdById: text("created_by_id"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});

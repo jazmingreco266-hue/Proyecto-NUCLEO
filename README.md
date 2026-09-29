@@ -9,7 +9,7 @@ sensible antes de que ocurra.
 
 **Para publicarlo e instalarlo en tu computadora o tablet, seguí [docs/06-publicar.md](docs/06-publicar.md).**
 
-## Qué hay hoy (etapa 3, bloques A y B)
+## Qué hay hoy (etapas 3 y 4, primer bloque)
 
 - Pipeline comercial de 25 estados, con historial imposible de editar.
 - Cada dato de una empresa lleva fuente, URL, fecha, confianza y estado
@@ -28,6 +28,11 @@ sensible antes de que ocurra.
   sitio y extrae datos del negocio. Un dato "observado" solo se guarda si la cita que lo respalda
   aparece textual en la página; lo que no se puede comprobar se descarta y se muestra. Todo queda como
   probable o no verificado hasta que lo confirmes. Cada llamada registra su costo real.
+- **Puntaje de oportunidad** explicado criterio por criterio, solo con criterios que tienen datos.
+- **Demo conceptual** por empresa: plantilla profesional armada con sus datos reales y editable, con aviso de
+  "propuesta no oficial", sin indexar, sin formularios y con enlace privado que vence a los 60 días. Versionada.
+- **Mensajes preparados**: tres asuntos, email HTML y texto, WhatsApp, formulario y redes, canal y horario
+  sugeridos. El sistema nunca envía: vos copiás, enviás y marcás como enviado.
 - **Cola de agentes** con reintentos, control de presupuesto, horario y nivel de autonomía,
   y la página **Tareas** para ver, reintentar o cancelar trabajos.
 

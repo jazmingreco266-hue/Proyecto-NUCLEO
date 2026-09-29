@@ -8,7 +8,8 @@ import { SettingsForm } from "../forms";
 
 export const metadata: Metadata = { title: "Configuración" };
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
+  const sp = await searchParams;
   const me = await requireUser("settings.read");
   const db = getDb();
   const [{ data, version, updatedAt }, history] = await Promise.all([
@@ -23,12 +24,17 @@ export default async function SettingsPage() {
         <div>
           <h1>Configuración</h1>
           <p>
-            Límites para los agentes automáticos. Se aplican cuando esos agentes existan (etapa 3). Los valores de
-            partida son conservadores: autonomía manual y presupuesto en cero.
+            Límites para los agentes automáticos y datos para firmar los mensajes. Los valores de partida son
+            conservadores: autonomía manual y presupuesto en cero.
           </p>
         </div>
       </div>
       {!canWrite && <p className="notice">Solo el propietario puede cambiar la configuración.</p>}
+      {sp.guardado && (
+        <p className="notice notice-ok" role="status">
+          Configuración guardada. El cambio quedó en el historial.
+        </p>
+      )}
       <div className="detail-grid">
         <div className="panel">
           <SettingsForm key={version} data={data} version={version} readOnly={!canWrite} />

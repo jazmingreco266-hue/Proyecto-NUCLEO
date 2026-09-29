@@ -8,6 +8,8 @@ import { publicMessage } from "@/server/principal";
 import { processNow } from "@/agents/orchestrator";
 import { requestAudit } from "@/server/services/audits";
 import { requestResearch } from "@/server/services/research";
+import { createDemo, prepareMessages, revokeDemo } from "@/server/services/demos";
+import { headers } from "next/headers";
 import {
   addFact,
   addNote,
@@ -202,4 +204,86 @@ export async function requestResearchAction(_: ActionState, form: FormData): Pro
   }
   revalidatePath("/panel", "layout");
   return { ok: message };
+}
+
+// ─────────────────────────── Demos y mensajes ───────────────────────────
+
+const lines = (form: FormData, key: string) =>
+  str(form, key)
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+export async function createDemoAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const who = await me();
+  let version: number;
+  try {
+    const d = await createDemo(getDb(), who, str(form, "prospectId"), {
+      businessName: str(form, "businessName"),
+      industry: str(form, "industry"),
+      city: str(form, "city"),
+      headline: str(form, "headline"),
+      subheadline: str(form, "subheadline"),
+      about: str(form, "about"),
+      services: lines(form, "services").map((l) => {
+        const [title, ...rest] = l.split("|");
+        return { title: (title ?? "").trim(), text: rest.join("|").trim() };
+      }),
+      highlights: lines(form, "highlights"),
+      testimonials: lines(form, "testimonials").map((l) => {
+        const [quote, author, sourceUrl] = l.split("|").map((x) => x.trim());
+        return { quote: quote ?? "", author: author ?? "", sourceUrl: sourceUrl ?? "" };
+      }),
+      contact: {
+        phone: str(form, "phone"),
+        whatsapp: str(form, "whatsapp"),
+        email: str(form, "email"),
+        address: str(form, "address"),
+        hours: str(form, "hours"),
+      },
+      ctaLabel: str(form, "ctaLabel"),
+      colors: { primary: str(form, "primary"), accent: str(form, "accent") },
+    });
+    version = d.version;
+  } catch (err) {
+    logUnexpected(err);
+    return { error: publicMessage(err), values: formValues(form) };
+  }
+  revalidatePath("/panel", "layout");
+  // El formulario se vuelve a montar con la versión nueva: el aviso lo muestra la página.
+  redirect(`/panel/oportunidades/${str(form, "prospectId")}?tab=demo&generada=${version}`);
+}
+
+export async function revokeDemoAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const who = await me();
+  try {
+    await revokeDemo(getDb(), who, str(form, "demoId"));
+  } catch (err) {
+    logUnexpected(err);
+    return { error: publicMessage(err) };
+  }
+  revalidatePath("/panel", "layout");
+  return { ok: "Enlace revocado: la demo ya no se puede abrir." };
+}
+
+/** Dirección pública del panel, para armar el enlace de la demo. */
+async function baseUrl(): Promise<string> {
+  const fixed = process.env.PUBLIC_BASE_URL?.trim();
+  if (fixed) return fixed;
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
+}
+
+export async function prepareMessagesAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const who = await me();
+  try {
+    const m = await prepareMessages(getDb(), who, str(form, "prospectId"), await baseUrl());
+    revalidatePath("/panel", "layout");
+    return { ok: `Mensajes v${m.version} preparados. Revisalos antes de enviar.` };
+  } catch (err) {
+    logUnexpected(err);
+    return { error: publicMessage(err) };
+  }
 }

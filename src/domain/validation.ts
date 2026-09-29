@@ -215,6 +215,14 @@ export const settingsSchema = z
       skipIfSiteScoreAbove: z.coerce.number().int().min(0).max(100),
       excludedIndustries: list(200),
     }),
+    // Quién firma los mensajes preparados. Vacío = el mensaje muestra un marcador para completar.
+    sender: z.object({
+      agencyName: z.string().trim().max(120),
+      senderName: z.string().trim().max(120),
+      replyEmail: z.union([z.literal(""), z.string().trim().toLowerCase().email("Email de respuesta inválido").max(254)]),
+      whatsapp: z.string().trim().max(40),
+      website: z.union([z.literal(""), sourceUrlSchema]),
+    }),
   })
   .refine((s) => s.schedule.endHour > s.schedule.startHour, {
     path: ["schedule", "endHour"],
@@ -259,6 +267,7 @@ export const DEFAULT_SETTINGS: Settings = {
     skipIfSiteScoreAbove: 80,
     excludedIndustries: [],
   },
+  sender: { agencyName: "Núcleo", senderName: "", replyEmail: "", whatsapp: "", website: "" },
 };
 
 // ─────────────────────────── Usuarios ───────────────────────────

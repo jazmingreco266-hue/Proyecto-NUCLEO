@@ -84,6 +84,13 @@ Implementado en `src/agents/http.ts` y probado en `tests/http.test.ts`.
 Los contactos encontrados quedan como **probables** (confianza 70): podrían ser, por ejemplo, del
 diseñador del sitio. Una persona los confirma antes de usarlos.
 
+## Demos públicas
+
+- Se abren solo con un enlace de 256 bits aleatorios; vencen a los 60 días y se pueden revocar.
+- Política de seguridad propia: `default-src 'none'` (sin scripts, sin formularios, sin recursos externos) y
+  `noindex` en encabezado y en la página. Todo el texto se escapa (probado con `<script>` en el contenido).
+- No usan datos privados del cliente ni capturan datos de quien las visita.
+
 ## Investigación con IA
 
 - La clave `ANTHROPIC_API_KEY` vive solo en las variables del servidor. Nunca en el código ni en la base.

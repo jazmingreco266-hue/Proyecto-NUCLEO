@@ -73,6 +73,13 @@ export async function saveSettingsAction(_: ActionState, form: FormData): Promis
       skipIfSiteScoreAbove: s(form, "skipIfSiteScoreAbove"),
       excludedIndustries: list(form, "excludedIndustries"),
     },
+    sender: {
+      agencyName: s(form, "agencyName"),
+      senderName: s(form, "senderName"),
+      replyEmail: s(form, "replyEmail"),
+      whatsapp: s(form, "senderWhatsapp"),
+      website: s(form, "senderWebsite"),
+    },
   };
   try {
     await updateSettings(getDb(), who, data, Number(s(form, "version")));
@@ -80,7 +87,8 @@ export async function saveSettingsAction(_: ActionState, form: FormData): Promis
     return { error: publicMessage(err) };
   }
   revalidatePath("/panel", "layout");
-  return { ok: "Configuración guardada. El cambio quedó en el historial." };
+  // El formulario se vuelve a montar con la versión nueva, así que el aviso lo muestra la página.
+  redirect("/panel/configuracion?guardado=1");
 }
 
 export async function createUserAction(_: ActionState, form: FormData): Promise<ActionState> {

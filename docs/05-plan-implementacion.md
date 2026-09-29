@@ -6,7 +6,7 @@
 |---|---|
 | 1 · Auditoría | ✔ Hecha: repositorio vacío, sin sistema previo (ver `01-auditoria.md`) |
 | 2 · Núcleo operativo | ✔ Hecha, con tests (detalle abajo) |
-| 3 · Prospección | **En curso.** Bloque A hecho (cola, costos, lectura respetuosa, auditoría técnica). Falta lo que depende de decisiones tuyas |
+| 3 · Prospección | **En curso.** Bloques A (cola, costos, lectura respetuosa, auditoría técnica) y B (investigación con IA) hechos. Faltan capturas, puntaje de oportunidad y descubrimiento |
 | 4 · Demos y comunicación | Pendiente |
 | 5 · Ejecución de proyectos | Pendiente |
 | 6 · Seguridad, migración y SEO | Pendiente |
@@ -36,8 +36,8 @@
 | 3 | Lectura respetuosa de sitios (robots.txt, SSRF, límites) | ✔ | `src/agents/http.ts`, `src/domain/robots.ts` |
 | 4 | Auditoría técnica objetiva sin IA, versionada | ✔ | `src/domain/site-audit.ts`, `src/agents/website-audit.ts` |
 | 5 | Capturas escritorio/celular | Pendiente | Necesita un navegador en el servidor: depende de dónde corra el worker (pregunta 1) |
-| 6 | Investigación con IA (hechos solo de páginas leídas, cada uno con URL) | Pendiente | Necesita proveedor y presupuesto de IA (pregunta 2) |
-| 7 | Puntaje de oportunidad con explicación por criterio | Pendiente | Hoy hay puntaje **técnico** del sitio. El de oportunidad necesita la investigación (tarea 6) para no inventar criterios |
+| 6 | Investigación con IA (hechos solo de páginas leídas, cada uno con URL) | ✔ Claude Opus 5.5 | `src/domain/research.ts`, `src/agents/business-research.ts`. Falta probarla con una clave real (ver abajo) |
+| 7 | Puntaje de oportunidad con explicación por criterio | Pendiente, **próximo** | Ya hay insumos reales: auditoría técnica + datos de la investigación |
 | 8 | Descubrimiento de empresas | Pendiente | Necesita elegir fuente (pregunta 3) |
 | 9 | Deduplicación por nombre + ciudad | Pendiente | Por dominio ya existe |
 | 10 | Panel: pestaña Auditoría, página Tareas, contador de tareas con problemas | ✔ | `src/app/panel/…` |
@@ -46,6 +46,28 @@
 build de producción, `npm audit` sin vulnerabilidades, y recorrido en navegador real: alta de
 prospecto → "Generar auditoría" sobre `example.com` → resultado guardado, sin errores de consola y sin
 desborde horizontal en celular.
+
+### Investigación con IA: cómo funciona
+
+- Lee la página principal y hasta 4 internas útiles (nosotros, servicios, contacto…) con el mismo lector
+  respetuoso de la auditoría. Si el sitio no tiene texto legible, no llama a la IA (costo 0).
+- Claude devuelve datos con salida estructurada. El servidor la valida y aplica la regla de veracidad:
+  un **hecho observado** necesita la URL de una página leída y una cita que aparezca textual en ella.
+  Si no, se descarta y queda listado como "descartado por no poder verificarse".
+- Los observados se guardan como **probables** (confianza máxima 80) y las inferencias e hipótesis como
+  **no verificadas** (máxima 60). Nada de la IA figura como verificado: eso lo hace una persona.
+- Si la IA recomienda calificar, el prospecto pasa a **Calificado** (y el orquestador puede auditarlo).
+  Descartar lo decide siempre una persona.
+- Costo: se calcula con el uso que informa la API y la tabla oficial de precios
+  (`PRICING_USD_PER_MTOK` en `src/domain/research.ts`). También se registra el costo de las respuestas
+  rechazadas o inválidas. Tope estimado por investigación: US$ 0,24.
+- Si un clasificador de seguridad de Claude declina el pedido, la API lo reintenta en el modelo
+  recomendado por Anthropic (`fallbacks: "default"`). Si igual se declina, la tarea queda bloqueada.
+
+**No verificado todavía:** una llamada real a la API. Este entorno de trabajo no tiene clave, así que
+el agente se probó con una IA simulada (12 tests) y la forma del pedido se comprobó contra los tipos del
+SDK oficial (`@anthropic-ai/sdk` 0.129.0). La primera investigación real conviene hacerla sobre un
+prospecto conocido y revisar el resultado.
 
 ### Qué hace hoy la auditoría (y qué no)
 
@@ -68,7 +90,8 @@ Estas decisiones afectan dinero, terceros o credenciales, así que no las tomo s
 
 1. **Hosting.** ¿Dónde se va a desplegar el panel y el worker? Necesita Node 22 y PostgreSQL 16.
    Contratar hosting es una acción que requiere tu aprobación.
-2. **Proveedor de IA para los agentes.** ¿Con qué cuenta y API key? La clave va como variable de
+2. ~~**Proveedor de IA para los agentes.**~~ Resuelto: Claude (Anthropic). Falta cargar la clave y el presupuesto.
+   Texto original: ¿Con qué cuenta y API key? La clave va como variable de
    entorno del servidor, nunca en el código. ¿Presupuesto mensual inicial?
 3. **Fuentes de descubrimiento.** Opciones típicas: Google Places API (paga por consulta y exige
    atribución), directorios empresariales con API o carga manual asistida.

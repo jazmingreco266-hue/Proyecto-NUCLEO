@@ -17,6 +17,7 @@ import {
   pauseAction,
   removeFactAction,
   requestAuditAction,
+  requestResearchAction,
   transitionAction,
 } from "./actions";
 
@@ -323,6 +324,26 @@ export function AuditRequestForm({ prospectId, again }: { prospectId: string; ag
       submitLabel={again ? "Regenerar auditoría" : "Generar auditoría"}
       submitClass={again ? "btn" : "btn btn-primary"}
       pendingLabel="Auditando… puede tardar hasta un minuto"
+    >
+      {() => <input type="hidden" name="prospectId" value={prospectId} />}
+    </ActionForm>
+  );
+}
+
+// ─────────────────────────── Investigación con IA ───────────────────────────
+
+export function ResearchRequestForm({ prospectId, again, maxCostUsd }: { prospectId: string; again: boolean; maxCostUsd: number }) {
+  return (
+    <ActionForm
+      action={requestResearchAction}
+      submitLabel={again ? "Investigar de nuevo" : "Investigar con IA"}
+      submitClass={again ? "btn" : "btn btn-primary"}
+      pendingLabel="Investigando… puede tardar un par de minutos"
+      confirm={() => ({
+        title: "Investigar con IA",
+        body: `Se leen hasta 5 páginas públicas del sitio y se envían a Claude. Tiene costo: como máximo unos US$ ${maxCostUsd.toFixed(2)} por investigación, que se descuentan del presupuesto mensual. Los datos quedan como probables hasta que los confirmes.`,
+        confirmLabel: "Investigar",
+      })}
     >
       {() => <input type="hidden" name="prospectId" value={prospectId} />}
     </ActionForm>

@@ -84,6 +84,15 @@ Implementado en `src/agents/http.ts` y probado en `tests/http.test.ts`.
 Los contactos encontrados quedan como **probables** (confianza 70): podrían ser, por ejemplo, del
 diseñador del sitio. Una persona los confirma antes de usarlos.
 
+## Investigación con IA
+
+- La clave `ANTHROPIC_API_KEY` vive solo en las variables del servidor. Nunca en el código ni en la base.
+- El texto de las páginas se envía marcado como contenido de terceros, y las instrucciones le indican a
+  Claude que lo trate como datos, no como órdenes (defensa contra instrucciones escondidas en un sitio).
+- La salida se valida con Zod en el servidor y se aplica la verificación de citas antes de guardar.
+- A Claude solo se envía texto público del sitio de la empresa: ningún dato del panel, de usuarios ni
+  notas internas.
+
 ## Agentes, costos y autonomía
 
 - Un trabajo pedido por una persona desde el panel corre al momento. Uno automático respeta el nivel

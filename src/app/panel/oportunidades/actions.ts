@@ -7,6 +7,7 @@ import { currentPrincipal } from "@/server/auth/current";
 import { publicMessage } from "@/server/principal";
 import { processNow } from "@/agents/orchestrator";
 import { requestAudit } from "@/server/services/audits";
+import { requestResearch } from "@/server/services/research";
 import {
   addFact,
   addNote,
@@ -167,6 +168,33 @@ export async function requestAuditAction(_: ActionState, form: FormData): Promis
             : status === "failed"
               ? "La auditoría falló. El detalle figura en Tareas."
               : "El sitio no respondió. La auditoría quedó en cola para reintentar.";
+    }
+  } catch (err) {
+    logUnexpected(err);
+    return { error: publicMessage(err) };
+  }
+  revalidatePath("/panel", "layout");
+  return { ok: message };
+}
+
+export async function requestResearchAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const who = await me();
+  const db = getDb();
+  let message: string;
+  try {
+    const { run, created } = await requestResearch(db, who, str(form, "prospectId"));
+    if (!created) {
+      message = "Ya hay una investigación en curso para este prospecto.";
+    } else {
+      const status = await processNow(db, run.id);
+      message =
+        status === "succeeded"
+          ? "Investigación completada. Revisá los datos nuevos: quedan como probables hasta que los confirmes."
+          : status === "blocked"
+            ? "La investigación quedó bloqueada. El motivo figura abajo."
+            : status === "failed"
+              ? "La investigación falló. El detalle figura en Tareas."
+              : "No se pudo completar ahora. Quedó en cola para reintentar.";
     }
   } catch (err) {
     logUnexpected(err);

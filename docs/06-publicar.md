@@ -49,6 +49,15 @@ Entrá a la dirección que te da Vercel. Como no hay usuarios, el login muestra
 **Crear la cuenta de propietario**. Poné el `SETUP_TOKEN`, tu nombre, email y contraseña.
 Apenas se crea la cuenta, esa página deja de existir. Después podés borrar `SETUP_TOKEN`.
 
+## Conectar la IA (opcional)
+
+1. Creá una clave en la consola de Anthropic (https://platform.claude.com) y cargale saldo.
+2. En Vercel, **Settings → Environment Variables**, agregá `ANTHROPIC_API_KEY` con esa clave y volvé a publicar.
+3. En el panel, **Configuración → Presupuesto mensual de APIs**: poné un monto mayor a 0. Con 0 la IA no corre.
+
+Cada investigación cuesta como máximo unos US$ 0,24 con los precios vigentes al 29/09/2026
+(https://platform.claude.com/docs/en/about-claude/pricing). El gasto del mes se ve en la ficha y en **Tareas**.
+
 ## Agentes en segundo plano (opcional)
 
 Las auditorías pedidas desde el panel se ejecutan al momento, sin nada extra. Para que los agentes
@@ -57,7 +66,7 @@ trabajen solos (reintentos y auditorías automáticas de prospectos calificados)
 | Opción | Cómo | Nota |
 |---|---|---|
 | Servidor propio o VPS | `npm run worker` como servicio | Corre sin parar y respeta el horario configurado |
-| Vercel Cron | Cargá `CRON_SECRET` (16+ caracteres) y programá una llamada a `/api/cron/agentes` | Cada llamada trabaja hasta 45 s. Revisá la frecuencia que permite tu plan en https://vercel.com/docs/cron-jobs |
+| Vercel Cron | Cargá `CRON_SECRET` (16+ caracteres) y programá una llamada a `/api/cron/agentes` | Cada llamada toma trabajos durante 150 s (la función tiene hasta 300 s). Revisá la frecuencia que permite tu plan en https://vercel.com/docs/cron-jobs |
 
 En ambos casos, en **Configuración** subí la autonomía de "Manual" a "Asistido" para que el
 orquestador encole trabajo por su cuenta. Mientras esté en manual, solo corre lo que pidas vos.

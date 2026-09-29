@@ -4,9 +4,10 @@ import { processNext, tick } from "@/agents/orchestrator";
 
 // Para Vercel Cron o cualquier programador externo. Protegido con CRON_SECRET.
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
-const BUDGET_MS = 45_000;
+// Deja margen para que el último trabajo (una investigación con IA puede tardar minutos) termine a tiempo.
+const BUDGET_MS = 150_000;
 
 function authorized(req: Request): boolean {
   const secret = process.env.CRON_SECRET;

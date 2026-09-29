@@ -35,6 +35,7 @@ const ACTION_TEXT: Record<string, string> = {
   "run.retry": "Reintentó una tarea",
   "run.cancel": "Canceló una tarea",
   "audit.create": "Guardó una auditoría web",
+  "research.facts": "Guardó datos de una investigación con IA",
 };
 
 export default async function ActivityPage() {

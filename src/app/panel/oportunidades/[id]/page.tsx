@@ -16,15 +16,21 @@ import { requireUser } from "@/server/auth/current";
 import { can, NotFoundError } from "@/server/principal";
 import { getProspect, listEvents, listFacts, listNotes } from "@/server/services/prospects";
 import { AUDIT_AGENT, getAudit, listAudits } from "@/server/services/audits";
-import { latestRunFor, RUN_STATUS_LABELS } from "@/server/services/agent-runs";
+import { latestRunFor, monthSpendUsd, RUN_STATUS_LABELS } from "@/server/services/agent-runs";
+import { latestResearch, RESEARCH_AGENT } from "@/server/services/research";
+import { getSettings } from "@/server/services/settings";
+import { aiConfigured } from "@/agents/ai";
+import { RESEARCH_ESTIMATED_COST_USD } from "@/domain/research";
 import { AUDIT_CATEGORIES, type CategoryKey, type CategoryResult, type Check, type Recommendation } from "@/domain/site-audit";
 import { notFound } from "next/navigation";
 import { Country, ExternalLink, formatMoney, Score, Status, When } from "../../../ui/format";
-import { AuditRequestForm, FactForm, NoteForm, PauseForm, RemoveFactForm, TransitionForm } from "../forms";
+import { AuditRequestForm, ResearchRequestForm, FactForm, NoteForm, PauseForm, RemoveFactForm, TransitionForm } from "../forms";
 
 export const metadata: Metadata = { title: "Prospecto" };
-// La auditoría pedida desde esta página se ejecuta al momento: puede tardar hasta un minuto.
-export const maxDuration = 60;
+// Auditoría e investigación pedidas desde esta página se ejecutan al momento (la investigación con IA
+// puede tardar un par de minutos). 300 s es el máximo por defecto de Vercel en todos los planes:
+// https://vercel.com/docs/functions/limitations (consultado el 29/09/2026).
+export const maxDuration = 300;
 
 const TABS = [
   { key: "empresa", label: "Empresa" },
@@ -144,6 +150,14 @@ export default async function ProspectPage({
       ? Promise.all([getAudit(db, me, p.id, auditVersion), listAudits(db, me, p.id), latestRunFor(db, me, p.id, AUDIT_AGENT)])
       : null,
   ]);
+  const researchData =
+    tab === "investigacion"
+      ? await Promise.all([
+          latestResearch(db, me, p.id),
+          latestRunFor(db, me, p.id, RESEARCH_AGENT),
+          getSettings(db, me).then(async (s) => ({ budget: s.data.apiBudgetUsdMonthly, spent: await monthSpendUsd(db, s.data.schedule.timezone) })),
+        ])
+      : null;
   const visited = new Set(events.map((e) => e.toStatus));
   const targets = can(me, "prospects.transition")
     ? allowedTargets(p.status, { type: "user", role: me.role })
@@ -278,6 +292,17 @@ export default async function ProspectPage({
                 Los datos se separan en hechos observados, inferencias y hipótesis. Solo un hecho observado con URL de
                 fuente puede figurar como verificado.
               </p>
+              {researchData && (
+                <ResearchPanel
+                  prospectId={p.id}
+                  hasWebsite={!!p.websiteUrl}
+                  isSample={p.isSample}
+                  canRequest={can(me, "prospects.write")}
+                  research={researchData[0]}
+                  run={researchData[1]}
+                  budget={researchData[2]}
+                />
+              )}
               {FACT_KINDS.map((kind) => {
                 const list = facts.filter((f) => f.kind === kind);
                 return (
@@ -667,6 +692,125 @@ function Recommendation({ rec }: { rec: Recommendation }) {
         ))}
       </ul>
       <span className="faint">El esfuerzo y el valor comercial se estiman con la investigación, no acá.</span>
+    </div>
+  );
+}
+
+// ─────────────────────────── Investigación con IA ───────────────────────────
+
+type ResearchOut = {
+  resumen: string;
+  recomendacion: "qualify" | "reject" | "unsure";
+  motivos: string[];
+  paginas: { url: string; recortada: boolean }[];
+  datosNuevos: number;
+  datosDescartados: { field: string; value: string; reason: string }[];
+};
+const RESEARCH_REC: Record<ResearchOut["recomendacion"], string> = {
+  qualify: "Calificar",
+  reject: "Descartar (lo decidís vos)",
+  unsure: "Falta información",
+};
+
+function ResearchPanel({
+  prospectId,
+  hasWebsite,
+  isSample,
+  canRequest,
+  research,
+  run,
+  budget,
+}: {
+  prospectId: string;
+  hasWebsite: boolean;
+  isSample: boolean;
+  canRequest: boolean;
+  research: Awaited<ReturnType<typeof latestResearch>>;
+  run: Awaited<ReturnType<typeof latestRunFor>>;
+  budget: { budget: number; spent: number };
+}) {
+  const configured = aiConfigured();
+  const out = research?.output as ResearchOut | undefined;
+  const showRun = run && run.status !== "succeeded" && (!research || run.createdAt > research.createdAt);
+  return (
+    <div className="panel stack">
+      <div className="section-head">
+        <h3>Investigación con IA</h3>
+        {canRequest && hasWebsite && !isSample && configured && budget.budget > 0 && (
+          <ResearchRequestForm prospectId={prospectId} again={!!research} maxCostUsd={RESEARCH_ESTIMATED_COST_USD} />
+        )}
+      </div>
+      {!configured && (
+        <p className="notice">
+          La IA no está conectada: falta la variable <code>ANTHROPIC_API_KEY</code> en el servidor.
+        </p>
+      )}
+      {configured && budget.budget === 0 && (
+        <p className="notice">
+          El presupuesto mensual de IA está en US$ 0. Definilo en <Link href="/panel/configuracion">Configuración</Link> para habilitarla.
+        </p>
+      )}
+      {budget.budget > 0 && (
+        <p className="faint">
+          Gastado este mes: US$ {budget.spent.toFixed(2)} de US$ {budget.budget.toFixed(2)}.
+        </p>
+      )}
+      {showRun && run && (
+        <p className={`notice ${run.status === "failed" || run.status === "blocked" ? "notice-error" : ""}`} role="status">
+          Última tarea: <strong>{RUN_STATUS_LABELS[run.status]}</strong>
+          {run.error ? ` · ${run.error}` : ""} · <Link href="/panel/tareas">Ver tareas</Link>
+        </p>
+      )}
+      {out && research && (
+        <>
+          <p>{out.resumen}</p>
+          <dl className="dl">
+            <dt>Recomendación</dt>
+            <dd>
+              {RESEARCH_REC[out.recomendacion]}
+              {out.motivos.length > 0 && (
+                <ul className="issues">
+                  {out.motivos.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              )}
+            </dd>
+            <dt>Páginas leídas</dt>
+            <dd>
+              {out.paginas.map((pg) => (
+                <div key={pg.url}>
+                  <ExternalLink href={pg.url} />
+                  {pg.recortada && <span className="faint"> (recortada por largo)</span>}
+                </div>
+              ))}
+            </dd>
+            <dt>Datos</dt>
+            <dd>
+              {out.datosNuevos} nuevos · {out.datosDescartados.length} descartados por no poder verificarse
+              {out.datosDescartados.length > 0 && (
+                <details className="disclose">
+                  <summary className="faint">Ver descartados</summary>
+                  <ul className="issues">
+                    {out.datosDescartados.map((d) => (
+                      <li key={`${d.field}-${d.value}`}>
+                        {d.field}: {d.value} — {d.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </dd>
+            <dt>Hecha</dt>
+            <dd>
+              <When date={research.finishedAt} /> · {research.model} · US$ {Number(research.costUsd).toFixed(4)}
+            </dd>
+          </dl>
+          <p className="faint">
+            Lo que aporta la IA queda como probable o no verificado. Confirmalo antes de usarlo con un cliente.
+          </p>
+        </>
+      )}
     </div>
   );
 }

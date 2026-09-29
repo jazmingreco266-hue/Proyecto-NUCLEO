@@ -9,7 +9,7 @@ sensible antes de que ocurra.
 
 **Para publicarlo e instalarlo en tu computadora o tablet, seguí [docs/06-publicar.md](docs/06-publicar.md).**
 
-## Qué hay hoy (etapa 3, bloque A)
+## Qué hay hoy (etapa 3, bloques A y B)
 
 - Pipeline comercial de 25 estados, con historial imposible de editar.
 - Cada dato de una empresa lleva fuente, URL, fecha, confianza y estado
@@ -24,6 +24,10 @@ sensible antes de que ocurra.
   integraciones y enlaces rotos. Solo puntúa lo medible; lo que requiere criterio queda "no evaluado".
   Cada auditoría es una versión nueva, nunca se sobrescribe.
 - Contactos y tecnología encontrados en el sitio se guardan como datos con fuente y fecha.
+- **Investigación con IA (Claude)** desde la pestaña Investigación: lee hasta 5 páginas públicas del
+  sitio y extrae datos del negocio. Un dato "observado" solo se guarda si la cita que lo respalda
+  aparece textual en la página; lo que no se puede comprobar se descarta y se muestra. Todo queda como
+  probable o no verificado hasta que lo confirmes. Cada llamada registra su costo real.
 - **Cola de agentes** con reintentos, control de presupuesto, horario y nivel de autonomía,
   y la página **Tareas** para ver, reintentar o cancelar trabajos.
 

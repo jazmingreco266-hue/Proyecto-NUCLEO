@@ -7,7 +7,7 @@
 | 1 · Auditoría | ✔ Hecha: repositorio vacío, sin sistema previo (ver `01-auditoria.md`) |
 | 2 · Núcleo operativo | ✔ Hecha, con tests (detalle abajo) |
 | 3 · Prospección | **En curso.** Hechos: cola, costos, lectura respetuosa, auditoría técnica, investigación con IA y puntaje de oportunidad. Faltan capturas, descubrimiento y deduplicación por nombre + ciudad |
-| 4 · Demos y comunicación | **En curso.** Hechos: demo conceptual versionada, propuesta (antes/después y 3 mejoras), mensajes por canal y descarga del email HTML. Faltan capturas de pantalla para el email y la mejora de textos con IA (opcional) |
+| 4 · Comunicación | ✔ Mensajes por canal y descarga del email HTML. **Las demos se retiraron** por decisión tomada el 29/09/2026 |
 | 5 · Ejecución de proyectos | Pendiente |
 | 6 · Seguridad, migración y SEO | Pendiente |
 | 7 · Ventas adicionales | Pendiente |
@@ -71,23 +71,19 @@ prospecto conocido y revisar el resultado.
 
 ## Etapa 4: qué quedó hecho
 
-- **Demo** (`src/domain/demo.ts`): el borrador sale solo de hechos observados de la ficha; las inferencias no se
-  usan como texto. Testimonios solo con URL pública de origen. Todo se puede editar antes de generar.
-  La página pública (`/demo/<enlace>`) no tiene scripts, formularios ni recursos externos (lo impone su política de
-  seguridad), lleva `noindex` y un aviso de propuesta no oficial, y el enlace (256 bits aleatorios) vence a los 60 días
-  o cuando lo revocás. Cada demo es una versión nueva; la base impide modificarlas o borrarlas.
+- **Sin demos.** Por decisión tomada el 29/09/2026 no se generan demos ni páginas de propuesta. El
+  código quedó en el historial de Git (commit `d4a9f57`) por si se quiere recuperar. Los estados «Generando demo» y
+  «Demo lista» siguen en la base por compatibilidad, marcados en desuso: se puede salir de ellos pero no entrar.
 - **Mensajes** (`src/domain/outreach.ts`): lo positivo del negocio sale solo de un hecho observado; si no hay, el
-  sistema avisa en vez de inventar un elogio. Las mejoras salen de la auditoría y se redactan como beneficios.
-  El horario sugerido se aclara como sugerencia general, no como dato medido. Incluyen una línea para darse de baja.
-- **Estados:** generar la demo lleva Auditado → Generando demo → Demo lista; preparar mensajes lleva Demo lista →
-  Mensaje listo. "Enviado manualmente" lo marca siempre una persona.
-- **Pendiente:** la captura del sitio actual y de la demo para mostrar dentro del email (necesita un navegador en el
-  servidor, ver bloqueos) y una opción para mejorar los textos con IA.
+  sistema avisa en vez de inventar un elogio. Las tres mejoras salen de la auditoría y se redactan como beneficios.
+  Cierran ofreciendo una propuesta sin compromiso y una charla. El horario sugerido se aclara como sugerencia
+  general, no como dato medido. Incluyen una línea para darse de baja.
+- **Estados:** preparar mensajes lleva Auditado → Mensaje listo. "Enviado manualmente" lo marca siempre una persona.
 
 ### Puntaje de oportunidad
 
 Promedio ponderado de los criterios **que tienen datos**: necesidad de modernización (peso 3, sale del
-puntaje técnico), mejora visible en una demo (2), facilidad de contacto (2), negocio activo según la
+puntaje técnico), mejoras visibles para el cliente (2), facilidad de contacto (2), negocio activo según la
 investigación (2) y calidad de la información (1). Capacidad de pago, competencia y probabilidad de
 respuesta figuran como "sin datos": no se estiman para no inventar. Con menos de 3 criterios medidos no
 hay puntaje. El desglose se ve en la ficha, pestaña Empresa → "Cómo se calcula".

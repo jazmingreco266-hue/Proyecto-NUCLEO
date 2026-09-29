@@ -102,7 +102,7 @@ export const websiteAuditHandler: Handler = async ({ db, run, agent, settings, f
           prospectId: p.id,
           to: "AUDITED",
           reason: `Auditoría técnica v${saved.version} completada: puntaje ${result.siteScore ?? "sin datos"}/100, recomendación preliminar «${recommendation.action}».`,
-          nextStep: "Revisar la auditoría y decidir si se prepara una demo.",
+          nextStep: "Revisar la auditoría y preparar los mensajes.",
           expectedVersion: cur.version,
         });
         moved = true;

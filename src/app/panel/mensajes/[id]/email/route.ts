@@ -1,7 +1,7 @@
 import { getDb } from "@/db/client";
 import { currentPrincipal } from "@/server/auth/current";
 import { publicMessage } from "@/server/principal";
-import { getMessages } from "@/server/services/demos";
+import { getMessages } from "@/server/services/outreach";
 
 export const dynamic = "force-dynamic";
 

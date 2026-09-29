@@ -107,8 +107,6 @@ describe("prospectos: pipeline", () => {
       "RESEARCHING",
       "QUALIFIED",
       "AUDITED",
-      "DEMO_GENERATING",
-      "DEMO_READY",
       "OUTREACH_READY",
     ]);
     await expect(
@@ -143,7 +141,7 @@ describe("prospectos: pipeline", () => {
     const owner = await makeUser();
     const p = await createProspect(db(), owner, { name: "Deploy SRL", country: "AR" });
     const ready = await walk(owner, p.id, [
-      "RESEARCHING", "QUALIFIED", "AUDITED", "DEMO_GENERATING", "DEMO_READY", "OUTREACH_READY",
+      "RESEARCHING", "QUALIFIED", "AUDITED", "OUTREACH_READY",
       "SENT_MANUALLY", "WAITING_RESPONSE", "REPLIED_POSITIVE", "PROPOSAL_SENT", "APPROVED",
       "BUILDING", "STAGING", "QA", "READY_TO_DEPLOY",
     ]);
@@ -293,7 +291,6 @@ describe("vista general", () => {
     expect(o.sampleProspects).toBe(1);
     expect(o.foundToday).toBe(1);
     expect(o.qualified).toBe(1);
-    expect(o.demosGenerated).toBe(0);
     expect(o.potentialRevenue).toEqual([{ currency: "ARS", amount: 1000 }]);
     expect(o.confirmedRevenue).toEqual([]);
   });

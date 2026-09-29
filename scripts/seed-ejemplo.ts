@@ -68,8 +68,6 @@ const samples: Sample[] = [
       { to: "RESEARCHING", by: "agent", reason: "Ejemplo: comienza la investigación" },
       { to: "QUALIFIED", by: "agent", reason: "Ejemplo: supera el puntaje mínimo" },
       { to: "AUDITED", by: "agent", reason: "Ejemplo: auditoría completada" },
-      { to: "DEMO_GENERATING", by: "agent", reason: "Ejemplo: se genera la demo" },
-      { to: "DEMO_READY", by: "agent", reason: "Ejemplo: demo lista" },
       { to: "OUTREACH_READY", by: "agent", reason: "Ejemplo: mensajes preparados" },
     ],
   },

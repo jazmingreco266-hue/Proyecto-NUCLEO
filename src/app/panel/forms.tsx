@@ -88,10 +88,6 @@ export function SettingsForm({ data, version, readOnly }: { data: Settings; vers
                 <input name="maxLeadsPerDay" type="number" min={0} max={500} defaultValue={data.maxLeadsPerDay} />
               </label>
               <label className="field">
-                <span>Máximo de demos por día</span>
-                <input name="maxDemosPerDay" type="number" min={0} max={50} defaultValue={data.maxDemosPerDay} />
-              </label>
-              <label className="field">
                 <span>Puntaje mínimo de oportunidad</span>
                 <input name="minOpportunityScore" type="number" min={0} max={100} defaultValue={data.minOpportunityScore} />
               </label>

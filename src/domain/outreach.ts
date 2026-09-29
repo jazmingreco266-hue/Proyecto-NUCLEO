@@ -8,7 +8,10 @@
  * - El sistema los prepara; una persona los revisa y los envía.
  */
 import type { Check } from "./site-audit";
-import { escapeHtml } from "./demo";
+
+export function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
 
 export type Sender = { agencyName: string; senderName: string; replyEmail: string; whatsapp: string; website: string };
 
@@ -17,7 +20,6 @@ export type OutreachInput = {
   country: string;
   facts: { category: string; field: string; value: string; kind: string }[];
   auditChecks: Check[] | null;
-  demoUrl: string;
   sender: Sender;
   allowedChannels: string[];
 };
@@ -33,7 +35,6 @@ export type OutreachContent = {
   social: string;
   channel: { suggested: string; reason: string; available: string[] };
   bestTime: { text: string; basis: string };
-  demoUrl: string;
   warnings: string[];
 };
 
@@ -106,7 +107,7 @@ function channels(facts: OutreachInput["facts"], allowed: string[]) {
     has(/linkedin/i) && "linkedin",
   ].filter((c): c is string => Boolean(c) && allowed.includes(c as string));
   const order: [string, string][] = [
-    ["email", "Hay un email comercial cargado: permite mandar el enlace a la demo con una presentación completa."],
+    ["email", "Hay un email comercial cargado: permite una presentación completa con las mejoras detalladas."],
     ["whatsapp", "Hay un WhatsApp comercial cargado: es un canal directo y habitual para negocios."],
     ["form", "El sitio tiene formulario de contacto: es el canal que la empresa ofrece para consultas."],
     ["instagram", "Hay un Instagram de la empresa cargado."],
@@ -151,9 +152,7 @@ export function buildOutreach(i: OutreachInput): OutreachContent {
     "Vi algunas oportunidades para que el sitio les traiga más consultas:",
     ...bullets.map((b) => `• ${b[0]!.toUpperCase()}${b.slice(1)}.`),
     "",
-    `Preparé un boceto de cómo podría verse, sin compromiso: ${i.demoUrl}`,
-    "Es solo una idea inicial: no está publicado ni reemplaza su sitio.",
-    "",
+    "Si les interesa, les armo una propuesta concreta, sin compromiso.",
     "¿Les parece si lo charlamos 15 minutos cuando les quede cómodo?",
     "",
     "Saludos,",
@@ -163,7 +162,6 @@ export function buildOutreach(i: OutreachInput): OutreachContent {
   ].join("\n");
 
   const e = escapeHtml;
-  const button = `<a href="${e(i.demoUrl)}" style="display:inline-block;background:#1c1c1b;color:#ffffff;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:8px">Ver el boceto</a>`;
   const emailHtml = `<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${e(`Una idea para el sitio de ${name}`)}</title></head>
 <body style="margin:0;padding:0;background:#f4f3ef">
@@ -174,9 +172,7 @@ export function buildOutreach(i: OutreachInput): OutreachContent {
 <p style="margin:0 0 16px">${e(intro)} ${e(positiveLine)}</p>
 <p style="margin:0 0 8px">Vi algunas oportunidades para que el sitio les traiga más consultas:</p>
 <ul style="margin:0 0 20px;padding-left:20px">${bullets.map((b) => `<li style="margin:0 0 6px">${e(b[0]!.toUpperCase() + b.slice(1))}.</li>`).join("")}</ul>
-<p style="margin:0 0 20px">Preparé un boceto de cómo podría verse, sin compromiso:</p>
-<p style="margin:0 0 20px">${button}</p>
-<p style="margin:0 0 20px;font-size:14px;color:#5d5d59">Es solo una idea inicial: no está publicado ni reemplaza su sitio. Si el botón no funciona: <a href="${e(i.demoUrl)}" style="color:#1c1c1b">${e(i.demoUrl)}</a></p>
+<p style="margin:0 0 20px">Si les interesa, les armo una propuesta concreta, sin compromiso.</p>
 <p style="margin:0 0 20px">¿Les parece si lo charlamos 15 minutos cuando les quede cómodo?</p>
 <p style="margin:0 0 24px">Saludos,<br>${signatureLines.map(e).join("<br>")}</p>
 </td></tr>
@@ -187,21 +183,21 @@ export function buildOutreach(i: OutreachInput): OutreachContent {
   const whatsapp = [
     `Hola, ¿cómo están? ${intro}`,
     positive ? `Vi ${name} y me llamó la atención: «${positive}».` : `Estuve viendo el sitio de ${name}.`,
-    `Les preparé un boceto de cómo podría verse su web, sin compromiso: ${i.demoUrl}`,
-    "Si les interesa, lo charlamos. Y si no, no hay problema.",
+    `Vi algunas mejoras posibles para su web, como ${bullets[0]}.`,
+    "Si les interesa, les cuento sin compromiso. Y si no, no hay problema.",
   ].join("\n");
 
   const form = [
     `Hola, ${introMid} ${positiveLine}`,
-    `Vi algunas mejoras posibles para el sitio (${bullets.slice(0, 2).join("; ")}) y preparé un boceto sin compromiso: ${i.demoUrl}`,
-    `Si les interesa, pueden escribirme${s.replyEmail ? ` a ${s.replyEmail}` : ""}${s.whatsapp ? `${s.replyEmail ? " o" : ""} al ${s.whatsapp}` : ""}.`,
+    `Vi algunas mejoras posibles para el sitio: ${bullets.slice(0, 2).join("; ")}.`,
+    `Si les interesa, les armo una propuesta sin compromiso${s.replyEmail || s.whatsapp ? `; pueden escribirme${s.replyEmail ? ` a ${s.replyEmail}` : ""}${s.whatsapp ? `${s.replyEmail ? " o" : ""} al ${s.whatsapp}` : ""}` : ""}.`,
     "Saludos.",
   ].join("\n");
 
-  const social = `Hola, ${introMid} Preparé un boceto sin compromiso de cómo podría verse el sitio de ${name}: ${i.demoUrl} ¿Les interesa verlo?`;
+  const social = `Hola, ${introMid} Vi algunas mejoras posibles para el sitio de ${name}, como ${bullets[0]}. ¿Les interesa que les cuente, sin compromiso?`;
 
   return {
-    subjects: [`Una idea para el sitio de ${name}`, `${name}: un boceto sin compromiso para su web`, `Preparé un boceto del nuevo sitio de ${name}`],
+    subjects: [`Una idea para el sitio de ${name}`, `${name}: tres mejoras para su web`, `Propuesta sin compromiso para el sitio de ${name}`],
     improvements,
     positive,
     emailText,
@@ -211,7 +207,6 @@ export function buildOutreach(i: OutreachInput): OutreachContent {
     social,
     channel: channels(i.facts, i.allowedChannels),
     bestTime: bestTime(i.country),
-    demoUrl: i.demoUrl,
     warnings,
   };
 }

@@ -55,7 +55,6 @@ export async function saveSettingsAction(_: ActionState, form: FormData): Promis
     industries: list(form, "industries"),
     languages: list(form, "languages"),
     maxLeadsPerDay: s(form, "maxLeadsPerDay"),
-    maxDemosPerDay: s(form, "maxDemosPerDay"),
     minOpportunityScore: s(form, "minOpportunityScore"),
     apiBudgetUsdMonthly: s(form, "apiBudgetUsdMonthly"),
     schedule: {

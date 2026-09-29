@@ -52,7 +52,7 @@ export function computeOpportunity(i: OpportunityInput): Opportunity {
       : { key: "modernizacion", label: "Necesidad de modernización", weight: 3, score: null, detail: "Falta la auditoría web." },
   );
 
-  // 2. Mejora visible en una demo: problemas que se notan a simple vista.
+  // 2. Mejoras visibles: problemas que el cliente nota a simple vista (más fáciles de explicar y vender).
   if (i.audit) {
     const visible = [
       ["viewport", "no se adapta al celular"],
@@ -65,14 +65,14 @@ export function computeOpportunity(i: OpportunityInput): Opportunity {
     ] as const;
     const found = visible.filter(([id]) => ["fail", "warn"].includes(status(id) ?? ""));
     c.push({
-      key: "demo",
-      label: "Mejora visible en una demo",
+      key: "visible",
+      label: "Mejoras visibles para el cliente",
       weight: 2,
       score: Math.min(100, found.length * 25),
       detail: found.length ? `Se notaría: ${found.map(([, t]) => t).join(", ")}.` : "Pocos problemas visibles a simple vista.",
     });
   } else {
-    c.push({ key: "demo", label: "Mejora visible en una demo", weight: 2, score: null, detail: "Falta la auditoría web." });
+    c.push({ key: "visible", label: "Mejoras visibles para el cliente", weight: 2, score: null, detail: "Falta la auditoría web." });
   }
 
   // 3. Facilidad de contacto: canales comerciales cargados como datos.

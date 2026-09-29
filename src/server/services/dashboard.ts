@@ -9,7 +9,6 @@ export type Money = { currency: string | null; amount: number };
 export type Overview = {
   foundToday: number;
   qualified: number;
-  demosGenerated: number;
   messagesPrepared: number;
   sentManually: number;
   responses: { positive: number; negative: number };
@@ -51,7 +50,6 @@ export async function getOverview(db: Db, who: Principal): Promise<Overview> {
         WHERE NOT is_sample AND deleted_at IS NULL
           AND discovered_at >= (date_trunc('day', now() AT TIME ZONE ${tz}) AT TIME ZONE ${tz})) AS found_today,
       ${reached("QUALIFIED")} AS qualified,
-      ${eventsTo("DEMO_READY")} AS demos,
       ${eventsTo("OUTREACH_READY")} AS prepared,
       ${eventsTo("SENT_MANUALLY")} AS sent,
       ${eventsTo("REPLIED_POSITIVE")} AS positive,
@@ -85,7 +83,6 @@ export async function getOverview(db: Db, who: Principal): Promise<Overview> {
   return {
     foundToday: m.found_today!,
     qualified: m.qualified!,
-    demosGenerated: m.demos!,
     messagesPrepared: m.prepared!,
     sentManually: m.sent!,
     responses: { positive: m.positive!, negative: m.negative! },

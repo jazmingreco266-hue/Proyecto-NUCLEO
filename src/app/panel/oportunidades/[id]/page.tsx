@@ -22,12 +22,12 @@ import { getSettings } from "@/server/services/settings";
 import { aiConfigured } from "@/agents/ai";
 import { RESEARCH_ESTIMATED_COST_USD } from "@/domain/research";
 import type { Opportunity } from "@/domain/opportunity";
-import { demoDraft, demoIsLive, latestMessages, listDemos } from "@/server/services/demos";
+import { latestMessages } from "@/server/services/outreach";
 import { CopyButton } from "../../../ui/copy-button";
 import { AUDIT_CATEGORIES, type CategoryKey, type CategoryResult, type Check, type Recommendation } from "@/domain/site-audit";
 import { notFound } from "next/navigation";
 import { Country, ExternalLink, formatMoney, Score, Status, When } from "../../../ui/format";
-import { AuditRequestForm, DemoForm, PrepareMessagesForm, RevokeDemoForm, ResearchRequestForm, FactForm, NoteForm, PauseForm, RemoveFactForm, TransitionForm } from "../forms";
+import { AuditRequestForm, PrepareMessagesForm, ResearchRequestForm, FactForm, NoteForm, PauseForm, RemoveFactForm, TransitionForm } from "../forms";
 
 export const metadata: Metadata = { title: "Prospecto" };
 // Auditoría e investigación pedidas desde esta página se ejecutan al momento (la investigación con IA
@@ -40,9 +40,7 @@ const TABS = [
   { key: "investigacion", label: "Investigación" },
   { key: "auditoria", label: "Auditoría web" },
   { key: "capturas", label: "Capturas", stage: 3 },
-  { key: "demo", label: "Demo" },
   { key: "contactos", label: "Contactos" },
-  { key: "propuesta", label: "Propuesta" },
   { key: "mensajes", label: "Mensajes" },
   { key: "historial", label: "Historial" },
   { key: "notas", label: "Notas" },
@@ -90,7 +88,6 @@ const MAIN_ROUTE: PipelineStatus[] = [
   "RESEARCHING",
   "QUALIFIED",
   "AUDITED",
-  "DEMO_READY",
   "OUTREACH_READY",
   "SENT_MANUALLY",
   "WAITING_RESPONSE",
@@ -133,9 +130,7 @@ export default async function ProspectPage({
       ? Promise.all([getAudit(db, me, p.id, auditVersion), listAudits(db, me, p.id), latestRunFor(db, me, p.id, AUDIT_AGENT)])
       : null,
   ]);
-  const demoData = ["demo", "propuesta", "mensajes"].includes(tab)
-    ? await Promise.all([listDemos(db, me, p.id), demoDraft(db, me, p.id), latestMessages(db, me, p.id)])
-    : null;
+  const messages = tab === "mensajes" ? await latestMessages(db, me, p.id) : null;
   const researchData =
     tab === "investigacion"
       ? await Promise.all([
@@ -418,12 +413,8 @@ export default async function ProspectPage({
             />
           )}
 
-          {tab === "demo" && demoData && (
-            <DemoTab generated={Number(sp.generada) || null} prospectId={p.id} isSample={p.isSample} canWrite={can(me, "prospects.write")} demos={demoData[0]} draft={demoData[1]} />
-          )}
-          {tab === "propuesta" && demoData && <ProposalTab websiteUrl={p.websiteUrl} demos={demoData[0]} messages={demoData[2]} />}
-          {tab === "mensajes" && demoData && (
-            <MessagesTab prospectId={p.id} canWrite={can(me, "prospects.write")} hasLiveDemo={demoData[0].some((d) => demoIsLive(d))} messages={demoData[2]} />
+          {tab === "mensajes" && (
+            <MessagesTab prospectId={p.id} isSample={p.isSample} canWrite={can(me, "prospects.write")} messages={messages} />
           )}
 
           {["capturas", "proyecto", "seguridad"].includes(tab) && (
@@ -835,117 +826,30 @@ function OpportunityBreakdown({ explanation }: { explanation: Opportunity | null
   );
 }
 
-// ─────────────────────────── Demo, propuesta y mensajes ───────────────────────────
+// ─────────────────────────── Mensajes ───────────────────────────
 
-type DemoRow = Awaited<ReturnType<typeof listDemos>>[number];
 type MessagesRow = Awaited<ReturnType<typeof latestMessages>>;
-
-function DemoTab({ generated, prospectId, isSample, canWrite, demos, draft }: { generated: number | null; prospectId: string; isSample: boolean; canWrite: boolean; demos: DemoRow[]; draft: Awaited<ReturnType<typeof demoDraft>> }) {
-  return (
-    <section className="stack" aria-labelledby="t-demo">
-      <h2 id="t-demo">Demo conceptual</h2>
-      {generated && (
-        <p className="notice notice-ok" role="status">
-          Demo v{generated} generada. Abrila con «Ver demo» para revisarla antes de usarla.
-        </p>
-      )}
-      <p className="muted">
-        Una propuesta visual armada con los datos reales de la empresa. Lleva un aviso de «propuesta no oficial», no se indexa
-        en buscadores, no tiene formularios y su enlace vence a los 60 días. Ninguna versión se sobrescribe.
-      </p>
-      {demos.length > 0 && (
-        <div className="panel stack">
-          <h3>Versiones</h3>
-          <ul className="versions-list">
-            {demos.map((d) => {
-              const live = demoIsLive(d);
-              return (
-                <li key={d.id}>
-                  <strong>v{d.version}</strong> · <When date={d.createdAt} /> ·{" "}
-                  {live ? (
-                    <>
-                      <a href={`/demo/${d.token}`} target="_blank" rel="noopener noreferrer">
-                        Ver demo
-                      </a>{" "}
-                      · vence <When date={d.expiresAt} withTime={false} />
-                      {canWrite && <RevokeDemoForm demoId={d.id} />}
-                    </>
-                  ) : (
-                    <span className="faint">{d.revokedAt ? "enlace revocado" : "enlace vencido"}</span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-      {isSample ? (
-        <p className="notice">Es un prospecto de ejemplo: no genera demos.</p>
-      ) : canWrite ? (
-        <section className="panel stack" aria-labelledby="demo-form">
-          <h3 id="demo-form">{demos.length ? "Nueva versión" : "Generar la demo"}</h3>
-          <p className="faint">
-            {demos.length
-              ? "Parte de la última versión. Al generar se crea una versión nueva con su propio enlace."
-              : "El borrador sale de los datos observados de la ficha. Revisá y completá cada texto: lo que dejes vacío no se muestra."}
-          </p>
-          <DemoForm key={demos[0]?.id ?? "nuevo"} prospectId={prospectId} draft={draft} again={demos.length > 0} />
-        </section>
-      ) : null}
-    </section>
-  );
-}
-
-function ProposalTab({ websiteUrl, demos, messages }: { websiteUrl: string | null; demos: DemoRow[]; messages: MessagesRow }) {
-  const live = demos.find((d) => demoIsLive(d));
-  return (
-    <section className="panel stack" aria-labelledby="t-prop">
-      <h2 id="t-prop">Propuesta</h2>
-      <div className="grid-2">
-        <div className="stack">
-          <h3>Antes</h3>
-          {websiteUrl ? <ExternalLink href={websiteUrl}>Ver sitio actual</ExternalLink> : <span className="faint">Sin sitio cargado</span>}
-        </div>
-        <div className="stack">
-          <h3>Después</h3>
-          {live ? (
-            <a href={`/demo/${live.token}`} target="_blank" rel="noopener noreferrer">
-              Ver demo v{live.version}
-            </a>
-          ) : (
-            <span className="faint">Todavía no hay una demo vigente.</span>
-          )}
-        </div>
-      </div>
-      <h3>Tres mejoras principales</h3>
-      {messages?.content.improvements.length ? (
-        <ol className="issues">
-          {messages.content.improvements.map((i) => (
-            <li key={i}>{i[0]!.toUpperCase() + i.slice(1)}.</li>
-          ))}
-        </ol>
-      ) : (
-        <p className="faint">Aparecen al preparar los mensajes (salen de la auditoría web).</p>
-      )}
-    </section>
-  );
-}
 
 const CHANNEL_NAMES: Record<string, string> = { email: "Email", whatsapp: "WhatsApp", form: "Formulario web", instagram: "Instagram", linkedin: "LinkedIn", ninguno: "Ninguno disponible" };
 
-function MessagesTab({ prospectId, canWrite, hasLiveDemo, messages }: { prospectId: string; canWrite: boolean; hasLiveDemo: boolean; messages: MessagesRow }) {
+function MessagesTab({ prospectId, isSample, canWrite, messages }: { prospectId: string; isSample: boolean; canWrite: boolean; messages: MessagesRow }) {
   const m = messages?.content;
   return (
     <section className="stack" aria-labelledby="t-msg">
       <div className="section-head">
         <h2 id="t-msg">Mensajes</h2>
-        {canWrite && hasLiveDemo && <PrepareMessagesForm prospectId={prospectId} again={!!messages} />}
+        {canWrite && !isSample && <PrepareMessagesForm prospectId={prospectId} again={!!messages} />}
       </div>
       <p className="muted">
         El sistema prepara los mensajes; nunca los envía. Revisalos, copialos, envialos vos y después marcá el prospecto como
         «Enviado manualmente» en Cambiar estado.
       </p>
-      {!hasLiveDemo && <p className="notice">Primero generá una demo en la pestaña Demo.</p>}
+      {!messages && !isSample && (
+        <div className="empty">
+          <h3>Todavía no hay mensajes</h3>
+          <p>Conviene hacer antes la auditoría web: de ahí salen las tres mejoras concretas que se mencionan.</p>
+        </div>
+      )}
       {messages && m && (
         <>
           {m.warnings.length > 0 && (

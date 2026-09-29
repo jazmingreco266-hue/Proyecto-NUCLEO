@@ -29,10 +29,8 @@ sensible antes de que ocurra.
   aparece textual en la página; lo que no se puede comprobar se descarta y se muestra. Todo queda como
   probable o no verificado hasta que lo confirmes. Cada llamada registra su costo real.
 - **Puntaje de oportunidad** explicado criterio por criterio, solo con criterios que tienen datos.
-- **Demo conceptual** por empresa: plantilla profesional armada con sus datos reales y editable, con aviso de
-  "propuesta no oficial", sin indexar, sin formularios y con enlace privado que vence a los 60 días. Versionada.
-- **Mensajes preparados**: tres asuntos, email HTML y texto, WhatsApp, formulario y redes, canal y horario
-  sugeridos. El sistema nunca envía: vos copiás, enviás y marcás como enviado.
+- **Mensajes preparados** a partir de la auditoría: tres asuntos, email HTML y texto, WhatsApp, formulario y
+  redes, canal y horario sugeridos. No se generan demos. El sistema nunca envía: vos copiás, enviás y marcás como enviado.
 - **Cola de agentes** con reintentos, control de presupuesto, horario y nivel de autonomía,
   y la página **Tareas** para ver, reintentar o cancelar trabajos.
 

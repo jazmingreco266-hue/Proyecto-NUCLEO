@@ -10,7 +10,7 @@ import { formatMoney } from "../ui/format";
 export const metadata: Metadata = { title: "Vista general" };
 
 const GROUPS: { key: StatusGroup; label: string; sub: string }[] = [
-  { key: "prospeccion", label: "Prospección", sub: "Investigación, auditoría y demo" },
+  { key: "prospeccion", label: "Prospección", sub: "Investigación y auditoría" },
   { key: "contacto", label: "Contacto", sub: "Mensajes y seguimiento" },
   { key: "venta", label: "Venta", sub: "Respuestas y propuestas" },
   { key: "proyecto", label: "Proyecto", sub: "Construcción a mantenimiento" },
@@ -129,7 +129,6 @@ export default async function Overview({ searchParams }: { searchParams: Promise
         <div className="metrics">
           <Metric n={o.foundToday} label="Empresas encontradas hoy" />
           <Metric n={o.qualified} label="Prospectos calificados" />
-          <Metric n={o.demosGenerated} label="Demos generadas" />
           <Metric n={o.messagesPrepared} label="Mensajes preparados" />
         </div>
       </section>

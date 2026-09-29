@@ -184,8 +184,8 @@ const list = (max: number) => z.array(z.string().trim().min(1).max(120)).max(max
 export const AUTONOMY_LEVELS = ["manual", "assisted", "autonomous"] as const;
 export const AUTONOMY_LABELS = {
   manual: "Manual: los agentes no corren solos",
-  assisted: "Asistido: investigan y proponen, vos aprobás cada demo",
-  autonomous: "Autónomo: investigan y generan demos dentro de los límites",
+  assisted: "Asistido: investigan y auditan solos; vos revisás y contactás",
+  autonomous: "Autónomo: hoy funciona igual que Asistido (reservado para más automatización)",
 } as const;
 
 export const CHANNELS = ["email", "whatsapp", "form", "instagram", "linkedin"] as const;
@@ -197,7 +197,6 @@ export const settingsSchema = z
     industries: list(200),
     languages: list(20),
     maxLeadsPerDay: z.coerce.number().int().min(0).max(500),
-    maxDemosPerDay: z.coerce.number().int().min(0).max(50),
     minOpportunityScore: z.coerce.number().int().min(0).max(100),
     apiBudgetUsdMonthly: z.coerce.number().min(0).max(100000),
     schedule: z.object({
@@ -249,7 +248,6 @@ export const DEFAULT_SETTINGS: Settings = {
   industries: [],
   languages: ["es"],
   maxLeadsPerDay: 20,
-  maxDemosPerDay: 3,
   minOpportunityScore: 60,
   apiBudgetUsdMonthly: 0,
   schedule: {

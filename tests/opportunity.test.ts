@@ -36,7 +36,7 @@ describe("puntaje de oportunidad: reglas", () => {
     expect(r.score!).toBeGreaterThanOrEqual(70);
     const byKey = Object.fromEntries(r.criteria.map((c) => [c.key, c]));
     expect(byKey.modernizacion!.score).toBe(70);
-    expect(byKey.demo!.detail).toMatch(/no se adapta al celular/);
+    expect(byKey.visible!.detail).toMatch(/no se adapta al celular/);
     expect(byKey.contacto!.score).toBe(90); // 50 + 2×15 + 1 confirmado×10
     expect(byKey.pago).toMatchObject({ score: null, weight: 0 });
   });
@@ -66,7 +66,7 @@ describe("puntaje de oportunidad: integración", () => {
     await processNow(db(), run.id, { fetcher });
 
     let { p: after } = await getProspect(db(), owner, p.id);
-    expect(after.opportunityScore).not.toBeNull(); // modernización + demo + contacto + información
+    expect(after.opportunityScore).not.toBeNull(); // modernización + mejoras visibles + contacto + información
     const first = after.opportunityScore!;
     expect((after.scoreExplanation as { criteria: unknown[] }).criteria.length).toBeGreaterThan(5);
 

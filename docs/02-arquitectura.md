@@ -60,8 +60,8 @@ aprobación**. La acción se ejecuta cuando el propietario la aprueba en el pane
 | Business Research | 3 | Prospecto | Hechos con fuente, URL, fecha y confianza | `RESEARCHING`, `QUALIFIED`, `REJECTED` | Guardar un dato "verificado" sin URL de fuente |
 | Website Audit | 3 ✔ | URL del sitio | Auditoría versionada: puntajes 0–100 por categoría medible, problemas, fortalezas, recomendación preliminar; contactos y tecnología como datos con fuente (captura: pendiente) | `AUDITED` | Usar lenguaje despectivo, puntuar lo que no midió, evadir robots.txt o bloqueos |
 | Opportunity Scoring | 3 | Hechos + auditoría | Puntaje con explicación por criterio | `QUALIFIED`, `REJECTED` | Presentar probabilidades como certezas |
-| Concept & Demo | 4 | Prospecto calificado | Demo versionada con `noindex` y aviso de propuesta no oficial | `DEMO_GENERATING`, `DEMO_READY` | Inventar testimonios, usar datos reales |
-| Outreach | 4 | Prospecto + demo | Asuntos, textos por canal, sugerencia de horario | `OUTREACH_READY` | Enviar nada |
+| ~~Concept & Demo~~ | — | — | **Retirado por decisión tomada el 29/09/2026.** Los estados `DEMO_GENERATING` y `DEMO_READY` quedan en desuso | — | — |
+| Outreach | 4 ✔ | Prospecto + auditoría + datos | Asuntos, email HTML y texto, versiones por canal, sugerencia de canal y horario | `OUTREACH_READY` | Enviar nada, inventar elogios |
 | Email Design | 4 | Mensaje | Email HTML + texto plano | — | Scripts, falsas urgencias |
 | Project Builder | 5 | Aprobación de proyecto | Alcance, plan, código | `BUILDING`, `STAGING` | Arrancar sin la aprobación "APROBAR Y COMENZAR PROYECTO" |
 | QA & Security | 5–6 | Proyecto | Reporte de tests y hallazgos | `QA` | Marcar terminado con fallas críticas o altas |
@@ -74,7 +74,7 @@ publicar) son solamente humanos. Esto está implementado en `src/domain/pipeline
 - **Dónde corre:** un proceso worker separado del panel, en el mismo servidor o en otro.
 - **Qué lo dispara:** un scheduler con los horarios definidos en Configuración.
 - **Límites:** antes de cada tarea, el orquestador compara el gasto del mes (suma de
-  `agent_runs.cost_usd`) contra el presupuesto configurado, y los topes diarios de leads y demos.
+  `agent_runs.cost_usd`) contra el presupuesto configurado, y el tope diario de leads.
   Si se alcanza un tope, la tarea queda en cola y se registra el motivo.
 - **Reintentos:** hasta 3 intentos con espera creciente. Después, la tarea queda como fallida
   y aparece en "Tareas bloqueadas" del panel.

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db/client";
 import { AUTONOMY_LEVELS, CHANNELS } from "@/domain/validation";
+import { parseAmount } from "@/domain/finance";
 import { currentPrincipal } from "@/server/auth/current";
 import { publicMessage } from "@/server/principal";
 import { decideApproval } from "@/server/services/approvals";
@@ -71,6 +72,14 @@ export async function saveSettingsAction(_: ActionState, form: FormData): Promis
       requirePublicContact: form.get("requirePublicContact") === "on",
       skipIfSiteScoreAbove: s(form, "skipIfSiteScoreAbove"),
       excludedIndustries: list(form, "excludedIndustries"),
+    },
+    pricing: {
+      currency: s(form, "pricingCurrency"),
+      taxPct: s(form, "pricingTaxPct"),
+      items: list(form, "pricingItems").map((l) => {
+        const [name, price] = l.split("|").map((x) => x.trim());
+        return { name: name ?? "", price: parseAmount(price ?? "") };
+      }),
     },
     sender: {
       agencyName: s(form, "agencyName"),

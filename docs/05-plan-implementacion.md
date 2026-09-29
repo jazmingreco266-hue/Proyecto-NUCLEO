@@ -80,6 +80,23 @@ prospecto conocido y revisar el resultado.
   general, no como dato medido. Incluyen una línea para darse de baja.
 - **Estados:** preparar mensajes lleva Auditado → Mensaje listo. "Enviado manualmente" lo marca siempre una persona.
 
+## Finanzas, cotizador, portafolio y copias de seguridad (29/09/2026)
+
+- **Ventas y gastos** (`src/domain/finance.ts`, `src/server/services/finance.ts`): la base impide editarlos o
+  borrarlos (trigger `money_guard`). Para corregir un error se anula con motivo y se carga de nuevo; el anulado
+  sigue visible y no suma. Montos en centavos para no acumular redondeos. Cada moneda por separado, sin convertir.
+- **Resultado mensual** por fecha de la operación (lo vendido y gastado en el mes, cobrado o no).
+- **Balance simplificado**: Activo = caja (cobrado − pagado) + cuentas por cobrar; Pasivo = cuentas por pagar;
+  Patrimonio = Activo − Pasivo. Solo con lo cargado; no reemplaza el balance de un contador.
+- **Cotizador**: lista de precios en Configuración (valores iniciales = rangos de mercado de Argentina 2026 ya
+  citados, para reemplazar). Impuesto por defecto 0 %: depende de la situación fiscal.
+- **Excel** (`src/server/xlsx.ts`): generador propio sin dependencias. Se descartó `exceljs` 4.4.0 porque `npm audit`
+  marcaba 2 vulnerabilidades moderadas (dependencia `uuid`). El archivo se validó con openpyxl y con LibreOffice
+  Calc, que lo abre y recalcula las fórmulas con los mismos resultados.
+- **Copia de seguridad**: el JSON incluye todas las tablas nuevas. Configuración muestra la fecha de la última copia
+  y avisa si pasaron más de 7 días. Las copias automáticas en la nube dependen del proveedor de la base de datos
+  (revisar su plan); el panel no guarda copias fuera de la base por su cuenta.
+
 ### Puntaje de oportunidad
 
 Promedio ponderado de los criterios **que tienen datos**: necesidad de modernización (peso 3, sale del

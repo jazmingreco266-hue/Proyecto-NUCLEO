@@ -31,6 +31,13 @@ sensible antes de que ocurra.
 - **Puntaje de oportunidad** explicado criterio por criterio, solo con criterios que tienen datos.
 - **Mensajes preparados** a partir de la auditoría: tres asuntos, email HTML y texto, WhatsApp, formulario y
   redes, canal y horario sugeridos. No se generan demos. El sistema nunca envía: vos copiás, enviás y marcás como enviado.
+- **Finanzas** (solo propietario): ventas y gastos que **no se pueden editar ni borrar** (se marcan cobrados o
+  pagados, o se anulan con motivo), gráfico de ventas, gastos y resultado de 12 meses, balance simplificado y
+  **Excel** con ventas, gastos, resultado mensual (con fórmulas), balance y presupuestos.
+- **Cotizador**: presupuestos con tu lista de precios y total en vivo; versión para imprimir o guardar en PDF;
+  un presupuesto aceptado se registra como venta con un clic.
+- **Portafolio** de sitios terminados, con autorización del cliente para mostrarlos.
+- **Copia de seguridad** completa (JSON) y aviso si pasó más de una semana desde la última.
 - **Cola de agentes** con reintentos, control de presupuesto, horario y nivel de autonomía,
   y la página **Tareas** para ver, reintentar o cancelar trabajos.
 

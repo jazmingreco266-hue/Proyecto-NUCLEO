@@ -95,6 +95,26 @@ export function SettingsForm({ data, version, readOnly }: { data: Settings; vers
           </fieldset>
 
           <fieldset>
+            <legend>Lista de precios del cotizador</legend>
+            <div className="form-grid">
+              <label className="field">
+                <span>Moneda</span>
+                <input name="pricingCurrency" maxLength={3} defaultValue={data.pricing.currency} autoCapitalize="characters" />
+              </label>
+              <label className="field">
+                <span>Impuesto por defecto (%)</span>
+                <input name="pricingTaxPct" type="number" min={0} max={100} step="0.01" defaultValue={data.pricing.taxPct} />
+                <small>Depende de tu situación fiscal: consultalo con tu contador.</small>
+              </label>
+            </div>
+            <label className="field">
+              <span>Ítems (uno por línea: «nombre | precio»)</span>
+              <textarea name="pricingItems" rows={5} defaultValue={data.pricing.items.map((i) => `${i.name} | ${i.price}`).join("\n")} />
+              <small>Los valores iniciales son referencias de mercado de Argentina (2026). Reemplazalos por tus precios.</small>
+            </label>
+          </fieldset>
+
+          <fieldset>
             <legend>Firma de los mensajes</legend>
             <div className="form-grid">
               <label className="field">

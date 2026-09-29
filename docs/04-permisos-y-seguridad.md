@@ -14,6 +14,9 @@
 | Cambiar configuración | ✔ | — | — | — |
 | Gestionar usuarios | ✔ | — | — | — |
 | Ver actividad | ✔ | — | — | — |
+| **Finanzas y cotizador** (ver y cargar) | ✔ | — | — | — |
+| Portafolio: ver | ✔ | ✔ | ✔ | — |
+| Portafolio: cargar y editar | ✔ | ✔ | — | — |
 
 Definido en `src/domain/permissions.ts`. Cada servicio lo verifica por su cuenta: ocultar un botón
 en el panel no es una barrera de seguridad.

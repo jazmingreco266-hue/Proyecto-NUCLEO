@@ -412,3 +412,50 @@ dialog.confirm p { color: var(--muted); margin-bottom: 1rem; }
 .copy-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
 .copy-list li { display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
 pre.message { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--font); font-size: 0.92rem; background: var(--surface-2); border-radius: var(--radius-s); padding: 1rem; }
+
+/* ───────────── Finanzas, cotizador y portafolio ───────────── */
+
+.chart { margin: 0; display: grid; gap: 0.8rem; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart .grid { stroke: #ecebe7; stroke-width: 1; }
+.chart .axis { stroke: #c9c8c2; stroke-width: 1; }
+.chart .tick { fill: var(--muted); font-size: 11px; font-family: var(--font); }
+.chart .end-label { fill: var(--text); font-size: 12px; font-weight: 600; font-family: var(--font); }
+.chart .m-sales { fill: #2a78d6; }
+.chart .m-expenses { fill: #eb6834; }
+.chart .m-profit { fill: none; stroke: #1baf7a; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .m-profit-dot { fill: #1baf7a; stroke: var(--surface); stroke-width: 2; }
+.chart .hit { fill: transparent; }
+.chart .hit:hover { fill: rgba(0, 0, 0, 0.03); }
+.legend { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; margin: 0; padding: 0; font-size: 0.88rem; color: var(--muted); }
+.legend li { display: inline-flex; align-items: center; gap: 0.45rem; }
+.key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+.key-sales { background: #2a78d6; }
+.key-expenses { background: #eb6834; }
+.key-profit { height: 2px; width: 16px; background: #1baf7a; border-radius: 1px; }
+tr.voided td { opacity: 0.6; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.quote-table { width: 100%; }
+.quote-table input { width: 100%; min-width: 0; }
+.quote-table input.qty { max-width: 5rem; }
+.totals { max-width: 26rem; margin-left: auto; }
+.totals dd { text-align: right; }
+.quote-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.7rem; }
+.quote-list li { display: grid; gap: 0.1rem; }
+.quote-doc { display: grid; gap: 1.2rem; }
+.quote-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
+.quote-meta { display: grid; gap: 0.2rem; text-align: right; font-size: 0.9rem; }
+.portfolio { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); align-items: start; }
+.work.featured { border-color: var(--signal); }
+.work-head { display: flex; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
+.check-field { display: flex; gap: 0.5rem; align-items: center; font-size: 0.92rem; }
+@media print {
+  .sidebar, .no-print { display: none !important; }
+  .shell { display: block; }
+  .main { padding: 0; }
+  .quote-doc { border: 0; padding: 0; }
+}
+table.cards.fit { min-width: 0; }
+.quote-table td:first-child { min-width: 14rem; }
+.quote-table td:first-child input { width: 100%; }
+.inline-btn { justify-self: start; width: auto; }

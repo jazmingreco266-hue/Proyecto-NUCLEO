@@ -3,6 +3,7 @@ import { getDb } from "@/db/client";
 import { requireUser } from "@/server/auth/current";
 import { can } from "@/server/principal";
 import { getSettings, settingsHistoryList } from "@/server/services/settings";
+import { lastBackupAt } from "@/server/services/backup";
 import { When } from "../../ui/format";
 import { SettingsForm } from "../forms";
 
@@ -17,6 +18,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     settingsHistoryList(db, me),
   ]);
   const canWrite = can(me, "settings.write");
+  const lastBackup = can(me, "users.manage") ? await lastBackupAt(db, me) : null;
+  const backupOld = !lastBackup || Date.now() - lastBackup.getTime() > 7 * 86_400_000;
 
   return (
     <>
@@ -44,10 +47,25 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <section className="panel stack">
               <h2>Copia de seguridad</h2>
               <p className="faint">
-                Descarga todos los datos del panel en un archivo. No incluye contraseñas. Guardalo en un lugar privado.
+                Descarga todos los datos del panel en un archivo: prospectos, ventas, gastos, presupuestos, portafolio y el
+                historial. No incluye contraseñas. Guardalo en un lugar privado, fuera de esta computadora (por ejemplo, en tu
+                nube personal).
+              </p>
+              <p className={backupOld ? "notice notice-signal" : "faint"}>
+                {lastBackup ? (
+                  <>
+                    Última copia: <When date={lastBackup} />.
+                  </>
+                ) : (
+                  "Todavía no descargaste ninguna copia."
+                )}
+                {backupOld && " Te recomiendo descargar una ahora (al menos una vez por semana)."}
               </p>
               <a className="btn" href="/api/exportar">
-                Descargar copia
+                Descargar copia completa
+              </a>
+              <a className="btn btn-ghost" href="/api/finanzas/excel">
+                Descargar finanzas en Excel
               </a>
             </section>
           )}

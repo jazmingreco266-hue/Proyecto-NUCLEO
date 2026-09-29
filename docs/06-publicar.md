@@ -88,6 +88,9 @@ el panel no guarda copias en el dispositivo, así que si perdés la tablet no se
 - Si dos personas editan lo mismo a la vez, el panel lo detecta y no pisa el trabajo de nadie.
 - El historial y la actividad no se pueden borrar.
 - Los prospectos no se borran de verdad: se retiran y quedan en la base.
-- **Copia de seguridad:** en **Configuración → Descargar copia** bajás todos los datos en un archivo
-  (sin contraseñas). Conviene hacerlo seguido y guardarlo en un lugar privado.
+- **Copia de seguridad:** en **Configuración → Descargar copia completa** bajás todos los datos en un archivo
+  (sin contraseñas), incluidas ventas, gastos y presupuestos. El panel te avisa si pasó más de una semana desde
+  la última. Guardala fuera de la computadora (por ejemplo, en tu nube personal).
+- **Finanzas en Excel:** en **Finanzas → Descargar Excel**.
+- **Ningún gasto se pierde por error:** ventas y gastos no se pueden editar ni borrar, solo anular con un motivo.
 - Además, revisá qué copias automáticas ofrece el plan de tu base de datos.

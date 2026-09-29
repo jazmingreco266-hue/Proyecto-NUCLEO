@@ -222,6 +222,12 @@ export const settingsSchema = z
       whatsapp: z.string().trim().max(40),
       website: z.union([z.literal(""), sourceUrlSchema]),
     }),
+    // Lista de precios del cotizador. Se editan en Configuración.
+    pricing: z.object({
+      currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Moneda del cotizador: código de 3 letras"),
+      taxPct: z.coerce.number().min(0).max(100),
+      items: z.array(z.object({ name: z.string().trim().min(2).max(120), price: z.coerce.number().min(0).max(1e12) })).max(60),
+    }),
   })
   .refine((s) => s.schedule.endHour > s.schedule.startHour, {
     path: ["schedule", "endHour"],
@@ -266,6 +272,18 @@ export const DEFAULT_SETTINGS: Settings = {
     excludedIndustries: [],
   },
   sender: { agencyName: "Núcleo", senderName: "", replyEmail: "", whatsapp: "", website: "" },
+  // Valores de referencia tomados de rangos de mercado de Argentina (2026). Cambialos por tus precios.
+  // Impuesto en 0: depende de tu situación fiscal (por ejemplo, el monotributo no factura IVA).
+  pricing: {
+    currency: "ARS",
+    taxPct: 0,
+    items: [
+      { name: "Landing page", price: 300000 },
+      { name: "Sitio institucional (hasta 5 secciones)", price: 450000 },
+      { name: "Sitio corporativo (6 a 10 secciones)", price: 900000 },
+      { name: "Tienda online básica", price: 1000000 },
+    ],
+  },
 };
 
 // ─────────────────────────── Usuarios ───────────────────────────

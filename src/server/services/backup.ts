@@ -1,4 +1,4 @@
-import { asc } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import {
   agentRuns,
@@ -13,6 +13,11 @@ import {
   settingsHistory,
   siteAudits,
   users,
+  sales,
+  expenses,
+  quotes,
+  portfolioItems,
+  outreachMessages,
 } from "@/db/schema";
 import { audit } from "../audit";
 import { assertCan, type Principal } from "../principal";
@@ -37,6 +42,11 @@ export async function exportAll(db: Db, who: Principal) {
     historyRows,
     runRows,
     siteAuditRows,
+    saleRows,
+    expenseRows,
+    quoteRows,
+    portfolioRows,
+    messageRows,
     auditRows,
   ] = await Promise.all([
     db
@@ -61,6 +71,11 @@ export async function exportAll(db: Db, who: Principal) {
     db.select().from(settingsHistory).orderBy(asc(settingsHistory.id)),
     db.select().from(agentRuns).orderBy(asc(agentRuns.createdAt)),
     db.select().from(siteAudits).orderBy(asc(siteAudits.createdAt)),
+    db.select().from(sales).orderBy(asc(sales.createdAt)),
+    db.select().from(expenses).orderBy(asc(expenses.createdAt)),
+    db.select().from(quotes).orderBy(asc(quotes.number)),
+    db.select().from(portfolioItems).orderBy(asc(portfolioItems.createdAt)),
+    db.select().from(outreachMessages).orderBy(asc(outreachMessages.createdAt)),
     db.select().from(auditLog).orderBy(asc(auditLog.id)),
   ]);
 
@@ -77,6 +92,11 @@ export async function exportAll(db: Db, who: Principal) {
       aprobaciones: approvalRows.length,
       notas: noteRows.length,
       auditoriasWeb: siteAuditRows.length,
+      ventas: saleRows.length,
+      gastos: expenseRows.length,
+      presupuestos: quoteRows.length,
+      portafolio: portfolioRows.length,
+      mensajes: messageRows.length,
       actividad: auditRows.length,
     },
     usuarios: userRows,
@@ -90,9 +110,26 @@ export async function exportAll(db: Db, who: Principal) {
     historialConfiguracion: historyRows,
     ejecucionesAgentes: runRows,
     auditoriasWeb: siteAuditRows,
+    ventas: saleRows,
+    gastos: expenseRows,
+    presupuestos: quoteRows,
+    portafolio: portfolioRows,
+    mensajes: messageRows,
     actividad: auditRows,
   };
   await audit(db, who, { action: "data.export", metadata: data.cantidades });
   return data;
 }
 
+
+/** Fecha de la última copia descargada, para recordar hacer una nueva. */
+export async function lastBackupAt(db: Db, who: Principal): Promise<Date | null> {
+  assertCan(who, "users.manage");
+  const [row] = await db
+    .select({ at: auditLog.createdAt })
+    .from(auditLog)
+    .where(eq(auditLog.action, "data.export"))
+    .orderBy(desc(auditLog.createdAt))
+    .limit(1);
+  return row?.at ?? null;
+}

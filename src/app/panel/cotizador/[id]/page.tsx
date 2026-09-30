@@ -72,6 +72,11 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
         </header>
         <p>
           Cliente: <strong>{q.clientName}</strong>
+          {q.prospectId && (
+            <Link className="no-print faint" href={`/panel/oportunidades/${q.prospectId}`}>
+              {" "}· Ver ficha de la empresa
+            </Link>
+          )}
         </p>
         <table className="quote-table">
           <thead>

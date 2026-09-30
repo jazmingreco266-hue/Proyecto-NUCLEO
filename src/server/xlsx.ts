@@ -16,7 +16,7 @@ export type Sheet = { name: string; columns: Column[]; rows: Cell[][]; totals?: 
 
 // ─────────────────────────── ZIP (método store) ───────────────────────────
 
-export function zip(files: { name: string; data: Buffer }[]): Buffer {
+function zip(files: { name: string; data: Buffer }[]): Buffer {
   const parts: Buffer[] = [];
   const central: Buffer[] = [];
   let offset = 0;

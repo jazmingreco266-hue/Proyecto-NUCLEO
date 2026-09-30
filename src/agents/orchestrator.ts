@@ -33,8 +33,6 @@ import { businessResearchHandler } from "./business-research";
 import { getSettings } from "@/server/services/settings";
 import { PoliteFetcher } from "./http";
 import { websiteAuditHandler } from "./website-audit";
-import { siteCopyHandler } from "./site-copy";
-import { SITE_COPY_AGENT } from "@/server/services/site";
 
 export type HandlerResult =
   | { kind: "done"; output: Record<string, unknown>; costUsd?: number; model?: string; tool?: string; tokensIn?: number; tokensOut?: number }
@@ -64,7 +62,6 @@ export type Deps = {
 const HANDLERS: Record<string, Handler> = {
   [AUDIT_AGENT]: websiteAuditHandler,
   [RESEARCH_AGENT]: businessResearchHandler(),
-  [SITE_COPY_AGENT]: siteCopyHandler(),
 };
 
 const SYSTEM_READER: Principal = { kind: "agent", name: "orchestrator" };

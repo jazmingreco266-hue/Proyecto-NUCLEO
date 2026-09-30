@@ -13,12 +13,14 @@ import {
   listPortfolio,
   markExpensePaid,
   markSalePaid,
+  quotesForProspect,
   quoteToSale,
   removePortfolioItem,
   savePortfolioItem,
   setQuoteStatus,
   voidMovement,
 } from "@/server/services/finance";
+import { createProspect } from "@/server/services/prospects";
 import { db, makeUser, resetData } from "./helpers";
 
 beforeEach(resetData);
@@ -143,6 +145,20 @@ describe("finanzas: presupuestos", () => {
     const [row] = await db().select().from(sales);
     expect(row).toMatchObject({ amount: "405000.00", status: "pendiente", quoteId: q.id });
     await expect(dbErr(db().execute(sql`UPDATE quotes SET total = 1`))).rejects.toThrow(/no se edita/);
+  });
+
+  it("se vincula a la empresa desde la que se hizo y se lista en su ficha", async () => {
+    const owner = await makeUser();
+    const p = await createProspect(db(), owner, { name: "Panadería Sol", country: "AR", websiteUrl: "https://sol.test/" });
+    const line = [{ description: "Sitio institucional", quantity: 1, unitPrice: 450000 }];
+    const q = await createQuote(db(), owner, { clientName: p.name, prospectId: p.id, currency: "ARS", lines: line, discountPct: 0, taxPct: 0 });
+    await createQuote(db(), owner, { clientName: "Otro", currency: "ARS", lines: line, discountPct: 0, taxPct: 0 });
+    expect((await quotesForProspect(db(), owner, p.id)).map((x) => x.id)).toEqual([q.id]);
+    await expect(
+      createQuote(db(), owner, { clientName: "Empresa borrada", prospectId: "00000000-0000-4000-8000-000000000000", currency: "ARS", lines: line, discountPct: 0, taxPct: 0 }),
+    ).rejects.toThrow(/La empresa no existe/);
+    const viewer = await makeUser("viewer");
+    await expect(quotesForProspect(db(), viewer, p.id)).rejects.toThrow(ForbiddenError);
   });
 });
 

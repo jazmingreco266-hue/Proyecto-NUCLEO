@@ -18,9 +18,6 @@ import {
   quotes,
   portfolioItems,
   outreachMessages,
-  brandAssets,
-  siteBriefs,
-  siteBuilds,
 } from "@/db/schema";
 import { audit } from "../audit";
 import { assertCan, type Principal } from "../principal";
@@ -50,9 +47,6 @@ export async function exportAll(db: Db, who: Principal) {
     quoteRows,
     portfolioRows,
     messageRows,
-    briefRows,
-    buildRows,
-    assetRows,
     auditRows,
   ] = await Promise.all([
     db
@@ -82,21 +76,13 @@ export async function exportAll(db: Db, who: Principal) {
     db.select().from(quotes).orderBy(asc(quotes.number)),
     db.select().from(portfolioItems).orderBy(asc(portfolioItems.createdAt)),
     db.select().from(outreachMessages).orderBy(asc(outreachMessages.createdAt)),
-    db.select().from(siteBriefs).orderBy(asc(siteBriefs.createdAt)),
-    db.select().from(siteBuilds).orderBy(asc(siteBuilds.createdAt)),
-    // Las imágenes van sin su contenido (para que la copia no pese cientos de MB): quedan en la base
-    // y el cliente tiene los originales. Se guarda su huella (sha256) para identificarlas.
-    db
-      .select({ id: brandAssets.id, prospectId: brandAssets.prospectId, kind: brandAssets.kind, mime: brandAssets.mime, width: brandAssets.width, height: brandAssets.height, sha256: brandAssets.sha256, alt: brandAssets.alt, createdAt: brandAssets.createdAt })
-      .from(brandAssets)
-      .orderBy(asc(brandAssets.createdAt)),
     db.select().from(auditLog).orderBy(asc(auditLog.id)),
   ]);
 
   const data = {
     formato: EXPORT_FORMAT,
     generado: new Date().toISOString(),
-    aviso: "Copia de seguridad de Núcleo. No incluye contraseñas, sesiones ni el contenido de las imágenes de marca (solo sus datos). Guardala en un lugar privado.",
+    aviso: "Copia de seguridad de Núcleo. No incluye contraseñas ni sesiones. Guardala en un lugar privado.",
     cantidades: {
       usuarios: userRows.length,
       prospectos: prospectRows.length,
@@ -111,9 +97,6 @@ export async function exportAll(db: Db, who: Principal) {
       presupuestos: quoteRows.length,
       portafolio: portfolioRows.length,
       mensajes: messageRows.length,
-      fichasSitio: briefRows.length,
-      sitiosGenerados: buildRows.length,
-      imagenesMarca: assetRows.length,
       actividad: auditRows.length,
     },
     usuarios: userRows,
@@ -132,9 +115,6 @@ export async function exportAll(db: Db, who: Principal) {
     presupuestos: quoteRows,
     portafolio: portfolioRows,
     mensajes: messageRows,
-    fichasSitio: briefRows,
-    sitiosGenerados: buildRows,
-    imagenesMarca: assetRows,
     actividad: auditRows,
   };
   await audit(db, who, { action: "data.export", metadata: data.cantidades });

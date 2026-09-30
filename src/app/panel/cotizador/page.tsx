@@ -5,15 +5,34 @@ import { requireUser } from "@/server/auth/current";
 import { listQuotes } from "@/server/services/finance";
 import { getSettings } from "@/server/services/settings";
 import { formatMoney, When } from "../../ui/format";
-import { QuoteCalculator } from "../finanzas/forms";
+import { QuoteCalculator, type QuotePreset } from "../finanzas/forms";
+import { getProspect, listFacts } from "@/server/services/prospects";
+import { detectUpsells } from "@/domain/upsell";
+import { NotFoundError } from "@/server/principal";
 import { QUOTE_STATUS_LABELS } from "./labels";
 
 export const metadata: Metadata = { title: "Cotizador" };
 
-export default async function QuotesPage() {
+export default async function QuotesPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const me = await requireUser("finance.read");
   const db = getDb();
+  const sp = await searchParams;
   const [{ data: settings }, quotes] = await Promise.all([getSettings(db, me), listQuotes(db, me)]);
+
+  // Abierto desde una empresa: cliente completado y servicios sugeridos por sus datos.
+  let preset: QuotePreset | undefined;
+  if (sp.empresa) {
+    try {
+      const { p } = await getProspect(db, me, sp.empresa);
+      const facts = await listFacts(db, me, p.id);
+      const suggested = detectUpsells(facts, settings.pricing.items).flatMap((u) =>
+        u.priceItems.map((i) => ({ ...i, reason: `${u.service}: ${u.signals.map((s) => s.label).join(", ")}` })),
+      );
+      preset = { prospectId: p.id, clientName: p.name, currency: p.currency, suggested };
+    } catch (err) {
+      if (!(err instanceof NotFoundError)) throw err;
+    }
+  }
   return (
     <>
       <div className="page-head">
@@ -30,8 +49,13 @@ export default async function QuotesPage() {
       </div>
       <div className="detail-grid">
         <section className="panel stack" aria-labelledby="q-new">
-          <h2 id="q-new">Nuevo presupuesto</h2>
-          <QuoteCalculator items={settings.pricing.items} currency={settings.pricing.currency} taxPct={settings.pricing.taxPct} />
+          <h2 id="q-new">Nuevo presupuesto{preset ? ` para ${preset.clientName}` : ""}</h2>
+          {preset && (
+            <p className="faint">
+              Queda vinculado a la empresa. <Link href={`/panel/oportunidades/${preset.prospectId}`}>Volver a la ficha</Link>
+            </p>
+          )}
+          <QuoteCalculator items={settings.pricing.items} currency={settings.pricing.currency} taxPct={settings.pricing.taxPct} preset={preset} />
         </section>
         <aside className="side" aria-label="Presupuestos">
           <section className="panel stack">

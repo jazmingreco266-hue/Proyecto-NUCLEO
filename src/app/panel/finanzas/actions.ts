@@ -118,6 +118,7 @@ export async function createQuoteAction(_: ActionState, f: FormData): Promise<Ac
   const r = await run(async () => {
     const q = await createQuote(getDb(), who, {
       clientName: str(f, "clientName"),
+      prospectId: str(f, "prospectId") || null,
       currency: str(f, "currency"),
       lines: parsedLines,
       discountPct: str(f, "discountPct") || "0",

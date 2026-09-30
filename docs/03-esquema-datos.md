@@ -23,9 +23,6 @@ La fuente de verdad es [`migrations/0001_nucleo.sql`](../migrations/0001_nucleo.
 | `sales` / `expenses` | Ventas y gastos | Montos > 0, moneda de 3 letras. **No se editan ni se borran**: solo se pasa de pendiente a cobrado/pagado (una vez) o se anulan con motivo; un anulado queda cerrado |
 | `quotes` | Presupuestos numerados | El contenido no se edita (se hace uno nuevo); solo cambia el estado. No se borran |
 | `portfolio_items` | Trabajos terminados para mostrar | Borrado lógico; `client_ok` indica si el cliente autorizó mostrarlo |
-| `brand_assets` | Logo y fotos que entregó el cliente (PNG, JPEG o WebP, hasta 3 MB), con medidas, huella sha256 y descripción | Tipo comprobado por contenido. **Solo agregado** |
-| `site_briefs` | Ficha del sitio del cliente: marca, textos y cómo autorizó el uso de su marca, versionada | Nota de autorización obligatoria. **Solo agregado** |
-| `site_builds` | Cada sitio generado: HTML y CSS exactos, plantilla, control de calidad y si está listo | **Solo agregado**: una versión nunca se sobrescribe |
 | `site_audits` | Auditorías técnicas de sitios, versionadas: URL leída, respuesta, puntajes por categoría, verificaciones, problemas, fortalezas y recomendación preliminar | Versión única por prospecto. **Solo agregado**: una auditoría nunca se sobrescribe |
 
 ## Veracidad en la base (sección 4.1)

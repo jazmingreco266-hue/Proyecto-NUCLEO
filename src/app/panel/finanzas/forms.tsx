@@ -176,11 +176,14 @@ const num = (v: string) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-export function QuoteCalculator({ items, currency, taxPct }: { items: PriceItem[]; currency: string; taxPct: number }) {
+/** Empresa desde la que se abrió el cotizador: completa el cliente y sugiere servicios. */
+export type QuotePreset = { prospectId: string; clientName: string; currency: string | null; suggested: (PriceItem & { reason: string })[] };
+
+export function QuoteCalculator({ items, currency, taxPct, preset }: { items: PriceItem[]; currency: string; taxPct: number; preset?: QuotePreset }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [discount, setDiscount] = useState("0");
   const [tax, setTax] = useState(String(taxPct));
-  const [cur, setCur] = useState(currency);
+  const [cur, setCur] = useState(preset?.currency ?? currency);
   const [nextKey, setNextKey] = useState(1);
 
   const lines: QuoteLine[] = rows
@@ -208,10 +211,11 @@ export function QuoteCalculator({ items, currency, taxPct }: { items: PriceItem[
       {(v) => (
         <>
           <input type="hidden" name="lines" value={JSON.stringify(lines)} />
+          {preset && <input type="hidden" name="prospectId" value={preset.prospectId} />}
           <div className="form-grid">
             <label className="field">
               <span>Cliente *</span>
-              <input name="clientName" required minLength={2} maxLength={200} defaultValue={v.clientName} />
+              <input name="clientName" required minLength={2} maxLength={200} defaultValue={v.clientName ?? preset?.clientName} />
             </label>
             <label className="field">
               <span>Moneda</span>
@@ -222,6 +226,21 @@ export function QuoteCalculator({ items, currency, taxPct }: { items: PriceItem[
               <input name="validUntil" type="date" defaultValue={v.validUntil} />
             </label>
           </div>
+
+          {preset && preset.suggested.length > 0 && (
+            <fieldset>
+              <legend>Sugeridos para esta empresa</legend>
+              <p className="faint">Según los datos cargados. Es una hipótesis: confirmalo con el cliente antes de incluirlo.</p>
+              <div className="chips">
+                {preset.suggested.map((i) => (
+                  <button key={i.name} type="button" className="btn btn-small" title={i.reason} onClick={() => add(i.name, String(i.price), i.recurring ?? false)}>
+                    + {i.name} · {fmt.format(i.price)}
+                    {i.recurring ? " / mes" : ""}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          )}
 
           <fieldset>
             <legend>Ítems de tu lista de precios</legend>

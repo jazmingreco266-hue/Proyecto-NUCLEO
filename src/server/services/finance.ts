@@ -6,7 +6,7 @@
 import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db/client";
-import { expenses, portfolioItems, quotes, sales, users } from "@/db/schema";
+import { expenses, portfolioItems, prospects, quotes, sales, users } from "@/db/schema";
 import {
   balanceSheet,
   expenseInputSchema,
@@ -200,6 +200,10 @@ export async function createQuote(db: Db, who: Principal, input: unknown): Promi
   const d = parse(quoteInputSchema, input);
   const by = userId(who);
   const { oneTime: t, monthly } = quoteSplit(d.lines, d.discountPct, d.taxPct);
+  if (d.prospectId) {
+    const [p] = await db.select({ id: prospects.id }).from(prospects).where(and(eq(prospects.id, d.prospectId), isNull(prospects.deletedAt)));
+    if (!p) throw new NotFoundError("La empresa");
+  }
   return db.transaction(async (tx) => {
     const [row] = await tx
       .insert(quotes)
@@ -278,6 +282,13 @@ export async function quoteToSale(db: Db, who: Principal, id: string): Promise<S
 export async function listQuotes(db: Db, who: Principal) {
   assertCan(who, "finance.read");
   return db.select().from(quotes).orderBy(desc(quotes.number)).limit(300);
+}
+
+/** Presupuestos hechos para una empresa, del más nuevo al más viejo. */
+export async function quotesForProspect(db: Db, who: Principal, prospectId: string) {
+  assertCan(who, "finance.read");
+  if (!uuid.safeParse(prospectId).success) return [];
+  return db.select().from(quotes).where(eq(quotes.prospectId, prospectId)).orderBy(desc(quotes.number));
 }
 
 export async function getQuote(db: Db, who: Principal, id: string) {

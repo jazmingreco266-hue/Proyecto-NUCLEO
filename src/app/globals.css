@@ -464,29 +464,3 @@ table.cards.fit { min-width: 0; }
 .tag-service { border-color: color-mix(in srgb, var(--g-prospeccion) 50%, var(--line)); color: var(--g-prospeccion); }
 .upsell { border-top: 1px solid var(--line); padding-top: 0.9rem; display: grid; gap: 0.4rem; }
 .upsell:first-of-type { border-top: 0; padding-top: 0; }
-
-/* ───────────── Sitio web del cliente ───────────── */
-.tag-ok { border-color: color-mix(in srgb, var(--ok) 55%, var(--line)); color: var(--ok); }
-.tag-bad { border-color: color-mix(in srgb, var(--danger) 55%, var(--line)); color: var(--danger); }
-.field-wide { grid-column: 1 / -1; }
-.site-latest { display: grid; gap: 0.9rem; }
-.site-actions { align-items: flex-start; }
-.site-actions form { display: contents; }
-.quality { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; font-size: 0.9rem; }
-.quality li { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr); gap: 0.5rem; overflow-wrap: anywhere; }
-.quality li > span { font-weight: 700; text-align: center; }
-.quality .q-ok > span { color: var(--ok); }
-.quality .q-aviso > span { color: var(--warn); }
-.quality .q-falla > span { color: var(--danger); }
-.quality strong { display: block; }
-.asset-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
-.asset-grid li { display: grid; gap: 0.3rem; }
-.asset-grid img, .asset-pick img { width: 100%; height: 96px; object-fit: contain; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-s); }
-.asset-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.6rem; }
-.asset-pick label { display: grid; gap: 0.3rem; font-size: 0.88rem; cursor: pointer; }
-.color-field { display: flex; gap: 0.5rem; align-items: center; }
-.color-field input[type="color"] { width: 2.8rem; height: 2.4rem; padding: 0.15rem; flex: none; }
-.service-row { align-items: end; padding-bottom: 0.75rem; border-bottom: 1px solid var(--line); }
-.asset-pick input[type="radio"], .asset-pick input[type="checkbox"] { width: 1.1rem; height: 1.1rem; margin: 0; }
-.asset-pick label { grid-template-columns: auto 1fr; align-items: center; }
-.asset-pick label img { grid-column: 1 / -1; }

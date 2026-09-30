@@ -24,10 +24,8 @@ import { RESEARCH_ESTIMATED_COST_USD } from "@/domain/research";
 import type { Opportunity } from "@/domain/opportunity";
 import { detectUpsells, type Upsell } from "@/domain/upsell";
 import { latestMessages } from "@/server/services/outreach";
-import { isClient, latestBrief, listBrandAssets, listBuilds } from "@/server/services/site";
-import { emptyBrief } from "@/domain/site";
-import { SITE_COPY_ESTIMATED_COST_USD } from "@/domain/site-copy";
-import { BrandAssetForm, BriefEditor, BuildSiteForm, SiteCopyForm } from "../site-forms";
+import { quotesForProspect } from "@/server/services/finance";
+import { QUOTE_STATUS_LABELS } from "../../cotizador/labels";
 import { CopyButton } from "../../../ui/copy-button";
 import { AUDIT_CATEGORIES, type CategoryKey, type CategoryResult, type Check, type Recommendation } from "@/domain/site-audit";
 import { notFound } from "next/navigation";
@@ -50,7 +48,6 @@ const TABS = [
   { key: "historial", label: "Historial" },
   { key: "notas", label: "Notas" },
   { key: "presupuesto", label: "Presupuesto", stage: 5 },
-  { key: "sitio", label: "Sitio web" },
   { key: "proyecto", label: "Proyecto técnico", stage: 5 },
   { key: "seguridad", label: "Seguridad y SEO", stage: 6 },
 ] as const;
@@ -152,8 +149,7 @@ export default async function ProspectPage({
           getSettings(db, me).then(async (s) => ({ budget: s.data.apiBudgetUsdMonthly, spent: await monthSpendUsd(db, s.data.schedule.timezone) })),
         ])
       : null;
-  const siteData =
-    tab === "sitio" ? await Promise.all([listBrandAssets(db, me, p.id), latestBrief(db, me, p.id), listBuilds(db, me, p.id)]) : null;
+  const prospectQuotes = can(me, "finance.read") ? await quotesForProspect(db, me, p.id) : null;
   const visited = new Set(events.map((e) => e.toStatus));
   const targets = can(me, "prospects.transition")
     ? allowedTargets(p.status, { type: "user", role: me.role })
@@ -435,21 +431,6 @@ export default async function ProspectPage({
             <MessagesTab prospectId={p.id} isSample={p.isSample} canWrite={can(me, "prospects.write")} messages={messages} />
           )}
 
-          {tab === "sitio" && siteData && (
-            <SiteTab
-              prospectId={p.id}
-              name={p.name}
-              status={p.status}
-              isSample={p.isSample}
-              canWrite={can(me, "prospects.write")}
-              facts={facts}
-              assets={siteData[0]}
-              brief={siteData[1]}
-              builds={siteData[2]}
-              savedVersion={Number(sp.ficha) > 0 ? Math.floor(Number(sp.ficha)) : null}
-            />
-          )}
-
           {["capturas", "proyecto", "seguridad"].includes(tab) && (
             <section className="panel">
               <Upcoming k={tab} />
@@ -458,6 +439,29 @@ export default async function ProspectPage({
         </div>
 
         <aside className="side" aria-label="Acciones">
+          {prospectQuotes && (
+            <section className="panel stack">
+              <h2>Cotización</h2>
+              {prospectQuotes.length > 0 && (
+                <ul className="quote-list">
+                  {prospectQuotes.map((q) => (
+                    <li key={q.id}>
+                      <Link href={`/panel/cotizador/${q.id}`}>N.º {q.number}</Link>
+                      <span className="cell-sub">
+                        {formatMoney(Number(q.total), q.currency)}
+                        {Number(q.monthlyTotal) > 0 ? ` + ${formatMoney(Number(q.monthlyTotal), q.currency)}/mes` : ""} · {QUOTE_STATUS_LABELS[q.status]}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {can(me, "finance.write") && (
+                <Link className={prospectQuotes.length ? "btn" : "btn btn-primary"} href={`/panel/cotizador?empresa=${p.id}`}>
+                  {prospectQuotes.length ? "Hacer otra cotización" : "Hacer cotización"}
+                </Link>
+              )}
+            </section>
+          )}
           <section className="panel stack">
             <h2>Cambiar estado</h2>
             <TransitionForm key={`t-${p.version}`} prospectId={p.id} version={p.version} targets={targets} />
@@ -470,161 +474,6 @@ export default async function ProspectPage({
           )}
         </aside>
       </div>
-    </>
-  );
-}
-
-// ─────────────────────────── Sitio web ───────────────────────────
-
-const QUALITY_ICON = { ok: "✓", aviso: "!", falla: "✕" } as const;
-
-function knownContacts(facts: Fact[]) {
-  const find = (re: RegExp) => facts.find((f) => f.category === "contact" && re.test(f.field))?.value.split("\n")[0]?.trim() ?? "";
-  const email = find(/email|correo/i);
-  return {
-    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "",
-    phone: find(/tel[eé]fono/i).slice(0, 40),
-    whatsapp: find(/whatsapp/i).replace(/\D/g, "").slice(0, 15),
-    address: facts.find((f) => /direcci[oó]n|domicilio/i.test(f.field))?.value.slice(0, 200) ?? "",
-  };
-}
-
-function SiteTab({
-  prospectId,
-  name,
-  status,
-  isSample,
-  canWrite,
-  facts,
-  assets,
-  brief,
-  builds,
-  savedVersion,
-}: {
-  savedVersion: number | null;
-  prospectId: string;
-  name: string;
-  status: PipelineStatus;
-  isSample: boolean;
-  canWrite: boolean;
-  facts: Fact[];
-  assets: Awaited<ReturnType<typeof listBrandAssets>>;
-  brief: Awaited<ReturnType<typeof latestBrief>>;
-  builds: Awaited<ReturnType<typeof listBuilds>>;
-}) {
-  if (isSample || !isClient(status)) {
-    return (
-      <section className="panel stack" aria-labelledby="t-sitio">
-        <h2 id="t-sitio">Sitio web del cliente</h2>
-        <div className="empty">
-          <h3>Se habilita cuando la empresa ya es cliente</h3>
-          <p>
-            Estado actual: <strong>{STATUS_LABELS[status]}</strong>. Cuando acepte el presupuesto, pasalo a <strong>Proyecto aprobado</strong> y pedile
-            su logo, colores, fotos y textos. Así el sitio usa su identidad real y con su autorización.
-          </p>
-        </div>
-      </section>
-    );
-  }
-  const initial = brief
-    ? { brand: brief.brand, content: brief.content, authorizationNote: brief.authorizationNote }
-    : { ...emptyBrief(name, knownContacts(facts)), authorizationNote: "" };
-  const latest = builds[0];
-  return (
-    <>
-      <section className="panel stack" aria-labelledby="t-sitio">
-        <h2 id="t-sitio">Sitio web del cliente</h2>
-        <p className="faint">
-          Plantilla profesional con la identidad del cliente: su logo, sus colores y sus fotos. HTML y CSS limpios, sin JavaScript, sin menciones a IA
-          ni créditos agregados. Solo se puede descargar si pasa el control de calidad.
-        </p>
-        {latest ? (
-          <div className="site-latest">
-            <div>
-              <strong>Última versión: v{latest.version}</strong> · <When date={latest.createdAt} />{" "}
-              <span className={latest.ready ? "tag tag-ok" : "tag tag-bad"}>{latest.ready ? "Lista para entregar" : "Con problemas"}</span>
-            </div>
-            <div className="form-actions">
-              <a className="btn" href={`/api/sitios/${latest.id}/vista`} target="_blank" rel="noopener">
-                Ver vista previa
-              </a>
-              {latest.ready && (
-                <a className="btn btn-primary" href={`/api/sitios/${latest.id}/zip`}>
-                  Descargar sitio (.zip)
-                </a>
-              )}
-            </div>
-            <ul className="quality">
-              {latest.quality.checks.map((c) => (
-                <li key={c.id} className={`q-${c.status}`}>
-                  <span aria-hidden="true">{QUALITY_ICON[c.status]}</span>
-                  <div>
-                    <strong>{c.label}</strong>
-                    <span className="cell-sub">{c.detail}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <p className="faint">Todavía no se generó ninguna versión.</p>
-        )}
-        {canWrite && brief && (
-          <div className="form-actions site-actions">
-            <BuildSiteForm prospectId={prospectId} />
-            {aiConfigured() && <SiteCopyForm prospectId={prospectId} maxCostUsd={SITE_COPY_ESTIMATED_COST_USD} />}
-          </div>
-        )}
-        {builds.length > 1 && (
-          <details>
-            <summary>Versiones anteriores ({builds.length - 1})</summary>
-            <ul className="quote-list">
-              {builds.slice(1).map((b) => (
-                <li key={b.id}>
-                  <a href={`/api/sitios/${b.id}/vista`} target="_blank" rel="noopener">
-                    v{b.version}
-                  </a>{" "}
-                  <span className="cell-sub">
-                    <When date={b.createdAt} /> · {b.ready ? "lista" : "con problemas"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-      </section>
-
-      {canWrite && (
-        <>
-          <section className="panel stack" aria-labelledby="t-marca">
-            <h2 id="t-marca">Logo y fotos del cliente</h2>
-            {assets.length > 0 && (
-              <ul className="asset-grid">
-                {assets.map((a) => (
-                  <li key={a.id}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/api/marca/${a.id}`} alt={a.alt || "Logo"} />
-                    <span className="cell-sub">
-                      {a.kind === "logo" ? "Logo" : a.alt} · {a.width}×{a.height}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <BrandAssetForm prospectId={prospectId} />
-          </section>
-
-          <section className="panel stack" aria-labelledby="t-ficha">
-            <h2 id="t-ficha">Ficha del sitio {brief ? `(v${brief.version}${brief.createdByType === "agent" ? ", textos pulidos con IA" : ""})` : ""}</h2>
-            {savedVersion && brief?.version === savedVersion && (
-              <p className="notice notice-ok" role="status">
-                Ficha v{savedVersion} guardada. Ahora podés generar el sitio.
-              </p>
-            )}
-            <BriefEditor key={brief?.id ?? "nueva"} prospectId={prospectId} initial={initial} assets={assets} />
-          </section>
-        </>
-      )}
     </>
   );
 }

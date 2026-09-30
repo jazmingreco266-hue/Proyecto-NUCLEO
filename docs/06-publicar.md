@@ -13,8 +13,8 @@ https://vercel.com/pricing antes de contratar.
 ## Paso a paso
 
 ### 1. Unir la rama al código principal
-En GitHub, abrí el repositorio `Proyecto-NUCLEO`, creá un *pull request* desde la rama
-`etapa-1-2-nucleo` hacia `main` y unilo (*Merge*).
+En GitHub, abrí el repositorio `Proyecto-NUCLEO`, entrá a **Pull requests**, abrí el que está pendiente
+(hoy el N.º 3) y tocá **Merge pull request** → **Confirm merge**.
 
 ### 2. Crear el proyecto en Vercel
 1. En Vercel: **Add New → Project**.
@@ -37,9 +37,10 @@ En **Settings → Environment Variables**, agregá (para *Production*):
 | `SETUP_TOKEN` | Un código largo que solo vos sepas (mínimo 16 caracteres). Sirve una sola vez |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | 32 bytes aleatorios en base64 |
 
-Para generar la clave, en cualquier computadora con Node.js:
-`node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
-Si no tenés Node, pedímela y te explico otra forma.
+Para generar la clave sin instalar nada: en Chrome o Edge, abrí una pestaña nueva, apretá **F12**,
+entrá a **Console**, pegá esto y apretá Enter. Copiá el texto que aparece (sin las comillas):
+`btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))`
+Con Node.js también sirve: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
 
 ### 5. Publicar
 Hacé **Deploy**. Si el build falla en el paso de migración, casi siempre es porque falta `DATABASE_URL`.

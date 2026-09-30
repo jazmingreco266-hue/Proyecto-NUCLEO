@@ -29,6 +29,7 @@ export const RUN_STATUS_LABELS: Record<RunStatus, string> = {
 
 export const AGENT_LABELS: Record<string, string> = {
   "website-audit": "Auditoría web",
+  "business-research": "Investigación con IA",
 };
 
 export type EnqueueInput = {
@@ -112,7 +113,7 @@ export async function completeRun(
       .set({
         status: "succeeded",
         output: r.output,
-        costUsd: String(r.costUsd ?? 0),
+        costUsd: sql`${agentRuns.costUsd} + ${String(r.costUsd ?? 0)}::numeric`,
         model: r.model ?? null,
         tool: r.tool ?? null,
         tokensIn: r.tokensIn ?? null,
@@ -127,16 +128,28 @@ export async function completeRun(
   });
 }
 
+/** Gasto de un intento que no terminó bien (por ejemplo, una respuesta de IA rechazada): se suma igual. */
+export type SpentOnAttempt = { costUsd?: number; model?: string | null; tool?: string | null };
+
+const addCost = (extra?: SpentOnAttempt) =>
+  extra?.costUsd ? { costUsd: sql`${agentRuns.costUsd} + ${String(extra.costUsd)}::numeric` } : {};
+const addModel = (extra?: SpentOnAttempt) => ({
+  ...(extra?.model ? { model: extra.model } : {}),
+  ...(extra?.tool ? { tool: extra.tool } : {}),
+});
+
 /** Error reintentable: vuelve a la cola con espera creciente o queda fallido si agotó los intentos. */
-export async function failRun(db: Db, run: AgentRun, error: string, now = new Date()) {
+export async function failRun(db: Db, run: AgentRun, error: string, now = new Date(), extra?: SpentOnAttempt) {
   const exhausted = run.attempt >= run.maxAttempts;
   await db.transaction(async (tx) => {
     await tx
       .update(agentRuns)
       .set(
         exhausted
-          ? { status: "failed", error: error.slice(0, 2000), finishedAt: now, lockedAt: null, lockedBy: null }
+          ? { status: "failed", error: error.slice(0, 2000), finishedAt: now, lockedAt: null, lockedBy: null, ...addCost(extra), ...addModel(extra) }
           : {
+              ...addCost(extra),
+              ...addModel(extra),
               status: "queued",
               error: error.slice(0, 2000),
               attempt: run.attempt + 1,
@@ -156,11 +169,11 @@ export async function failRun(db: Db, run: AgentRun, error: string, now = new Da
 }
 
 /** No se reintenta solo: requiere que una persona revise (o que cambie la configuración). */
-export async function blockRun(db: Db, run: AgentRun, reason: string) {
+export async function blockRun(db: Db, run: AgentRun, reason: string, extra?: SpentOnAttempt) {
   await db.transaction(async (tx) => {
     await tx
       .update(agentRuns)
-      .set({ status: "blocked", error: reason.slice(0, 2000), finishedAt: new Date(), lockedAt: null, lockedBy: null })
+      .set({ status: "blocked", error: reason.slice(0, 2000), finishedAt: new Date(), lockedAt: null, lockedBy: null, ...addCost(extra), ...addModel(extra) })
       .where(eq(agentRuns.id, run.id));
     await audit(tx, { kind: "agent", name: run.agent }, { action: "run.blocked", entityType: "agent_run", entityId: run.id, metadata: { motivo: reason.slice(0, 300) } });
   });

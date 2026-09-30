@@ -13,8 +13,8 @@ https://vercel.com/pricing antes de contratar.
 ## Paso a paso
 
 ### 1. Unir la rama al código principal
-En GitHub, abrí el repositorio `Proyecto-NUCLEO`, creá un *pull request* desde la rama
-`etapa-1-2-nucleo` hacia `main` y unilo (*Merge*).
+En GitHub, abrí el repositorio `Proyecto-NUCLEO`, entrá a **Pull requests**, abrí el que está pendiente
+(hoy el N.º 3) y tocá **Merge pull request** → **Confirm merge**.
 
 ### 2. Crear el proyecto en Vercel
 1. En Vercel: **Add New → Project**.
@@ -37,9 +37,10 @@ En **Settings → Environment Variables**, agregá (para *Production*):
 | `SETUP_TOKEN` | Un código largo que solo vos sepas (mínimo 16 caracteres). Sirve una sola vez |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | 32 bytes aleatorios en base64 |
 
-Para generar la clave, en cualquier computadora con Node.js:
-`node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
-Si no tenés Node, pedímela y te explico otra forma.
+Para generar la clave sin instalar nada: en Chrome o Edge, abrí una pestaña nueva, apretá **F12**,
+entrá a **Console**, pegá esto y apretá Enter. Copiá el texto que aparece (sin las comillas):
+`btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))`
+Con Node.js también sirve: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
 
 ### 5. Publicar
 Hacé **Deploy**. Si el build falla en el paso de migración, casi siempre es porque falta `DATABASE_URL`.
@@ -49,6 +50,15 @@ Entrá a la dirección que te da Vercel. Como no hay usuarios, el login muestra
 **Crear la cuenta de propietario**. Poné el `SETUP_TOKEN`, tu nombre, email y contraseña.
 Apenas se crea la cuenta, esa página deja de existir. Después podés borrar `SETUP_TOKEN`.
 
+## Conectar la IA (opcional)
+
+1. Creá una clave en la consola de Anthropic (https://platform.claude.com) y cargale saldo.
+2. En Vercel, **Settings → Environment Variables**, agregá `ANTHROPIC_API_KEY` con esa clave y volvé a publicar.
+3. En el panel, **Configuración → Presupuesto mensual de APIs**: poné un monto mayor a 0. Con 0 la IA no corre.
+
+Cada investigación cuesta como máximo unos US$ 0,24 con los precios vigentes al 29/09/2026
+(https://platform.claude.com/docs/en/about-claude/pricing). El gasto del mes se ve en la ficha y en **Tareas**.
+
 ## Agentes en segundo plano (opcional)
 
 Las auditorías pedidas desde el panel se ejecutan al momento, sin nada extra. Para que los agentes
@@ -57,7 +67,7 @@ trabajen solos (reintentos y auditorías automáticas de prospectos calificados)
 | Opción | Cómo | Nota |
 |---|---|---|
 | Servidor propio o VPS | `npm run worker` como servicio | Corre sin parar y respeta el horario configurado |
-| Vercel Cron | Cargá `CRON_SECRET` (16+ caracteres) y programá una llamada a `/api/cron/agentes` | Cada llamada trabaja hasta 45 s. Revisá la frecuencia que permite tu plan en https://vercel.com/docs/cron-jobs |
+| Vercel Cron | Cargá `CRON_SECRET` (16+ caracteres) y programá una llamada a `/api/cron/agentes` | Cada llamada toma trabajos durante 150 s (la función tiene hasta 300 s). Revisá la frecuencia que permite tu plan en https://vercel.com/docs/cron-jobs |
 
 En ambos casos, en **Configuración** subí la autonomía de "Manual" a "Asistido" para que el
 orquestador encole trabajo por su cuenta. Mientras esté en manual, solo corre lo que pidas vos.
@@ -73,12 +83,30 @@ orquestador encole trabajo por su cuenta. Mientras esté en manual, solo corre l
 Se abre en su propia ventana, con el ícono de Núcleo. Los datos siempre se leen del servidor:
 el panel no guarda copias en el dispositivo, así que si perdés la tablet no se pierde ni se filtra nada.
 
+## Se actualiza solo (no hace falta reinstalar)
+
+Se instala **una sola vez**. Después, cada cambio llega solo:
+
+1. Cuando se aprueba (se une) un cambio en la rama `main` de GitHub, Vercel publica la versión nueva
+   automáticamente ([docs de Vercel](https://vercel.com/docs/git)). En esa publicación también se aplican
+   solas las actualizaciones de la base de datos (`npm run vercel-build`).
+2. La app instalada no guarda copias de las páginas, así que al abrirla ya muestra la versión nueva.
+3. Si la tenías abierta: al volver a la app se recarga sola. Si estabas escribiendo algo sin guardar, no recarga
+   (para no perderlo) y muestra **"Hay una versión nueva del panel · Actualizar"**. Además revisa cada 5 minutos.
+
+Para comparar versiones se usa el commit publicado (`VERCEL_GIT_COMMIT_SHA`, variable de sistema de Vercel;
+tiene que estar tildada la opción *Enable access to System Environment Variables* en Settings → Environment
+Variables — [docs](https://vercel.com/docs/environment-variables/system-environment-variables)).
+
 ## Cómo se protege lo que guardás
 
 - Cada cambio se guarda en PostgreSQL dentro de una transacción: o se guarda completo o no se guarda.
 - Si dos personas editan lo mismo a la vez, el panel lo detecta y no pisa el trabajo de nadie.
 - El historial y la actividad no se pueden borrar.
 - Los prospectos no se borran de verdad: se retiran y quedan en la base.
-- **Copia de seguridad:** en **Configuración → Descargar copia** bajás todos los datos en un archivo
-  (sin contraseñas). Conviene hacerlo seguido y guardarlo en un lugar privado.
+- **Copia de seguridad:** en **Configuración → Descargar copia completa** bajás todos los datos en un archivo
+  (sin contraseñas), incluidas ventas, gastos y presupuestos. El panel te avisa si pasó más de una semana desde
+  la última. Guardala fuera de la computadora (por ejemplo, en tu nube personal).
+- **Finanzas en Excel:** en **Finanzas → Descargar Excel**.
+- **Ningún gasto se pierde por error:** ventas y gastos no se pueden editar ni borrar, solo anular con un motivo.
 - Además, revisá qué copias automáticas ofrece el plan de tu base de datos.

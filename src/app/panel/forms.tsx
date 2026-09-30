@@ -88,14 +88,60 @@ export function SettingsForm({ data, version, readOnly }: { data: Settings; vers
                 <input name="maxLeadsPerDay" type="number" min={0} max={500} defaultValue={data.maxLeadsPerDay} />
               </label>
               <label className="field">
-                <span>Máximo de demos por día</span>
-                <input name="maxDemosPerDay" type="number" min={0} max={50} defaultValue={data.maxDemosPerDay} />
-              </label>
-              <label className="field">
                 <span>Puntaje mínimo de oportunidad</span>
                 <input name="minOpportunityScore" type="number" min={0} max={100} defaultValue={data.minOpportunityScore} />
               </label>
             </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Lista de precios del cotizador</legend>
+            <div className="form-grid">
+              <label className="field">
+                <span>Moneda</span>
+                <input name="pricingCurrency" maxLength={3} defaultValue={data.pricing.currency} autoCapitalize="characters" />
+              </label>
+              <label className="field">
+                <span>Impuesto por defecto (%)</span>
+                <input name="pricingTaxPct" type="number" min={0} max={100} step="0.01" defaultValue={data.pricing.taxPct} />
+                <small>Depende de tu situación fiscal: consultalo con tu contador.</small>
+              </label>
+            </div>
+            <label className="field">
+              <span>Ítems (uno por línea: «nombre | precio», y «| mensual» si se cobra todos los meses)</span>
+              <textarea name="pricingItems" rows={8} defaultValue={data.pricing.items.map((i) => `${i.name} | ${i.price}${i.recurring ? " | mensual" : ""}`).join("\n")} />
+              <small>
+                Los valores iniciales son el piso de rangos de mercado de Argentina (2026): sitios, chatbots y bases de datos.
+                Reemplazalos por tus precios.
+              </small>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Firma de los mensajes</legend>
+            <div className="form-grid">
+              <label className="field">
+                <span>Nombre de la agencia</span>
+                <input name="agencyName" maxLength={120} defaultValue={data.sender.agencyName} />
+              </label>
+              <label className="field">
+                <span>Tu nombre</span>
+                <input name="senderName" maxLength={120} defaultValue={data.sender.senderName} />
+              </label>
+              <label className="field">
+                <span>Email para respuestas</span>
+                <input name="replyEmail" type="email" maxLength={254} defaultValue={data.sender.replyEmail} />
+              </label>
+              <label className="field">
+                <span>WhatsApp de contacto</span>
+                <input name="senderWhatsapp" maxLength={40} defaultValue={data.sender.whatsapp} placeholder="+54 9 11 …" />
+              </label>
+              <label className="field">
+                <span>Sitio de la agencia</span>
+                <input name="senderWebsite" type="url" maxLength={2000} defaultValue={data.sender.website} placeholder="https://" />
+              </label>
+            </div>
+            <small className="faint">Se usan para firmar los mensajes preparados. El sistema nunca envía nada por su cuenta.</small>
           </fieldset>
 
           <fieldset>

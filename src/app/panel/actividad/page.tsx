@@ -35,6 +35,21 @@ const ACTION_TEXT: Record<string, string> = {
   "run.retry": "Reintentó una tarea",
   "run.cancel": "Canceló una tarea",
   "audit.create": "Guardó una auditoría web",
+  "research.facts": "Guardó datos de una investigación con IA",
+  "outreach.prepare": "Preparó mensajes de contacto",
+  "sale.create": "Registró una venta",
+  "sale.paid": "Marcó una venta como cobrada",
+  "sale.void": "Anuló una venta",
+  "expense.create": "Registró un gasto",
+  "expense.paid": "Marcó un gasto como pagado",
+  "expense.void": "Anuló un gasto",
+  "quote.create": "Creó un presupuesto",
+  "quote.status": "Cambió el estado de un presupuesto",
+  "quote.to_sale": "Registró un presupuesto como venta",
+  "finance.export": "Descargó las finanzas en Excel",
+  "portfolio.create": "Agregó un trabajo al portafolio",
+  "portfolio.update": "Editó un trabajo del portafolio",
+  "portfolio.remove": "Retiró un trabajo del portafolio",
 };
 
 export default async function ActivityPage() {

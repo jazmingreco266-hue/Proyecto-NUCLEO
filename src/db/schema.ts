@@ -3,6 +3,7 @@ import {
   bigserial,
   boolean,
   char,
+  date,
   integer,
   jsonb,
   numeric,
@@ -265,4 +266,102 @@ export const siteAudits = pgTable("site_audits", {
   createdByType: actorType("created_by_type").notNull(),
   createdById: text("created_by_id"),
   createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const outreachMessages = pgTable("outreach_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  prospectId: uuid("prospect_id")
+    .notNull()
+    .references(() => prospects.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  content: jsonb("content").notNull(),
+  createdByType: actorType("created_by_type").notNull(),
+  createdById: text("created_by_id"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const sales = pgTable("sales", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  occurredOn: date("occurred_on", { mode: "string" }).notNull(),
+  description: text("description").notNull(),
+  clientName: text("client_name").notNull(),
+  prospectId: uuid("prospect_id").references(() => prospects.id, { onDelete: "set null" }),
+  quoteId: uuid("quote_id"),
+  amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  currency: char("currency", { length: 3 }).notNull(),
+  status: text("status", { enum: ["pendiente", "cobrado"] }).notNull(),
+  paidOn: date("paid_on", { mode: "string" }),
+  method: text("method"),
+  notes: text("notes"),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => users.id),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  voidedAt: ts("voided_at"),
+  voidedBy: uuid("voided_by").references(() => users.id),
+  voidReason: text("void_reason"),
+});
+
+export const expenses = pgTable("expenses", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  occurredOn: date("occurred_on", { mode: "string" }).notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(),
+  vendor: text("vendor"),
+  amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  currency: char("currency", { length: 3 }).notNull(),
+  status: text("status", { enum: ["pendiente", "pagado"] }).notNull(),
+  paidOn: date("paid_on", { mode: "string" }),
+  notes: text("notes"),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => users.id),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  voidedAt: ts("voided_at"),
+  voidedBy: uuid("voided_by").references(() => users.id),
+  voidReason: text("void_reason"),
+});
+
+export const quotes = pgTable("quotes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  number: bigserial("number", { mode: "number" }).notNull(),
+  prospectId: uuid("prospect_id").references(() => prospects.id, { onDelete: "set null" }),
+  clientName: text("client_name").notNull(),
+  currency: char("currency", { length: 3 }).notNull(),
+  lines: jsonb("lines").notNull(),
+  discountPct: numeric("discount_pct", { precision: 5, scale: 2 }).notNull().default("0"),
+  taxPct: numeric("tax_pct", { precision: 5, scale: 2 }).notNull().default("0"),
+  subtotal: numeric("subtotal", { precision: 14, scale: 2 }).notNull(),
+  total: numeric("total", { precision: 14, scale: 2 }).notNull(),
+  monthlyTotal: numeric("monthly_total", { precision: 14, scale: 2 }).notNull().default("0"),
+  validUntil: date("valid_until", { mode: "string" }),
+  notes: text("notes"),
+  status: text("status", { enum: ["borrador", "enviado", "aceptado", "rechazado"] }).notNull().default("borrador"),
+  saleId: uuid("sale_id").references(() => sales.id),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => users.id),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  updatedAt: ts("updated_at").notNull().defaultNow(),
+});
+
+export const portfolioItems = pgTable("portfolio_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  clientName: text("client_name").notNull(),
+  prospectId: uuid("prospect_id").references(() => prospects.id, { onDelete: "set null" }),
+  url: text("url"),
+  year: smallint("year"),
+  summary: text("summary").notNull().default(""),
+  highlights: text("highlights").array().notNull().default([]),
+  tags: text("tags").array().notNull().default([]),
+  services: text("services").array().notNull().default([]),
+  featured: boolean("featured").notNull().default(false),
+  clientOk: boolean("client_ok").notNull().default(false),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => users.id),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  updatedAt: ts("updated_at").notNull().defaultNow(),
+  deletedAt: ts("deleted_at"),
 });

@@ -28,7 +28,7 @@ describe("pipeline: estructura", () => {
     }
   });
 
-  it("todo estado es alcanzable desde DISCOVERED", () => {
+  it("todo estado en uso es alcanzable desde DISCOVERED; los de demo quedaron en desuso", () => {
     const seen = new Set(["DISCOVERED"]);
     const queue = ["DISCOVERED"] as (keyof typeof TRANSITIONS)[];
     while (queue.length) {
@@ -39,7 +39,9 @@ describe("pipeline: estructura", () => {
         }
       }
     }
-    expect(seen.size).toBe(25);
+    expect(seen.size).toBe(23);
+    expect(seen.has("DEMO_GENERATING")).toBe(false);
+    expect(seen.has("DEMO_READY")).toBe(false);
   });
 
   it("CLOSED es terminal", () => {
@@ -59,8 +61,10 @@ describe("pipeline: quién puede mover", () => {
 
   it("un agente avanza la prospección interna", () => {
     expect(canTransition("DISCOVERED", "RESEARCHING", agent).ok).toBe(true);
-    expect(canTransition("AUDITED", "DEMO_GENERATING", agent).ok).toBe(true);
-    expect(canTransition("DEMO_READY", "OUTREACH_READY", agent).ok).toBe(true);
+    expect(canTransition("AUDITED", "OUTREACH_READY", agent).ok).toBe(true);
+    // Estados de demo en desuso: no se puede entrar, solo salir.
+    expect(canTransition("AUDITED", "DEMO_GENERATING", owner).ok).toBe(false);
+    expect(canTransition("DEMO_READY", "OUTREACH_READY", owner).ok).toBe(true);
   });
 
   it("un agente nunca marca un mensaje como enviado ni registra respuestas", () => {

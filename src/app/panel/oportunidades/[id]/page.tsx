@@ -16,25 +16,35 @@ import { requireUser } from "@/server/auth/current";
 import { can, NotFoundError } from "@/server/principal";
 import { getProspect, listEvents, listFacts, listNotes } from "@/server/services/prospects";
 import { AUDIT_AGENT, getAudit, listAudits } from "@/server/services/audits";
-import { latestRunFor, RUN_STATUS_LABELS } from "@/server/services/agent-runs";
+import { latestRunFor, monthSpendUsd, RUN_STATUS_LABELS } from "@/server/services/agent-runs";
+import { latestResearch, RESEARCH_AGENT } from "@/server/services/research";
+import { getSettings } from "@/server/services/settings";
+import { aiConfigured } from "@/agents/ai";
+import { RESEARCH_ESTIMATED_COST_USD } from "@/domain/research";
+import type { Opportunity } from "@/domain/opportunity";
+import { detectUpsells, type Upsell } from "@/domain/upsell";
+import { latestMessages } from "@/server/services/outreach";
+import { quotesForProspect } from "@/server/services/finance";
+import { QUOTE_STATUS_LABELS } from "../../cotizador/labels";
+import { CopyButton } from "../../../ui/copy-button";
 import { AUDIT_CATEGORIES, type CategoryKey, type CategoryResult, type Check, type Recommendation } from "@/domain/site-audit";
 import { notFound } from "next/navigation";
 import { Country, ExternalLink, formatMoney, Score, Status, When } from "../../../ui/format";
-import { AuditRequestForm, FactForm, NoteForm, PauseForm, RemoveFactForm, TransitionForm } from "../forms";
+import { AuditRequestForm, PrepareMessagesForm, ResearchRequestForm, FactForm, NoteForm, PauseForm, RemoveFactForm, TransitionForm } from "../forms";
 
 export const metadata: Metadata = { title: "Prospecto" };
-// La auditoría pedida desde esta página se ejecuta al momento: puede tardar hasta un minuto.
-export const maxDuration = 60;
+// Auditoría e investigación pedidas desde esta página se ejecutan al momento (la investigación con IA
+// puede tardar un par de minutos). 300 s es el máximo por defecto de Vercel en todos los planes:
+// https://vercel.com/docs/functions/limitations (consultado el 29/09/2026).
+export const maxDuration = 300;
 
 const TABS = [
   { key: "empresa", label: "Empresa" },
   { key: "investigacion", label: "Investigación" },
   { key: "auditoria", label: "Auditoría web" },
   { key: "capturas", label: "Capturas", stage: 3 },
-  { key: "demo", label: "Demo", stage: 4 },
   { key: "contactos", label: "Contactos" },
-  { key: "propuesta", label: "Propuesta", stage: 4 },
-  { key: "mensajes", label: "Mensajes", stage: 4 },
+  { key: "mensajes", label: "Mensajes" },
   { key: "historial", label: "Historial" },
   { key: "notas", label: "Notas" },
   { key: "presupuesto", label: "Presupuesto", stage: 5 },
@@ -49,26 +59,6 @@ const UPCOMING: Record<string, { title: string; items: string[] }> = {
     items: [
       "Captura del sitio actual en escritorio y celular, con fecha y hora",
       "Requieren un navegador en el servidor: se habilitan cuando se defina dónde corre el worker",
-    ],
-  },
-  demo: {
-    title: "El generador de demos llega en la etapa 4",
-    items: [
-      "Demo conceptual con noindex, protegida y marcada como propuesta no oficial",
-      "Versiones: ninguna demo se sobrescribe",
-      "Comparador antes y después",
-    ],
-  },
-  propuesta: {
-    title: "Las propuestas llegan en la etapa 4",
-    items: ["Tres mejoras principales", "Beneficio comercial explicado", "Enlace a la demo"],
-  },
-  mensajes: {
-    title: "Los mensajes llegan en la etapa 4",
-    items: [
-      "Tres asuntos posibles, email HTML y texto plano",
-      "Versiones para WhatsApp, formulario web, Instagram y LinkedIn",
-      "Sugerencia de canal y horario. El sistema nunca envía: vos copiás y enviás",
     ],
   },
   presupuesto: {
@@ -101,7 +91,6 @@ const MAIN_ROUTE: PipelineStatus[] = [
   "RESEARCHING",
   "QUALIFIED",
   "AUDITED",
-  "DEMO_READY",
   "OUTREACH_READY",
   "SENT_MANUALLY",
   "WAITING_RESPONSE",
@@ -144,6 +133,23 @@ export default async function ProspectPage({
       ? Promise.all([getAudit(db, me, p.id, auditVersion), listAudits(db, me, p.id), latestRunFor(db, me, p.id, AUDIT_AGENT)])
       : null,
   ]);
+  const messages = tab === "mensajes" ? await latestMessages(db, me, p.id) : null;
+  const upsellData =
+    tab === "empresa"
+      ? detectUpsells(
+          facts,
+          can(me, "finance.read") ? (await getSettings(db, me)).data.pricing.items : [],
+        )
+      : null;
+  const researchData =
+    tab === "investigacion"
+      ? await Promise.all([
+          latestResearch(db, me, p.id),
+          latestRunFor(db, me, p.id, RESEARCH_AGENT),
+          getSettings(db, me).then(async (s) => ({ budget: s.data.apiBudgetUsdMonthly, spent: await monthSpendUsd(db, s.data.schedule.timezone) })),
+        ])
+      : null;
+  const prospectQuotes = can(me, "finance.read") ? await quotesForProspect(db, me, p.id) : null;
   const visited = new Set(events.map((e) => e.toStatus));
   const targets = can(me, "prospects.transition")
     ? allowedTargets(p.status, { type: "user", role: me.role })
@@ -249,6 +255,7 @@ export default async function ProspectPage({
                 <dt>Puntaje de oportunidad</dt>
                 <dd>
                   <Score value={p.opportunityScore} label="Puntaje de oportunidad" />
+                  <OpportunityBreakdown explanation={p.scoreExplanation as Opportunity | null} />
                 </dd>
                 <dt>Puntaje del sitio</dt>
                 <dd>
@@ -270,6 +277,9 @@ export default async function ProspectPage({
               </dl>
             </section>
           )}
+          {tab === "empresa" && upsellData && (
+            <UpsellPanel upsells={upsellData} />
+          )}
 
           {tab === "investigacion" && (
             <section className="stack" aria-labelledby="t-inv">
@@ -278,6 +288,17 @@ export default async function ProspectPage({
                 Los datos se separan en hechos observados, inferencias y hipótesis. Solo un hecho observado con URL de
                 fuente puede figurar como verificado.
               </p>
+              {researchData && (
+                <ResearchPanel
+                  prospectId={p.id}
+                  hasWebsite={!!p.websiteUrl}
+                  isSample={p.isSample}
+                  canRequest={can(me, "prospects.write")}
+                  research={researchData[0]}
+                  run={researchData[1]}
+                  budget={researchData[2]}
+                />
+              )}
               {FACT_KINDS.map((kind) => {
                 const list = facts.filter((f) => f.kind === kind);
                 return (
@@ -406,7 +427,11 @@ export default async function ProspectPage({
             />
           )}
 
-          {["capturas", "demo", "propuesta", "mensajes", "proyecto", "seguridad"].includes(tab) && (
+          {tab === "mensajes" && (
+            <MessagesTab prospectId={p.id} isSample={p.isSample} canWrite={can(me, "prospects.write")} messages={messages} />
+          )}
+
+          {["capturas", "proyecto", "seguridad"].includes(tab) && (
             <section className="panel">
               <Upcoming k={tab} />
             </section>
@@ -414,6 +439,29 @@ export default async function ProspectPage({
         </div>
 
         <aside className="side" aria-label="Acciones">
+          {prospectQuotes && (
+            <section className="panel stack">
+              <h2>Cotización</h2>
+              {prospectQuotes.length > 0 && (
+                <ul className="quote-list">
+                  {prospectQuotes.map((q) => (
+                    <li key={q.id}>
+                      <Link href={`/panel/cotizador/${q.id}`}>N.º {q.number}</Link>
+                      <span className="cell-sub">
+                        {formatMoney(Number(q.total), q.currency)}
+                        {Number(q.monthlyTotal) > 0 ? ` + ${formatMoney(Number(q.monthlyTotal), q.currency)}/mes` : ""} · {QUOTE_STATUS_LABELS[q.status]}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {can(me, "finance.write") && (
+                <Link className={prospectQuotes.length ? "btn" : "btn btn-primary"} href={`/panel/cotizador?empresa=${p.id}`}>
+                  {prospectQuotes.length ? "Hacer otra cotización" : "Hacer cotización"}
+                </Link>
+              )}
+            </section>
+          )}
           <section className="panel stack">
             <h2>Cambiar estado</h2>
             <TransitionForm key={`t-${p.version}`} prospectId={p.id} version={p.version} targets={targets} />
@@ -668,5 +716,287 @@ function Recommendation({ rec }: { rec: Recommendation }) {
       </ul>
       <span className="faint">El esfuerzo y el valor comercial se estiman con la investigación, no acá.</span>
     </div>
+  );
+}
+
+// ─────────────────────────── Investigación con IA ───────────────────────────
+
+type ResearchOut = {
+  resumen: string;
+  recomendacion: "qualify" | "reject" | "unsure";
+  motivos: string[];
+  paginas: { url: string; recortada: boolean }[];
+  datosNuevos: number;
+  datosDescartados: { field: string; value: string; reason: string }[];
+};
+const RESEARCH_REC: Record<ResearchOut["recomendacion"], string> = {
+  qualify: "Calificar",
+  reject: "Descartar (lo decidís vos)",
+  unsure: "Falta información",
+};
+
+function ResearchPanel({
+  prospectId,
+  hasWebsite,
+  isSample,
+  canRequest,
+  research,
+  run,
+  budget,
+}: {
+  prospectId: string;
+  hasWebsite: boolean;
+  isSample: boolean;
+  canRequest: boolean;
+  research: Awaited<ReturnType<typeof latestResearch>>;
+  run: Awaited<ReturnType<typeof latestRunFor>>;
+  budget: { budget: number; spent: number };
+}) {
+  const configured = aiConfigured();
+  const out = research?.output as ResearchOut | undefined;
+  const showRun = run && run.status !== "succeeded" && (!research || run.createdAt > research.createdAt);
+  return (
+    <div className="panel stack">
+      <div className="section-head">
+        <h3>Investigación con IA</h3>
+        {canRequest && hasWebsite && !isSample && configured && budget.budget > 0 && (
+          <ResearchRequestForm prospectId={prospectId} again={!!research} maxCostUsd={RESEARCH_ESTIMATED_COST_USD} />
+        )}
+      </div>
+      {!configured && (
+        <p className="notice">
+          La IA no está conectada: falta la variable <code>ANTHROPIC_API_KEY</code> en el servidor.
+        </p>
+      )}
+      {configured && budget.budget === 0 && (
+        <p className="notice">
+          El presupuesto mensual de IA está en US$ 0. Definilo en <Link href="/panel/configuracion">Configuración</Link> para habilitarla.
+        </p>
+      )}
+      {budget.budget > 0 && (
+        <p className="faint">
+          Gastado este mes: US$ {budget.spent.toFixed(2)} de US$ {budget.budget.toFixed(2)}.
+        </p>
+      )}
+      {showRun && run && (
+        <p className={`notice ${run.status === "failed" || run.status === "blocked" ? "notice-error" : ""}`} role="status">
+          Última tarea: <strong>{RUN_STATUS_LABELS[run.status]}</strong>
+          {run.error ? ` · ${run.error}` : ""} · <Link href="/panel/tareas">Ver tareas</Link>
+        </p>
+      )}
+      {out && research && (
+        <>
+          <p>{out.resumen}</p>
+          <dl className="dl">
+            <dt>Recomendación</dt>
+            <dd>
+              {RESEARCH_REC[out.recomendacion]}
+              {out.motivos.length > 0 && (
+                <ul className="issues">
+                  {out.motivos.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              )}
+            </dd>
+            <dt>Páginas leídas</dt>
+            <dd>
+              {out.paginas.map((pg) => (
+                <div key={pg.url}>
+                  <ExternalLink href={pg.url} />
+                  {pg.recortada && <span className="faint"> (recortada por largo)</span>}
+                </div>
+              ))}
+            </dd>
+            <dt>Datos</dt>
+            <dd>
+              {out.datosNuevos} nuevos · {out.datosDescartados.length} descartados por no poder verificarse
+              {out.datosDescartados.length > 0 && (
+                <details className="disclose">
+                  <summary className="faint">Ver descartados</summary>
+                  <ul className="issues">
+                    {out.datosDescartados.map((d) => (
+                      <li key={`${d.field}-${d.value}`}>
+                        {d.field}: {d.value} — {d.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </dd>
+            <dt>Hecha</dt>
+            <dd>
+              <When date={research.finishedAt} /> · {research.model} · US$ {Number(research.costUsd).toFixed(4)}
+            </dd>
+          </dl>
+          <p className="faint">
+            Lo que aporta la IA queda como probable o no verificado. Confirmalo antes de usarlo con un cliente.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────── Puntaje de oportunidad ───────────────────────────
+
+function OpportunityBreakdown({ explanation }: { explanation: Opportunity | null }) {
+  if (!explanation?.criteria) {
+    return <p className="faint">Se calcula solo cuando hay auditoría, investigación o datos cargados.</p>;
+  }
+  return (
+    <details className="disclose">
+      <summary className="faint">Cómo se calcula</summary>
+      <ul className="checks">
+        {explanation.criteria.map((c) => (
+          <li key={c.key} className={`check ${c.score == null ? "check-info" : c.score >= 60 ? "check-pass" : c.score >= 30 ? "check-warn" : "check-fail"}`}>
+            <span className="check-status">{c.score == null ? "Sin datos" : `${c.score}/100`}</span>
+            <span>
+              <strong>{c.label}</strong>
+              {c.weight > 0 ? ` (peso ${c.weight})` : ""}. {c.detail}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="faint">{explanation.note}</p>
+    </details>
+  );
+}
+
+// ─────────────────────────── Mensajes ───────────────────────────
+
+type MessagesRow = Awaited<ReturnType<typeof latestMessages>>;
+
+const CHANNEL_NAMES: Record<string, string> = { email: "Email", whatsapp: "WhatsApp", form: "Formulario web", instagram: "Instagram", linkedin: "LinkedIn", ninguno: "Ninguno disponible" };
+
+function MessagesTab({ prospectId, isSample, canWrite, messages }: { prospectId: string; isSample: boolean; canWrite: boolean; messages: MessagesRow }) {
+  const m = messages?.content;
+  return (
+    <section className="stack" aria-labelledby="t-msg">
+      <div className="section-head">
+        <h2 id="t-msg">Mensajes</h2>
+        {canWrite && !isSample && <PrepareMessagesForm prospectId={prospectId} again={!!messages} />}
+      </div>
+      <p className="muted">
+        El sistema prepara los mensajes; nunca los envía. Revisalos, copialos, envialos vos y después marcá el prospecto como
+        «Enviado manualmente» en Cambiar estado.
+      </p>
+      {!messages && !isSample && (
+        <div className="empty">
+          <h3>Todavía no hay mensajes</h3>
+          <p>Conviene hacer antes la auditoría web: de ahí salen las tres mejoras concretas que se mencionan.</p>
+        </div>
+      )}
+      {messages && m && (
+        <>
+          {m.warnings.length > 0 && (
+            <div className="notice notice-signal">
+              <strong>Antes de enviar:</strong>
+              <ul className="issues">
+                {m.warnings.map((w) => (
+                  <li key={w}>{w}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="panel stack">
+            <dl className="dl">
+              <dt>Canal sugerido</dt>
+              <dd>
+                {CHANNEL_NAMES[m.channel.suggested] ?? m.channel.suggested}. <span className="faint">{m.channel.reason}</span>
+              </dd>
+              <dt>Cuándo</dt>
+              <dd>
+                {m.bestTime.text} <span className="faint">{m.bestTime.basis}</span>
+              </dd>
+              <dt>Versión</dt>
+              <dd>
+                v{messages.version} · <When date={messages.createdAt} />
+              </dd>
+            </dl>
+          </div>
+          <div className="panel stack">
+            <h3>Asuntos posibles</h3>
+            <ul className="copy-list">
+              {m.subjects.map((subj) => (
+                <li key={subj}>
+                  <span>{subj}</span> <CopyButton text={subj} />
+                </li>
+              ))}
+            </ul>
+          </div>
+          <MessageBlock title="Email (texto plano)" text={m.emailText}>
+            <a className="btn btn-small" href={`/panel/mensajes/${messages.id}/email`}>
+              Descargar email HTML
+            </a>
+          </MessageBlock>
+          <MessageBlock title="WhatsApp" text={m.whatsapp} />
+          <MessageBlock title="Formulario de contacto del sitio" text={m.form} />
+          <MessageBlock title="Instagram o LinkedIn" text={m.social} />
+        </>
+      )}
+    </section>
+  );
+}
+
+function MessageBlock({ title, text, children }: { title: string; text: string; children?: React.ReactNode }) {
+  return (
+    <div className="panel stack">
+      <div className="section-head">
+        <h3>{title}</h3>
+        <div className="row-actions">
+          {children}
+          <CopyButton text={text} />
+        </div>
+      </div>
+      <pre className="message">{text}</pre>
+    </div>
+  );
+}
+
+// ─────────────────────────── Servicios adicionales ───────────────────────────
+
+function UpsellPanel({ upsells }: { upsells: Upsell[] }) {
+  return (
+    <section className="panel stack" aria-labelledby="t-upsell">
+      <h2 id="t-upsell">Otros servicios que podrían servirle</h2>
+      {upsells.length === 0 ? (
+        <p className="faint">
+          No hay señales en los datos cargados. Aparecen cuando la investigación o vos cargan datos como «turnos», «pedidos»,
+          «catálogo» o un WhatsApp de consultas.
+        </p>
+      ) : (
+        <>
+          <p className="faint">Hipótesis a confirmar con el cliente, a partir de los datos cargados. No son hechos.</p>
+          {upsells.map((u) => (
+            <article key={u.service} className="upsell">
+              <h3>{u.service}</h3>
+              <p>{u.solution}</p>
+              <p className="muted">Beneficio: {u.benefit}</p>
+              <ul className="issues">
+                {u.signals.map((s) => (
+                  <li key={s.id}>
+                    Señal: {s.label}. Dato: «{s.evidence}»{" "}
+                    <span className="faint">({s.kind === "observed" ? "observado" : s.kind === "inference" ? "inferencia" : "hipótesis"})</span>
+                    {s.sourceUrl && (
+                      <>
+                        {" "}
+                        · <ExternalLink href={s.sourceUrl}>fuente</ExternalLink>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {u.priceItems.length > 0 && (
+                <p className="faint">
+                  En tu lista de precios:{" "}
+                  {u.priceItems.map((i) => `${i.name} (${new Intl.NumberFormat("es-AR").format(i.price)}${i.recurring ? " por mes" : ""})`).join(" · ")}
+                </p>
+              )}
+            </article>
+          ))}
+        </>
+      )}
+    </section>
   );
 }

@@ -19,6 +19,10 @@ La fuente de verdad es [`migrations/0001_nucleo.sql`](../migrations/0001_nucleo.
 | `settings_history` | Cada versión de la configuración | **Solo agregado** |
 | `audit_log` | Registro de todo lo que pasa | **Solo agregado**; los metadatos se limpian de secretos antes de guardarse |
 | `agent_runs` | Cola y registro de ejecuciones de agentes: modelo, herramienta, costo estimado y real, tokens, intentos, error, quién lo pidió | Costo no negativo; intentos entre 1 y 10; el mismo trabajo (`dedupe_key`) no puede estar dos veces en cola o ejecutándose |
+| `outreach_messages` | Mensajes de contacto preparados, versionados | **Solo agregado** |
+| `sales` / `expenses` | Ventas y gastos | Montos > 0, moneda de 3 letras. **No se editan ni se borran**: solo se pasa de pendiente a cobrado/pagado (una vez) o se anulan con motivo; un anulado queda cerrado |
+| `quotes` | Presupuestos numerados | El contenido no se edita (se hace uno nuevo); solo cambia el estado. No se borran |
+| `portfolio_items` | Trabajos terminados para mostrar | Borrado lógico; `client_ok` indica si el cliente autorizó mostrarlo |
 | `site_audits` | Auditorías técnicas de sitios, versionadas: URL leída, respuesta, puntajes por categoría, verificaciones, problemas, fortalezas y recomendación preliminar | Versión única por prospecto. **Solo agregado**: una auditoría nunca se sobrescribe |
 
 ## Veracidad en la base (sección 4.1)

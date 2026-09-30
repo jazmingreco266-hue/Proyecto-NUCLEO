@@ -184,8 +184,8 @@ const list = (max: number) => z.array(z.string().trim().min(1).max(120)).max(max
 export const AUTONOMY_LEVELS = ["manual", "assisted", "autonomous"] as const;
 export const AUTONOMY_LABELS = {
   manual: "Manual: los agentes no corren solos",
-  assisted: "Asistido: investigan y proponen, vos aprobás cada demo",
-  autonomous: "Autónomo: investigan y generan demos dentro de los límites",
+  assisted: "Asistido: investigan y auditan solos; vos revisás y contactás",
+  autonomous: "Autónomo: hoy funciona igual que Asistido (reservado para más automatización)",
 } as const;
 
 export const CHANNELS = ["email", "whatsapp", "form", "instagram", "linkedin"] as const;
@@ -197,7 +197,6 @@ export const settingsSchema = z
     industries: list(200),
     languages: list(20),
     maxLeadsPerDay: z.coerce.number().int().min(0).max(500),
-    maxDemosPerDay: z.coerce.number().int().min(0).max(50),
     minOpportunityScore: z.coerce.number().int().min(0).max(100),
     apiBudgetUsdMonthly: z.coerce.number().min(0).max(100000),
     schedule: z.object({
@@ -214,6 +213,22 @@ export const settingsSchema = z
       requirePublicContact: z.boolean(),
       skipIfSiteScoreAbove: z.coerce.number().int().min(0).max(100),
       excludedIndustries: list(200),
+    }),
+    // Quién firma los mensajes preparados. Vacío = el mensaje muestra un marcador para completar.
+    sender: z.object({
+      agencyName: z.string().trim().max(120),
+      senderName: z.string().trim().max(120),
+      replyEmail: z.union([z.literal(""), z.string().trim().toLowerCase().email("Email de respuesta inválido").max(254)]),
+      whatsapp: z.string().trim().max(40),
+      website: z.union([z.literal(""), sourceUrlSchema]),
+    }),
+    // Lista de precios del cotizador. Se editan en Configuración.
+    pricing: z.object({
+      currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Moneda del cotizador: código de 3 letras"),
+      taxPct: z.coerce.number().min(0).max(100),
+      items: z
+        .array(z.object({ name: z.string().trim().min(2).max(120), price: z.coerce.number().min(0).max(1e12), recurring: z.boolean().optional().default(false) }))
+        .max(60),
     }),
   })
   .refine((s) => s.schedule.endHour > s.schedule.startHour, {
@@ -241,7 +256,6 @@ export const DEFAULT_SETTINGS: Settings = {
   industries: [],
   languages: ["es"],
   maxLeadsPerDay: 20,
-  maxDemosPerDay: 3,
   minOpportunityScore: 60,
   apiBudgetUsdMonthly: 0,
   schedule: {
@@ -258,6 +272,24 @@ export const DEFAULT_SETTINGS: Settings = {
     requirePublicContact: true,
     skipIfSiteScoreAbove: 80,
     excludedIndustries: [],
+  },
+  sender: { agencyName: "Núcleo", senderName: "", replyEmail: "", whatsapp: "", website: "" },
+  // Valores de referencia tomados de rangos de mercado de Argentina (2026). Cambialos por tus precios.
+  // Impuesto en 0: depende de tu situación fiscal (por ejemplo, el monotributo no factura IVA).
+  pricing: {
+    currency: "ARS",
+    taxPct: 0,
+    items: [
+      { name: "Landing page", price: 300000, recurring: false },
+      { name: "Sitio institucional (hasta 5 secciones)", price: 450000, recurring: false },
+      { name: "Sitio corporativo (6 a 10 secciones)", price: 900000, recurring: false },
+      { name: "Tienda online básica", price: 1000000, recurring: false },
+      // Chatbot: primer año de un desarrollo a medida, ARS 800.000–4.000.000 (DoubleTick, 06/2026).
+      { name: "Chatbot de WhatsApp (desarrollo)", price: 800000, recurring: false },
+      // CRM / base de datos a medida básico ARS 2–3 M; mantenimiento ARS 120.000–300.000/mes (SODI, 04/2026).
+      { name: "Base de datos / CRM a medida (básico)", price: 2000000, recurring: false },
+      { name: "Mantenimiento de base de datos / CRM", price: 120000, recurring: true },
+    ],
   },
 };
 

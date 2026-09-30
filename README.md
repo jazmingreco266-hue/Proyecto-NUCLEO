@@ -9,7 +9,7 @@ sensible antes de que ocurra.
 
 **Para publicarlo e instalarlo en tu computadora o tablet, seguí [docs/06-publicar.md](docs/06-publicar.md).**
 
-## Qué hay hoy (etapa 3, bloque A)
+## Qué hay hoy (etapas 3 y 4, primer bloque)
 
 - Pipeline comercial de 25 estados, con historial imposible de editar.
 - Cada dato de una empresa lleva fuente, URL, fecha, confianza y estado
@@ -24,6 +24,24 @@ sensible antes de que ocurra.
   integraciones y enlaces rotos. Solo puntúa lo medible; lo que requiere criterio queda "no evaluado".
   Cada auditoría es una versión nueva, nunca se sobrescribe.
 - Contactos y tecnología encontrados en el sitio se guardan como datos con fuente y fecha.
+- **Investigación con IA (Claude)** desde la pestaña Investigación: lee hasta 5 páginas públicas del
+  sitio y extrae datos del negocio. Un dato "observado" solo se guarda si la cita que lo respalda
+  aparece textual en la página; lo que no se puede comprobar se descarta y se muestra. Todo queda como
+  probable o no verificado hasta que lo confirmes. Cada llamada registra su costo real.
+- **Puntaje de oportunidad** explicado criterio por criterio, solo con criterios que tienen datos.
+- **Mensajes preparados** a partir de la auditoría: tres asuntos, email HTML y texto, WhatsApp, formulario y
+  redes, canal y horario sugeridos. No se generan demos. El sistema nunca envía: vos copiás, enviás y marcás como enviado.
+- **Finanzas** (solo propietario): ventas y gastos que **no se pueden editar ni borrar** (se marcan cobrados o
+  pagados, o se anulan con motivo), gráfico de ventas, gastos y resultado de 12 meses, balance simplificado y
+  **Excel** con ventas, gastos, resultado mensual (con fórmulas), balance y presupuestos.
+- **Cotizador**: presupuestos con tu lista de precios y total en vivo; versión para imprimir o guardar en PDF;
+  un presupuesto aceptado se registra como venta con un clic. Desde la ficha de cada empresa, **Hacer cotización**
+  abre el cotizador con el cliente completado y los servicios sugeridos por sus datos, y la ficha lista sus presupuestos.
+- **Chatbots y bases de datos** como servicios: el cotizador admite abonos mensuales, cada empresa muestra si le
+  serviría un chatbot o una base de datos (con el dato que lo motivó, como hipótesis), los mensajes lo mencionan
+  cuando hay señales y el puntaje de oportunidad lo tiene en cuenta.
+- **Portafolio** de trabajos terminados (sitios, chatbots, bases de datos, sistemas), con autorización del cliente.
+- **Copia de seguridad** completa (JSON) y aviso si pasó más de una semana desde la última.
 - **Cola de agentes** con reintentos, control de presupuesto, horario y nivel de autonomía,
   y la página **Tareas** para ver, reintentar o cancelar trabajos.
 

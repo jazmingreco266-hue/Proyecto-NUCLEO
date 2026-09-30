@@ -25,6 +25,9 @@ export const PERMISSIONS = [
   "settings.write",
   "users.manage",
   "audit.read",
+  // Ventas, gastos, presupuestos y balances: información sensible del negocio.
+  "finance.read",
+  "finance.write",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 

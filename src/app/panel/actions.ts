@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db/client";
 import { AUTONOMY_LEVELS, CHANNELS } from "@/domain/validation";
+import { parseAmount } from "@/domain/finance";
 import { currentPrincipal } from "@/server/auth/current";
 import { publicMessage } from "@/server/principal";
 import { decideApproval } from "@/server/services/approvals";
@@ -55,7 +56,6 @@ export async function saveSettingsAction(_: ActionState, form: FormData): Promis
     industries: list(form, "industries"),
     languages: list(form, "languages"),
     maxLeadsPerDay: s(form, "maxLeadsPerDay"),
-    maxDemosPerDay: s(form, "maxDemosPerDay"),
     minOpportunityScore: s(form, "minOpportunityScore"),
     apiBudgetUsdMonthly: s(form, "apiBudgetUsdMonthly"),
     schedule: {
@@ -73,6 +73,21 @@ export async function saveSettingsAction(_: ActionState, form: FormData): Promis
       skipIfSiteScoreAbove: s(form, "skipIfSiteScoreAbove"),
       excludedIndustries: list(form, "excludedIndustries"),
     },
+    pricing: {
+      currency: s(form, "pricingCurrency"),
+      taxPct: s(form, "pricingTaxPct"),
+      items: list(form, "pricingItems").map((l) => {
+        const [name, price, kind] = l.split("|").map((x) => x.trim());
+        return { name: name ?? "", price: parseAmount(price ?? ""), recurring: /^mensual/i.test(kind ?? "") };
+      }),
+    },
+    sender: {
+      agencyName: s(form, "agencyName"),
+      senderName: s(form, "senderName"),
+      replyEmail: s(form, "replyEmail"),
+      whatsapp: s(form, "senderWhatsapp"),
+      website: s(form, "senderWebsite"),
+    },
   };
   try {
     await updateSettings(getDb(), who, data, Number(s(form, "version")));
@@ -80,7 +95,8 @@ export async function saveSettingsAction(_: ActionState, form: FormData): Promis
     return { error: publicMessage(err) };
   }
   revalidatePath("/panel", "layout");
-  return { ok: "Configuración guardada. El cambio quedó en el historial." };
+  // El formulario se vuelve a montar con la versión nueva, así que el aviso lo muestra la página.
+  redirect("/panel/configuracion?guardado=1");
 }
 
 export async function createUserAction(_: ActionState, form: FormData): Promise<ActionState> {

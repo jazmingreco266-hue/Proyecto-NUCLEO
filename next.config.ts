@@ -14,8 +14,13 @@ const securityHeaders = [
     : []),
 ];
 
+// Identifica cada versión publicada. En Vercel es el commit desplegado; en local, la hora del build.
+// Se fija al compilar, así la página abierta y el servidor pueden comparar si hay una versión nueva.
+const appVersion = process.env.VERCEL_GIT_COMMIT_SHA || `local-${Date.now()}`;
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  env: { NUCLEO_VERSION: appVersion },
   serverExternalPackages: ["pg", "bcryptjs"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

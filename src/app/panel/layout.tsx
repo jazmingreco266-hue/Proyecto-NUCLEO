@@ -6,6 +6,7 @@ import { requireUser } from "@/server/auth/current";
 import { can } from "@/server/principal";
 import { logoutAction } from "../login/actions";
 import { Wordmark } from "../ui/brand";
+import { UpdateNotice } from "../ui/update-notice";
 import { Nav } from "./nav";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
@@ -20,6 +21,13 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     { href: "/panel/oportunidades", label: "Oportunidades" },
     { href: "/panel/aprobaciones", label: "Aprobaciones", count: counts.rows[0]?.pending ?? 0 },
     { href: "/panel/tareas", label: "Tareas", count: counts.rows[0]?.problems ?? 0 },
+    ...(can(me, "finance.read")
+      ? [
+          { href: "/panel/finanzas", label: "Finanzas" },
+          { href: "/panel/cotizador", label: "Cotizador" },
+        ]
+      : []),
+    { href: "/panel/portafolio", label: "Portafolio" },
     { href: "/panel/configuracion", label: "Configuración" },
     ...(can(me, "users.manage") ? [{ href: "/panel/usuarios", label: "Usuarios" }] : []),
     ...(can(me, "audit.read") ? [{ href: "/panel/actividad", label: "Actividad" }] : []),
@@ -43,6 +51,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
         </div>
       </aside>
       <main className="main" id="contenido">
+        <UpdateNotice />
         {children}
       </main>
     </div>

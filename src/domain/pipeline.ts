@@ -3,7 +3,7 @@
  *
  * Define los 25 estados, qué transiciones son válidas y quién puede hacerlas.
  * Regla central: los agentes solo mueven prospectos en las etapas internas
- * (investigación, auditoría, demo, construcción). Todo lo comercial o irreversible
+ * (investigación, auditoría, mensajes, construcción). Todo lo comercial o irreversible
  * (marcar enviado, registrar respuesta, aprobar proyecto, publicar) es humano.
  */
 
@@ -43,8 +43,9 @@ export const STATUS_LABELS: Record<PipelineStatus, string> = {
   QUALIFIED: "Calificado",
   REJECTED: "Descartado",
   AUDITED: "Auditado",
-  DEMO_GENERATING: "Generando demo",
-  DEMO_READY: "Demo lista",
+  // En desuso: el sistema ya no genera demos. Se conservan por compatibilidad con la base.
+  DEMO_GENERATING: "Generando demo (en desuso)",
+  DEMO_READY: "Demo lista (en desuso)",
   OUTREACH_READY: "Mensaje listo",
   SENT_MANUALLY: "Enviado manualmente",
   WAITING_RESPONSE: "Esperando respuesta",
@@ -101,10 +102,11 @@ export const TRANSITIONS: Record<PipelineStatus, readonly PipelineStatus[]> = {
   DISCOVERED: ["RESEARCHING", "REJECTED"],
   RESEARCHING: ["QUALIFIED", "REJECTED"],
   QUALIFIED: ["AUDITED", "REJECTED"],
-  AUDITED: ["DEMO_GENERATING", "REJECTED"],
-  DEMO_GENERATING: ["DEMO_READY", "AUDITED"],
-  DEMO_READY: ["OUTREACH_READY", "DEMO_GENERATING", "REJECTED"],
-  OUTREACH_READY: ["SENT_MANUALLY", "DEMO_READY", "REJECTED"],
+  AUDITED: ["OUTREACH_READY", "REJECTED"],
+  // Estados en desuso: solo permiten salir hacia el recorrido actual.
+  DEMO_GENERATING: ["AUDITED", "OUTREACH_READY"],
+  DEMO_READY: ["OUTREACH_READY", "AUDITED", "REJECTED"],
+  OUTREACH_READY: ["SENT_MANUALLY", "AUDITED", "REJECTED"],
   SENT_MANUALLY: ["WAITING_RESPONSE"],
   WAITING_RESPONSE: ["REPLIED_POSITIVE", "REPLIED_NEGATIVE", "FOLLOW_UP_REQUIRED"],
   FOLLOW_UP_REQUIRED: ["SENT_MANUALLY", "CLOSED"],
@@ -131,8 +133,6 @@ const AGENT_TARGETS: ReadonlySet<PipelineStatus> = new Set<PipelineStatus>([
   "QUALIFIED",
   "REJECTED",
   "AUDITED",
-  "DEMO_GENERATING",
-  "DEMO_READY",
   "OUTREACH_READY",
   "STAGING",
   "QA",

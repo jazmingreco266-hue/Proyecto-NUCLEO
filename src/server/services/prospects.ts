@@ -17,6 +17,7 @@ import {
 } from "@/domain/validation";
 import { z } from "zod";
 import { audit } from "../audit";
+import { recomputeOpportunity } from "./opportunity";
 import {
   actorOf,
   assertCan,
@@ -367,7 +368,7 @@ export async function addFact(db: Db, who: Principal, input: unknown) {
   assertCan(who, "facts.write");
   const data = parse(factInputSchema, input);
   const actor = actorOf(who);
-  return db.transaction(async (tx) => {
+  const fact = await db.transaction(async (tx) => {
     const [p] = await tx
       .select({ id: prospects.id })
       .from(prospects)
@@ -403,6 +404,8 @@ export async function addFact(db: Db, who: Principal, input: unknown) {
     });
     return fact!;
   });
+  await recomputeOpportunity(db, data.prospectId);
+  return fact;
 }
 
 export async function listFacts(db: Db, who: Principal, prospectId: string) {
@@ -418,7 +421,7 @@ export async function removeFact(db: Db, who: Principal, factId: string, reason:
   assertCan(who, "facts.write");
   if (who.kind !== "user") throw new UserFacingError("Solo una persona puede retirar un dato.");
   if (!reason?.trim()) throw new UserFacingError("Explicá por qué se retira el dato.");
-  return db.transaction(async (tx) => {
+  const prospectId = await db.transaction(async (tx) => {
     const [f] = await tx
       .update(prospectFacts)
       .set({ deletedAt: new Date() })
@@ -431,7 +434,9 @@ export async function removeFact(db: Db, who: Principal, factId: string, reason:
       entityId: f.prospectId,
       metadata: { dato: f.id, campo: f.field, motivo: reason },
     });
+    return f.prospectId;
   });
+  await recomputeOpportunity(db, prospectId);
 }
 
 // ─────────────────────────── Notas ───────────────────────────

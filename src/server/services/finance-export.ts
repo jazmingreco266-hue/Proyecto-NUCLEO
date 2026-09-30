@@ -109,11 +109,12 @@ export async function financeWorkbook(db: Db, who: Principal): Promise<Buffer> {
       { header: "Subtotal", type: "money", width: 16 },
       { header: "Descuento %", type: "number", width: 12 },
       { header: "Impuesto %", type: "number", width: 12 },
-      { header: "Total", type: "money", width: 16 },
+      { header: "Total pago único", type: "money", width: 16 },
+      { header: "Abono mensual", type: "money", width: 16 },
       { header: "Estado", type: "text", width: 11 },
       { header: "Válido hasta", type: "date", width: 12 },
     ],
-    rows: q.map((r) => [r.number, r.createdAt.toISOString().slice(0, 10), r.clientName, r.currency, Number(r.subtotal), Number(r.discountPct), Number(r.taxPct), Number(r.total), r.status, r.validUntil]),
+    rows: q.map((r) => [r.number, r.createdAt.toISOString().slice(0, 10), r.clientName, r.currency, Number(r.subtotal), Number(r.discountPct), Number(r.taxPct), Number(r.total), Number(r.monthlyTotal), r.status, r.validUntil]),
   };
 
   await audit(db, who, { action: "finance.export", metadata: { ventas: s.length, gastos: e.length, presupuestos: q.length } });

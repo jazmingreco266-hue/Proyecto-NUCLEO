@@ -8,6 +8,7 @@
  * - El sistema los prepara; una persona los revisa y los envía.
  */
 import type { Check } from "./site-audit";
+import type { Upsell } from "./upsell";
 
 export function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -22,6 +23,8 @@ export type OutreachInput = {
   auditChecks: Check[] | null;
   sender: Sender;
   allowedChannels: string[];
+  /** Servicios adicionales detectados (chatbot, base de datos), cada uno con su motivo. */
+  upsells?: Pick<Upsell, "service" | "pitch" | "signals">[];
 };
 
 export type OutreachContent = {
@@ -35,6 +38,8 @@ export type OutreachContent = {
   social: string;
   channel: { suggested: string; reason: string; available: string[] };
   bestTime: { text: string; basis: string };
+  /** Frases sobre servicios adicionales incluidas en los mensajes. */
+  extras: string[];
   warnings: string[];
 };
 
@@ -144,6 +149,9 @@ export function buildOutreach(i: OutreachInput): OutreachContent {
   const positiveLine = positive ? `Estuve mirando ${name} y me llamó la atención esto: «${positive}».` : `Estuve mirando el sitio de ${name}.`;
   const bullets = improvements.length ? improvements : ["[escribí acá una mejora concreta]"];
 
+  // Una frase por servicio adicional, solo si hay un dato que la respalde.
+  const extras = (i.upsells ?? []).slice(0, 2).map((u) => `También vi que ${u.signals[0]!.label}: ${u.pitch}.`);
+
   const emailText = [
     `Hola, equipo de ${name}:`,
     "",
@@ -151,6 +159,7 @@ export function buildOutreach(i: OutreachInput): OutreachContent {
     "",
     "Vi algunas oportunidades para que el sitio les traiga más consultas:",
     ...bullets.map((b) => `• ${b[0]!.toUpperCase()}${b.slice(1)}.`),
+    ...(extras.length ? ["", ...extras] : []),
     "",
     "Si les interesa, les armo una propuesta concreta, sin compromiso.",
     "¿Les parece si lo charlamos 15 minutos cuando les quede cómodo?",
@@ -172,6 +181,7 @@ export function buildOutreach(i: OutreachInput): OutreachContent {
 <p style="margin:0 0 16px">${e(intro)} ${e(positiveLine)}</p>
 <p style="margin:0 0 8px">Vi algunas oportunidades para que el sitio les traiga más consultas:</p>
 <ul style="margin:0 0 20px;padding-left:20px">${bullets.map((b) => `<li style="margin:0 0 6px">${e(b[0]!.toUpperCase() + b.slice(1))}.</li>`).join("")}</ul>
+${extras.map((x) => `<p style="margin:0 0 16px">${e(x)}</p>`).join("")}
 <p style="margin:0 0 20px">Si les interesa, les armo una propuesta concreta, sin compromiso.</p>
 <p style="margin:0 0 20px">¿Les parece si lo charlamos 15 minutos cuando les quede cómodo?</p>
 <p style="margin:0 0 24px">Saludos,<br>${signatureLines.map(e).join("<br>")}</p>
@@ -184,6 +194,7 @@ export function buildOutreach(i: OutreachInput): OutreachContent {
     `Hola, ¿cómo están? ${intro}`,
     positive ? `Vi ${name} y me llamó la atención: «${positive}».` : `Estuve viendo el sitio de ${name}.`,
     `Vi algunas mejoras posibles para su web, como ${bullets[0]}.`,
+    ...extras.slice(0, 1),
     "Si les interesa, les cuento sin compromiso. Y si no, no hay problema.",
   ].join("\n");
 
@@ -207,6 +218,7 @@ export function buildOutreach(i: OutreachInput): OutreachContent {
     social,
     channel: channels(i.facts, i.allowedChannels),
     bestTime: bestTime(i.country),
+    extras,
     warnings,
   };
 }

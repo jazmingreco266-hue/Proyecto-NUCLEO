@@ -7,6 +7,7 @@
  * Es una estimación para ordenar prospectos, no una probabilidad de venta.
  */
 import type { Check } from "./site-audit";
+import { detectUpsells } from "./upsell";
 
 export const OPPORTUNITY_VERSION = 1;
 export const MIN_CRITERIA = 3;
@@ -21,7 +22,7 @@ export type Criterion = {
 
 export type OpportunityInput = {
   audit: { siteScore: number | null; checks: Check[] } | null;
-  facts: { category: string; field: string; kind: string; verification: string }[];
+  facts: { category: string; field: string; kind: string; verification: string; value?: string }[];
   research: { recommendation: "qualify" | "reject" | "unsure" } | null;
 };
 
@@ -117,6 +118,20 @@ export function computeOpportunity(i: OpportunityInput): Opportunity {
           detail: `${i.facts.length} dato(s), ${observed} observado(s) con fuente.`,
         }
       : { key: "informacion", label: "Calidad de la información", weight: 1, score: null, detail: "Todavía no hay datos cargados." },
+  );
+
+  // 6. Servicios adicionales (chatbot, base de datos): más valor por cliente y posible abono mensual.
+  const extra = detectUpsells(i.facts.map((f) => ({ ...f, value: f.value ?? "", sourceUrl: null })));
+  c.push(
+    i.facts.length
+      ? {
+          key: "adicionales",
+          label: "Potencial de chatbot o base de datos",
+          weight: 1,
+          score: extra.length === 0 ? 0 : extra.length === 1 ? 60 : 100,
+          detail: extra.length ? `Posible: ${extra.map((u) => u.service.toLowerCase()).join(" y ")} (hipótesis a confirmar).` : "No hay señales en los datos cargados.",
+        }
+      : { key: "adicionales", label: "Potencial de chatbot o base de datos", weight: 1, score: null, detail: "Todavía no hay datos cargados." },
   );
 
   // Criterios que hoy no se pueden medir sin inventar.

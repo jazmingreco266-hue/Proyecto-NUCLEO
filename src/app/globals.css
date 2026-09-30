@@ -459,3 +459,7 @@ table.cards.fit { min-width: 0; }
 .quote-table td:first-child { min-width: 14rem; }
 .quote-table td:first-child input { width: 100%; }
 .inline-btn { justify-self: start; width: auto; }
+.totals .totals-head { font-weight: 600; color: var(--text); margin-top: 0.4rem; }
+.tag-service { border-color: color-mix(in srgb, var(--g-prospeccion) 50%, var(--line)); color: var(--g-prospeccion); }
+.upsell { border-top: 1px solid var(--line); padding-top: 0.9rem; display: grid; gap: 0.4rem; }
+.upsell:first-of-type { border-top: 0; padding-top: 0; }

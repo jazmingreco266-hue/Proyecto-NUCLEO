@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db/client";
-import { quoteTotals, type QuoteLine } from "@/domain/finance";
+import { quoteSplit, type QuoteLine } from "@/domain/finance";
 import { requireUser } from "@/server/auth/current";
 import { NotFoundError } from "@/server/principal";
 import { getQuote } from "@/server/services/finance";
@@ -26,7 +26,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
   }
   const { data: settings } = await getSettings(db, me);
   const lines = q.lines as QuoteLine[];
-  const t = quoteTotals(lines, Number(q.discountPct), Number(q.taxPct));
+  const { oneTime: t, monthly: mo } = quoteSplit(lines, Number(q.discountPct), Number(q.taxPct));
   const m = (n: number) => formatMoney(n, q.currency);
   const s = settings.sender;
 
@@ -85,7 +85,10 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
           <tbody>
             {lines.map((l, i) => (
               <tr key={i}>
-                <td>{l.description}</td>
+                <td>
+                  {l.description}
+                  {l.recurring ? <span className="faint"> · mensual</span> : null}
+                </td>
                 <td className="num">{l.quantity}</td>
                 <td className="num">{m(l.unitPrice)}</td>
                 <td className="num">{m(l.quantity * l.unitPrice)}</td>
@@ -94,7 +97,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
           </tbody>
         </table>
         <dl className="dl totals">
-          <dt>Subtotal</dt>
+          <dt>Subtotal (pago único)</dt>
           <dd className="num">{m(t.subtotal)}</dd>
           {t.discount > 0 && (
             <>
@@ -109,11 +112,21 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
             </>
           )}
           <dt>
-            <strong>Total</strong>
+            <strong>Total pago único</strong>
           </dt>
           <dd className="num">
             <strong>{m(Number(q.total))}</strong>
           </dd>
+          {mo.subtotal > 0 && (
+            <>
+              <dt>
+                <strong>Abono mensual</strong>
+              </dt>
+              <dd className="num">
+                <strong>{m(Number(q.monthlyTotal))} / mes</strong>
+              </dd>
+            </>
+          )}
         </dl>
         {q.notes && <p className="note-body">{q.notes}</p>}
       </article>

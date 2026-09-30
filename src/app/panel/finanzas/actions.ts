@@ -161,6 +161,7 @@ export async function savePortfolioAction(_: ActionState, f: FormData): Promise<
             .split(",")
             .map((t) => t.trim())
             .filter(Boolean),
+          services: f.getAll("services").map(String),
           featured: f.get("featured") === "on",
           clientOk: f.get("clientOk") === "on",
         },

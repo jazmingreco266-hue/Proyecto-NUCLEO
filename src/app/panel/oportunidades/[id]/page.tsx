@@ -22,6 +22,7 @@ import { getSettings } from "@/server/services/settings";
 import { aiConfigured } from "@/agents/ai";
 import { RESEARCH_ESTIMATED_COST_USD } from "@/domain/research";
 import type { Opportunity } from "@/domain/opportunity";
+import { detectUpsells, type Upsell } from "@/domain/upsell";
 import { latestMessages } from "@/server/services/outreach";
 import { CopyButton } from "../../../ui/copy-button";
 import { AUDIT_CATEGORIES, type CategoryKey, type CategoryResult, type Check, type Recommendation } from "@/domain/site-audit";
@@ -131,6 +132,13 @@ export default async function ProspectPage({
       : null,
   ]);
   const messages = tab === "mensajes" ? await latestMessages(db, me, p.id) : null;
+  const upsellData =
+    tab === "empresa"
+      ? detectUpsells(
+          facts,
+          can(me, "finance.read") ? (await getSettings(db, me)).data.pricing.items : [],
+        )
+      : null;
   const researchData =
     tab === "investigacion"
       ? await Promise.all([
@@ -265,6 +273,9 @@ export default async function ProspectPage({
                 </dd>
               </dl>
             </section>
+          )}
+          {tab === "empresa" && upsellData && (
+            <UpsellPanel upsells={upsellData} />
           )}
 
           {tab === "investigacion" && (
@@ -914,5 +925,52 @@ function MessageBlock({ title, text, children }: { title: string; text: string; 
       </div>
       <pre className="message">{text}</pre>
     </div>
+  );
+}
+
+// ─────────────────────────── Servicios adicionales ───────────────────────────
+
+function UpsellPanel({ upsells }: { upsells: Upsell[] }) {
+  return (
+    <section className="panel stack" aria-labelledby="t-upsell">
+      <h2 id="t-upsell">Otros servicios que podrían servirle</h2>
+      {upsells.length === 0 ? (
+        <p className="faint">
+          No hay señales en los datos cargados. Aparecen cuando la investigación o vos cargan datos como «turnos», «pedidos»,
+          «catálogo» o un WhatsApp de consultas.
+        </p>
+      ) : (
+        <>
+          <p className="faint">Hipótesis a confirmar con el cliente, a partir de los datos cargados. No son hechos.</p>
+          {upsells.map((u) => (
+            <article key={u.service} className="upsell">
+              <h3>{u.service}</h3>
+              <p>{u.solution}</p>
+              <p className="muted">Beneficio: {u.benefit}</p>
+              <ul className="issues">
+                {u.signals.map((s) => (
+                  <li key={s.id}>
+                    Señal: {s.label}. Dato: «{s.evidence}»{" "}
+                    <span className="faint">({s.kind === "observed" ? "observado" : s.kind === "inference" ? "inferencia" : "hipótesis"})</span>
+                    {s.sourceUrl && (
+                      <>
+                        {" "}
+                        · <ExternalLink href={s.sourceUrl}>fuente</ExternalLink>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {u.priceItems.length > 0 && (
+                <p className="faint">
+                  En tu lista de precios:{" "}
+                  {u.priceItems.map((i) => `${i.name} (${new Intl.NumberFormat("es-AR").format(i.price)}${i.recurring ? " por mes" : ""})`).join(" · ")}
+                </p>
+              )}
+            </article>
+          ))}
+        </>
+      )}
+    </section>
   );
 }

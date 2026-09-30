@@ -18,7 +18,7 @@ export async function recomputeOpportunity(db: Db, prospectId: string): Promise<
     .orderBy(desc(siteAudits.version))
     .limit(1);
   const facts = await db
-    .select({ category: prospectFacts.category, field: prospectFacts.field, kind: prospectFacts.kind, verification: prospectFacts.verification })
+    .select({ category: prospectFacts.category, field: prospectFacts.field, value: prospectFacts.value, kind: prospectFacts.kind, verification: prospectFacts.verification })
     .from(prospectFacts)
     .where(and(eq(prospectFacts.prospectId, prospectId), isNull(prospectFacts.deletedAt)));
   const [research] = await db

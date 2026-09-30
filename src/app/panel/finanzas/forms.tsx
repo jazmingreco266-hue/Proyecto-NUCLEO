@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { EXPENSE_CATEGORIES, parseAmount, quoteTotals, type QuoteLine } from "@/domain/finance";
+import { EXPENSE_CATEGORIES, parseAmount, quoteSplit, SERVICE_KINDS, type QuoteLine } from "@/domain/finance";
 import { ActionForm } from "../../ui/action-form";
 import {
   createExpenseAction,
@@ -168,8 +168,8 @@ export function VoidForm({ kind, id }: { kind: "sale" | "expense"; id: string })
 
 // ─────────────────────────── Cotizador ───────────────────────────
 
-type PriceItem = { name: string; price: number };
-type Row = { key: number; description: string; quantity: string; unitPrice: string };
+type PriceItem = { name: string; price: number; recurring?: boolean };
+type Row = { key: number; description: string; quantity: string; unitPrice: string; recurring: boolean };
 
 const num = (v: string) => {
   const n = Number(parseAmount(v));
@@ -184,9 +184,12 @@ export function QuoteCalculator({ items, currency, taxPct }: { items: PriceItem[
   const [nextKey, setNextKey] = useState(1);
 
   const lines: QuoteLine[] = rows
-    .map((r) => ({ description: r.description.trim(), quantity: num(r.quantity), unitPrice: num(r.unitPrice) }))
+    .map((r) => ({ description: r.description.trim(), quantity: num(r.quantity), unitPrice: num(r.unitPrice), recurring: r.recurring }))
     .filter((l) => l.description && l.quantity > 0);
-  const t = useMemo(() => quoteTotals(lines, Math.min(100, Math.max(0, num(discount))), Math.min(100, Math.max(0, num(tax)))), [lines, discount, tax]);
+  const { oneTime: t, monthly: mo } = useMemo(
+    () => quoteSplit(lines, Math.min(100, Math.max(0, num(discount))), Math.min(100, Math.max(0, num(tax)))),
+    [lines, discount, tax],
+  );
   let fmt: Intl.NumberFormat;
   try {
     fmt = new Intl.NumberFormat("es-AR", { style: "currency", currency: cur || "ARS", maximumFractionDigits: 2 });
@@ -194,8 +197,8 @@ export function QuoteCalculator({ items, currency, taxPct }: { items: PriceItem[
     fmt = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
   }
 
-  const add = (description = "", unitPrice = "") => {
-    setRows((r) => [...r, { key: nextKey, description, quantity: "1", unitPrice }]);
+  const add = (description = "", unitPrice = "", recurring = false) => {
+    setRows((r) => [...r, { key: nextKey, description, quantity: "1", unitPrice, recurring }]);
     setNextKey((k) => k + 1);
   };
   const update = (key: number, patch: Partial<Row>) => setRows((r) => r.map((x) => (x.key === key ? { ...x, ...patch } : x)));
@@ -225,8 +228,9 @@ export function QuoteCalculator({ items, currency, taxPct }: { items: PriceItem[
             {items.length ? (
               <div className="chips">
                 {items.map((i) => (
-                  <button key={i.name} type="button" className="btn btn-small" onClick={() => add(i.name, String(i.price))}>
+                  <button key={i.name} type="button" className="btn btn-small" onClick={() => add(i.name, String(i.price), i.recurring ?? false)}>
                     + {i.name} · {fmt.format(i.price)}
+                    {i.recurring ? " / mes" : ""}
                   </button>
                 ))}
               </div>
@@ -247,6 +251,7 @@ export function QuoteCalculator({ items, currency, taxPct }: { items: PriceItem[
                     <th scope="col">Cant.</th>
                     <th scope="col">Precio unitario</th>
                     <th scope="col">Importe</th>
+                    <th scope="col">Mensual</th>
                     <th scope="col">
                       <span className="sr-only">Quitar</span>
                     </th>
@@ -265,6 +270,9 @@ export function QuoteCalculator({ items, currency, taxPct }: { items: PriceItem[
                         <input aria-label="Precio unitario" inputMode="decimal" value={r.unitPrice} onChange={(e) => update(r.key, { unitPrice: e.target.value })} />
                       </td>
                       <td className="num">{fmt.format(num(r.quantity) * num(r.unitPrice))}</td>
+                      <td>
+                        <input type="checkbox" aria-label="Se cobra todos los meses" checked={r.recurring} onChange={(e) => update(r.key, { recurring: e.target.checked })} />
+                      </td>
                       <td>
                         <button type="button" className="btn btn-ghost btn-small" onClick={() => setRows((x) => x.filter((y) => y.key !== r.key))}>
                           Quitar
@@ -290,6 +298,8 @@ export function QuoteCalculator({ items, currency, taxPct }: { items: PriceItem[
           </div>
 
           <dl className="dl totals" aria-live="polite">
+            <dt className="totals-head">Pago único</dt>
+            <dd />
             <dt>Subtotal</dt>
             <dd className="num">{fmt.format(t.subtotal)}</dd>
             {t.discount > 0 && (
@@ -310,6 +320,18 @@ export function QuoteCalculator({ items, currency, taxPct }: { items: PriceItem[
             <dd className="num">
               <strong>{fmt.format(t.total)}</strong>
             </dd>
+            {mo.subtotal > 0 && (
+              <>
+                <dt className="totals-head">Abono mensual</dt>
+                <dd />
+                <dt>
+                  <strong>Total por mes</strong>
+                </dt>
+                <dd className="num">
+                  <strong>{fmt.format(mo.total)}</strong>
+                </dd>
+              </>
+            )}
           </dl>
 
           <label className="field">
@@ -361,6 +383,7 @@ export type PortfolioDraft = {
   summary: string;
   highlights: string[];
   tags: string[];
+  services: string[];
   featured: boolean;
   clientOk: boolean;
 };
@@ -402,6 +425,16 @@ export function PortfolioForm({ item }: { item?: PortfolioDraft }) {
             <span>Etiquetas (separadas por coma)</span>
             <input name="tags" maxLength={400} defaultValue={v.tags ?? d?.tags.join(", ")} placeholder="gastronomía, tienda online" />
           </label>
+          <fieldset>
+            <legend>Qué se hizo</legend>
+            <div className="chips">
+              {SERVICE_KINDS.map((k) => (
+                <label key={k} className="check-field">
+                  <input type="checkbox" name="services" value={k} defaultChecked={d?.services.includes(k) ?? false} /> {k}
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <label className="check-field">
             <input type="checkbox" name="featured" defaultChecked={d?.featured ?? false} /> Destacado
           </label>

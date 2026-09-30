@@ -333,6 +333,7 @@ export const quotes = pgTable("quotes", {
   taxPct: numeric("tax_pct", { precision: 5, scale: 2 }).notNull().default("0"),
   subtotal: numeric("subtotal", { precision: 14, scale: 2 }).notNull(),
   total: numeric("total", { precision: 14, scale: 2 }).notNull(),
+  monthlyTotal: numeric("monthly_total", { precision: 14, scale: 2 }).notNull().default("0"),
   validUntil: date("valid_until", { mode: "string" }),
   notes: text("notes"),
   status: text("status", { enum: ["borrador", "enviado", "aceptado", "rechazado"] }).notNull().default("borrador"),
@@ -354,6 +355,7 @@ export const portfolioItems = pgTable("portfolio_items", {
   summary: text("summary").notNull().default(""),
   highlights: text("highlights").array().notNull().default([]),
   tags: text("tags").array().notNull().default([]),
+  services: text("services").array().notNull().default([]),
   featured: boolean("featured").notNull().default(false),
   clientOk: boolean("client_ok").notNull().default(false),
   createdBy: uuid("created_by")

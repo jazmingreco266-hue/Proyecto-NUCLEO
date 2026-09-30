@@ -36,7 +36,10 @@ sensible antes de que ocurra.
   **Excel** con ventas, gastos, resultado mensual (con fórmulas), balance y presupuestos.
 - **Cotizador**: presupuestos con tu lista de precios y total en vivo; versión para imprimir o guardar en PDF;
   un presupuesto aceptado se registra como venta con un clic.
-- **Portafolio** de sitios terminados, con autorización del cliente para mostrarlos.
+- **Chatbots y bases de datos** como servicios: el cotizador admite abonos mensuales, cada empresa muestra si le
+  serviría un chatbot o una base de datos (con el dato que lo motivó, como hipótesis), los mensajes lo mencionan
+  cuando hay señales y el puntaje de oportunidad lo tiene en cuenta.
+- **Portafolio** de trabajos terminados (sitios, chatbots, bases de datos, sistemas), con autorización del cliente.
 - **Copia de seguridad** completa (JSON) y aviso si pasó más de una semana desde la última.
 - **Cola de agentes** con reintentos, control de presupuesto, horario y nivel de autonomía,
   y la página **Tareas** para ver, reintentar o cancelar trabajos.

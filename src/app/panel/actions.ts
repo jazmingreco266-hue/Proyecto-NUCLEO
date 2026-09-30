@@ -77,8 +77,8 @@ export async function saveSettingsAction(_: ActionState, form: FormData): Promis
       currency: s(form, "pricingCurrency"),
       taxPct: s(form, "pricingTaxPct"),
       items: list(form, "pricingItems").map((l) => {
-        const [name, price] = l.split("|").map((x) => x.trim());
-        return { name: name ?? "", price: parseAmount(price ?? "") };
+        const [name, price, kind] = l.split("|").map((x) => x.trim());
+        return { name: name ?? "", price: parseAmount(price ?? ""), recurring: /^mensual/i.test(kind ?? "") };
       }),
     },
     sender: {

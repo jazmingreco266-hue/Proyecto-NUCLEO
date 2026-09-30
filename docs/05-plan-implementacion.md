@@ -97,6 +97,20 @@ prospecto conocido y revisar el resultado.
   y avisa si pasaron más de 7 días. Las copias automáticas en la nube dependen del proveedor de la base de datos
   (revisar su plan); el panel no guarda copias fuera de la base por su cuenta.
 
+## Etapa 7 (primer bloque): chatbots y bases de datos (30/09/2026)
+
+- `src/domain/upsell.ts`: señales en los datos cargados (WhatsApp de consultas, turnos, pedidos, catálogo o stock,
+  clientes recurrentes) → sugerencia de chatbot o base de datos / CRM, con el dato y la fuente que la motivan.
+  Siempre como hipótesis a confirmar con el cliente. No estima complejidad ni plazos (no hay datos para hacerlo).
+- Cotizador: ítems de pago único o mensuales; el presupuesto muestra ambos totales. Registrar como venta toma solo
+  el pago único (los abonos se registran como venta cuando se cobran).
+- Precios iniciales de referencia (piso de los rangos): chatbot a medida ARS 800.000 (primer año ARS 800.000–4.000.000,
+  [DoubleTick, 06/2026](https://www.doubletick.com.ar/cuanto-cuesta-chatbot-whatsapp-argentina/)); CRM a medida básico
+  ARS 2.000.000 y mantenimiento ARS 120.000/mes ([SODI, 04/2026](https://www.sodi.com.ar/blog/cuanto-cuesta-crm-para-pymes)).
+- Puntaje de oportunidad: nuevo criterio «Potencial de chatbot o base de datos» (peso 1).
+- Mensajes: una frase por servicio sugerido, solo si hay una señal.
+- Portafolio: qué se hizo (sitio web, tienda, chatbot, base de datos, sistema interno, mantenimiento).
+
 ### Puntaje de oportunidad
 
 Promedio ponderado de los criterios **que tienen datos**: necesidad de modernización (peso 3, sale del

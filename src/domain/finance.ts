@@ -77,8 +77,13 @@ export const quoteLineSchema = z.object({
   description: z.string().trim().min(1).max(200),
   quantity: z.coerce.number().positive().max(10_000),
   unitPrice: z.coerce.number().min(0).max(1e12),
+  /** true = abono mensual (mantenimiento, chatbot, hosting); false = pago único. */
+  recurring: z.boolean().optional().default(false),
 });
-export type QuoteLine = z.infer<typeof quoteLineSchema>;
+export type QuoteLine = { description: string; quantity: number; unitPrice: number; recurring?: boolean };
+
+/** Servicios que ofrece la agencia (para el portafolio y las oportunidades). */
+export const SERVICE_KINDS = ["Sitio web", "Tienda online", "Chatbot", "Base de datos / CRM", "Sistema interno", "Mantenimiento"] as const;
 
 export const quoteInputSchema = z.object({
   clientName: z.string().trim().min(2, "Falta el cliente").max(200),
@@ -100,6 +105,14 @@ export function quoteTotals(lines: QuoteLine[], discountPct: number, taxPct: num
   const taxable = sub - disc;
   const tax = Math.round((taxable * taxPct) / 100);
   return { subtotal: fromCents(sub), discount: fromCents(disc), taxable: fromCents(taxable), tax: fromCents(tax), total: fromCents(taxable + tax) };
+}
+
+/** Totales separados: lo que se paga una vez y lo que se paga todos los meses. Descuento e impuesto aplican a ambos. */
+export function quoteSplit(lines: QuoteLine[], discountPct: number, taxPct: number): { oneTime: QuoteTotals; monthly: QuoteTotals } {
+  return {
+    oneTime: quoteTotals(lines.filter((l) => !l.recurring), discountPct, taxPct),
+    monthly: quoteTotals(lines.filter((l) => l.recurring), discountPct, taxPct),
+  };
 }
 
 // ─────────────────────────── Resultados ───────────────────────────

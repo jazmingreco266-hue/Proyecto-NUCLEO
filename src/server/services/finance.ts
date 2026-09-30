@@ -12,8 +12,9 @@ import {
   expenseInputSchema,
   monthlySummary,
   quoteInputSchema,
-  quoteTotals,
+  quoteSplit,
   saleInputSchema,
+  SERVICE_KINDS,
   type Movement,
 } from "@/domain/finance";
 import { sourceUrlSchema } from "@/domain/validation";
@@ -198,7 +199,7 @@ export async function createQuote(db: Db, who: Principal, input: unknown): Promi
   assertCan(who, "finance.write");
   const d = parse(quoteInputSchema, input);
   const by = userId(who);
-  const t = quoteTotals(d.lines, d.discountPct, d.taxPct);
+  const { oneTime: t, monthly } = quoteSplit(d.lines, d.discountPct, d.taxPct);
   return db.transaction(async (tx) => {
     const [row] = await tx
       .insert(quotes)
@@ -211,12 +212,13 @@ export async function createQuote(db: Db, who: Principal, input: unknown): Promi
         taxPct: d.taxPct.toFixed(2),
         subtotal: t.subtotal.toFixed(2),
         total: t.total.toFixed(2),
+        monthlyTotal: monthly.total.toFixed(2),
         validUntil: d.validUntil ?? null,
         notes: d.notes ?? null,
         createdBy: by,
       })
       .returning();
-    await audit(tx, who, { action: "quote.create", entityType: "quote", entityId: row!.id, metadata: { numero: row!.number, total: t.total, moneda: d.currency } });
+    await audit(tx, who, { action: "quote.create", entityType: "quote", entityId: row!.id, metadata: { numero: row!.number, total: t.total, mensual: monthly.total, moneda: d.currency } });
     return row!;
   });
 }
@@ -251,6 +253,7 @@ export async function quoteToSale(db: Db, who: Principal, id: string): Promise<S
     if (!q) throw new NotFoundError("El presupuesto");
     if (q.status !== "aceptado") throw new ConflictError("Solo un presupuesto aceptado se registra como venta.");
     if (q.saleId) throw new ConflictError("Este presupuesto ya se registró como venta.");
+    if (Number(q.total) <= 0) throw new ConflictError("El presupuesto no tiene pagos únicos: registrá cada cobro mensual como venta cuando lo cobres.");
     const [sale] = await tx
       .insert(sales)
       .values({
@@ -298,6 +301,7 @@ export const portfolioInputSchema = z.object({
   summary: z.string().trim().max(2000),
   highlights: lines(8),
   tags: lines(12),
+  services: z.array(z.enum(SERVICE_KINDS)).max(SERVICE_KINDS.length).default([]),
   featured: z.boolean(),
   clientOk: z.boolean(),
 });

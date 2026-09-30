@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { Db } from "@/db/client";
 import { outreachMessages, prospectFacts, prospects, siteAudits } from "@/db/schema";
 import { buildOutreach, type OutreachContent } from "@/domain/outreach";
+import { detectUpsells } from "@/domain/upsell";
 import type { Check } from "@/domain/site-audit";
 import { audit } from "../audit";
 import { actorOf, assertCan, NotFoundError, UserFacingError, type Principal } from "../principal";
@@ -34,7 +35,14 @@ export async function prepareMessages(db: Db, who: Principal, prospectId: string
     .orderBy(desc(siteAudits.version))
     .limit(1);
 
+  const upsells = detectUpsells(
+    (await db
+      .select({ category: prospectFacts.category, field: prospectFacts.field, value: prospectFacts.value, kind: prospectFacts.kind, sourceUrl: prospectFacts.sourceUrl })
+      .from(prospectFacts)
+      .where(and(eq(prospectFacts.prospectId, prospectId), isNull(prospectFacts.deletedAt)))),
+  );
   const content = buildOutreach({
+    upsells,
     businessName: p.name,
     country: p.country,
     facts,

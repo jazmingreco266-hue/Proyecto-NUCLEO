@@ -96,7 +96,8 @@ CREATE TABLE quotes (
   discount_pct  numeric(5,2) NOT NULL DEFAULT 0 CHECK (discount_pct BETWEEN 0 AND 100),
   tax_pct       numeric(5,2) NOT NULL DEFAULT 0 CHECK (tax_pct BETWEEN 0 AND 100),
   subtotal      numeric(14,2) NOT NULL CHECK (subtotal >= 0),
-  total         numeric(14,2) NOT NULL CHECK (total >= 0),
+  total         numeric(14,2) NOT NULL CHECK (total >= 0),          -- pago único
+  monthly_total numeric(14,2) NOT NULL DEFAULT 0 CHECK (monthly_total >= 0), -- abono mensual (chatbot, mantenimiento…)
   valid_until   date,
   notes         text,
   status        text NOT NULL DEFAULT 'borrador' CHECK (status IN ('borrador', 'enviado', 'aceptado', 'rechazado')),
@@ -113,10 +114,10 @@ BEGIN
     RAISE EXCEPTION 'Los presupuestos no se borran: se marcan como rechazados';
   END IF;
   IF (NEW.id, NEW.number, NEW.prospect_id, NEW.client_name, NEW.currency, NEW.lines, NEW.discount_pct,
-      NEW.tax_pct, NEW.subtotal, NEW.total, NEW.valid_until, NEW.notes, NEW.created_by, NEW.created_at)
+      NEW.tax_pct, NEW.subtotal, NEW.total, NEW.monthly_total, NEW.valid_until, NEW.notes, NEW.created_by, NEW.created_at)
      IS DISTINCT FROM
      (OLD.id, OLD.number, OLD.prospect_id, OLD.client_name, OLD.currency, OLD.lines, OLD.discount_pct,
-      OLD.tax_pct, OLD.subtotal, OLD.total, OLD.valid_until, OLD.notes, OLD.created_by, OLD.created_at) THEN
+      OLD.tax_pct, OLD.subtotal, OLD.total, OLD.monthly_total, OLD.valid_until, OLD.notes, OLD.created_by, OLD.created_at) THEN
     -- Única excepción: el prospecto se desvincula solo si se retira de la base.
     IF NOT (NEW.prospect_id IS NULL AND OLD.prospect_id IS NOT NULL) THEN
       RAISE EXCEPTION 'El contenido de un presupuesto no se edita: hacé uno nuevo';
@@ -139,6 +140,7 @@ CREATE TABLE portfolio_items (
   summary       text NOT NULL DEFAULT '',
   highlights    text[] NOT NULL DEFAULT '{}',
   tags          text[] NOT NULL DEFAULT '{}',
+  services      text[] NOT NULL DEFAULT '{}',   -- sitio web, chatbot, base de datos, sistema interno…
   featured      boolean NOT NULL DEFAULT false,
   client_ok     boolean NOT NULL DEFAULT false,   -- el cliente autorizó mostrarlo
   created_by    uuid NOT NULL REFERENCES users(id),

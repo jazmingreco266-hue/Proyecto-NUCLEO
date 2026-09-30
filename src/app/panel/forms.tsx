@@ -108,9 +108,12 @@ export function SettingsForm({ data, version, readOnly }: { data: Settings; vers
               </label>
             </div>
             <label className="field">
-              <span>Ítems (uno por línea: «nombre | precio»)</span>
-              <textarea name="pricingItems" rows={5} defaultValue={data.pricing.items.map((i) => `${i.name} | ${i.price}`).join("\n")} />
-              <small>Los valores iniciales son referencias de mercado de Argentina (2026). Reemplazalos por tus precios.</small>
+              <span>Ítems (uno por línea: «nombre | precio», y «| mensual» si se cobra todos los meses)</span>
+              <textarea name="pricingItems" rows={8} defaultValue={data.pricing.items.map((i) => `${i.name} | ${i.price}${i.recurring ? " | mensual" : ""}`).join("\n")} />
+              <small>
+                Los valores iniciales son el piso de rangos de mercado de Argentina (2026): sitios, chatbots y bases de datos.
+                Reemplazalos por tus precios.
+              </small>
             </label>
           </fieldset>
 

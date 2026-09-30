@@ -46,7 +46,8 @@ export default async function QuotesPage() {
                       N.º {q.number} · {q.clientName}
                     </Link>
                     <span className="cell-sub">
-                      {formatMoney(Number(q.total), q.currency)} · {QUOTE_STATUS_LABELS[q.status]} · <When date={q.createdAt} withTime={false} />
+                      {formatMoney(Number(q.total), q.currency)}
+                      {Number(q.monthlyTotal) > 0 ? ` + ${formatMoney(Number(q.monthlyTotal), q.currency)}/mes` : ""} · {QUOTE_STATUS_LABELS[q.status]} · <When date={q.createdAt} withTime={false} />
                     </span>
                   </li>
                 ))}

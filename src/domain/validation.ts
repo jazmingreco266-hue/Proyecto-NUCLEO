@@ -226,7 +226,9 @@ export const settingsSchema = z
     pricing: z.object({
       currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Moneda del cotizador: código de 3 letras"),
       taxPct: z.coerce.number().min(0).max(100),
-      items: z.array(z.object({ name: z.string().trim().min(2).max(120), price: z.coerce.number().min(0).max(1e12) })).max(60),
+      items: z
+        .array(z.object({ name: z.string().trim().min(2).max(120), price: z.coerce.number().min(0).max(1e12), recurring: z.boolean().optional().default(false) }))
+        .max(60),
     }),
   })
   .refine((s) => s.schedule.endHour > s.schedule.startHour, {
@@ -278,10 +280,15 @@ export const DEFAULT_SETTINGS: Settings = {
     currency: "ARS",
     taxPct: 0,
     items: [
-      { name: "Landing page", price: 300000 },
-      { name: "Sitio institucional (hasta 5 secciones)", price: 450000 },
-      { name: "Sitio corporativo (6 a 10 secciones)", price: 900000 },
-      { name: "Tienda online básica", price: 1000000 },
+      { name: "Landing page", price: 300000, recurring: false },
+      { name: "Sitio institucional (hasta 5 secciones)", price: 450000, recurring: false },
+      { name: "Sitio corporativo (6 a 10 secciones)", price: 900000, recurring: false },
+      { name: "Tienda online básica", price: 1000000, recurring: false },
+      // Chatbot: primer año de un desarrollo a medida, ARS 800.000–4.000.000 (DoubleTick, 06/2026).
+      { name: "Chatbot de WhatsApp (desarrollo)", price: 800000, recurring: false },
+      // CRM / base de datos a medida básico ARS 2–3 M; mantenimiento ARS 120.000–300.000/mes (SODI, 04/2026).
+      { name: "Base de datos / CRM a medida (básico)", price: 2000000, recurring: false },
+      { name: "Mantenimiento de base de datos / CRM", price: 120000, recurring: true },
     ],
   },
 };

@@ -18,7 +18,7 @@ export default async function PortfolioPage() {
         <div>
           <h1>Portafolio</h1>
           <p>
-            Los sitios terminados, para mostrar tu trabajo a nuevos clientes. Antes de mostrar uno afuera, confirmá que el cliente
+            Los trabajos terminados (sitios, chatbots, bases de datos y sistemas), para mostrarlos a nuevos clientes. Antes de mostrar uno afuera, confirmá que el cliente
             lo autorizó y usá solo logros medidos o confirmados por él.
           </p>
         </div>
@@ -46,7 +46,16 @@ export default async function PortfolioPage() {
                   <span className={`tag ${it.clientOk ? "" : "tag-paused"}`}>{it.clientOk ? "Autorizado por el cliente" : "Sin autorización para mostrar"}</span>
                 </div>
               </div>
-              {it.url && <ExternalLink href={it.url}>Ver el sitio</ExternalLink>}
+              {it.services.length > 0 && (
+                <div className="chips">
+                  {it.services.map((s) => (
+                    <span key={s} className="tag tag-service">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {it.url && <ExternalLink href={it.url}>Ver el trabajo</ExternalLink>}
               {it.summary && <p>{it.summary}</p>}
               {it.highlights.length > 0 && (
                 <ul className="issues">

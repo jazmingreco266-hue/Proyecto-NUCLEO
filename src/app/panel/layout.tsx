@@ -6,6 +6,7 @@ import { requireUser } from "@/server/auth/current";
 import { can } from "@/server/principal";
 import { logoutAction } from "../login/actions";
 import { Wordmark } from "../ui/brand";
+import { UpdateNotice } from "../ui/update-notice";
 import { Nav } from "./nav";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
@@ -50,6 +51,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
         </div>
       </aside>
       <main className="main" id="contenido">
+        <UpdateNotice />
         {children}
       </main>
     </div>

@@ -82,6 +82,21 @@ orquestador encole trabajo por su cuenta. Mientras esté en manual, solo corre l
 Se abre en su propia ventana, con el ícono de Núcleo. Los datos siempre se leen del servidor:
 el panel no guarda copias en el dispositivo, así que si perdés la tablet no se pierde ni se filtra nada.
 
+## Se actualiza solo (no hace falta reinstalar)
+
+Se instala **una sola vez**. Después, cada cambio llega solo:
+
+1. Cuando se aprueba (se une) un cambio en la rama `main` de GitHub, Vercel publica la versión nueva
+   automáticamente ([docs de Vercel](https://vercel.com/docs/git)). En esa publicación también se aplican
+   solas las actualizaciones de la base de datos (`npm run vercel-build`).
+2. La app instalada no guarda copias de las páginas, así que al abrirla ya muestra la versión nueva.
+3. Si la tenías abierta: al volver a la app se recarga sola. Si estabas escribiendo algo sin guardar, no recarga
+   (para no perderlo) y muestra **"Hay una versión nueva del panel · Actualizar"**. Además revisa cada 5 minutos.
+
+Para comparar versiones se usa el commit publicado (`VERCEL_GIT_COMMIT_SHA`, variable de sistema de Vercel;
+tiene que estar tildada la opción *Enable access to System Environment Variables* en Settings → Environment
+Variables — [docs](https://vercel.com/docs/environment-variables/system-environment-variables)).
+
 ## Cómo se protege lo que guardás
 
 - Cada cambio se guarda en PostgreSQL dentro de una transacción: o se guarda completo o no se guarda.

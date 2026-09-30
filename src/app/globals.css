@@ -113,6 +113,7 @@ legend { padding: 0 0.4rem; font-weight: 650; }
 .notice-error { border-color: color-mix(in srgb, var(--danger) 55%, var(--line)); color: var(--danger); }
 .notice-ok { border-color: color-mix(in srgb, var(--ok) 55%, var(--line)); color: var(--ok); }
 .notice-signal { border-color: color-mix(in srgb, var(--signal) 60%, var(--line)); }
+.update-notice { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
 
 /* ───────────── Estructura del panel ───────────── */
 

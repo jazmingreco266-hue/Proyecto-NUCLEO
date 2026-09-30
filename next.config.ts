@@ -21,6 +21,8 @@ const appVersion = process.env.VERCEL_GIT_COMMIT_SHA || `local-${Date.now()}`;
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   env: { NUCLEO_VERSION: appVersion },
+  // Logos y fotos del cliente se suben desde el panel (cada imagen hasta 3 MB).
+  experimental: { serverActions: { bodySizeLimit: "4mb" } },
   serverExternalPackages: ["pg", "bcryptjs"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

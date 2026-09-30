@@ -9,7 +9,7 @@ export const db = () => getDb();
 /** Vacía los datos entre tests. TRUNCATE no dispara los triggers de solo-agregado. */
 export async function resetData() {
   await db().execute(sql`TRUNCATE users, sessions, prospects, prospect_facts, pipeline_events,
-    approvals, approval_decisions, notes, settings, settings_history, audit_log, agent_runs, site_audits, outreach_messages, sales, expenses, quotes, portfolio_items
+    approvals, approval_decisions, notes, settings, settings_history, audit_log, agent_runs, site_audits, outreach_messages, sales, expenses, quotes, portfolio_items, brand_assets, site_briefs, site_builds
     RESTART IDENTITY CASCADE`);
 }
 

@@ -3,6 +3,7 @@ import {
   bigserial,
   boolean,
   char,
+  customType,
   date,
   integer,
   jsonb,
@@ -364,4 +365,58 @@ export const portfolioItems = pgTable("portfolio_items", {
   createdAt: ts("created_at").notNull().defaultNow(),
   updatedAt: ts("updated_at").notNull().defaultNow(),
   deletedAt: ts("deleted_at"),
+});
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+export const brandAssets = pgTable("brand_assets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  prospectId: uuid("prospect_id")
+    .notNull()
+    .references(() => prospects.id, { onDelete: "cascade" }),
+  kind: text("kind", { enum: ["logo", "foto"] }).notNull(),
+  mime: text("mime", { enum: ["image/png", "image/jpeg", "image/webp"] }).notNull(),
+  width: integer("width").notNull(),
+  height: integer("height").notNull(),
+  bytes: bytea("bytes").notNull(),
+  sha256: char("sha256", { length: 64 }).notNull(),
+  alt: text("alt").notNull().default(""),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => users.id),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const siteBriefs = pgTable("site_briefs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  prospectId: uuid("prospect_id")
+    .notNull()
+    .references(() => prospects.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  brand: jsonb("brand").notNull(),
+  content: jsonb("content").notNull(),
+  authorizationNote: text("authorization_note").notNull(),
+  createdByType: actorType("created_by_type").notNull(),
+  createdById: text("created_by_id"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const siteBuilds = pgTable("site_builds", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  prospectId: uuid("prospect_id")
+    .notNull()
+    .references(() => prospects.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  briefId: uuid("brief_id")
+    .notNull()
+    .references(() => siteBriefs.id),
+  template: text("template").notNull(),
+  html: text("html").notNull(),
+  css: text("css").notNull(),
+  quality: jsonb("quality").notNull(),
+  ready: boolean("ready").notNull(),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => users.id),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });

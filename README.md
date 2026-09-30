@@ -39,6 +39,11 @@ sensible antes de que ocurra.
 - **Chatbots y bases de datos** como servicios: el cotizador admite abonos mensuales, cada empresa muestra si le
   serviría un chatbot o una base de datos (con el dato que lo motivó, como hipótesis), los mensajes lo mencionan
   cuando hay señales y el puntaje de oportunidad lo tiene en cuenta.
+- **Sitio web del cliente** (solo clientes con proyecto aprobado): con su logo, colores, fuentes y fotos, y su
+  autorización registrada. Plantilla profesional en HTML y CSS, sin JavaScript, sin menciones a IA ni créditos.
+  **Control de calidad** que bloquea la entrega si hay frases de plantilla, datos sin completar, emojis, falta
+  de contraste o de contacto. Textos pulidos con IA opcionales, que se descartan si agregan datos. Vista previa
+  y descarga en .zip. Ver [docs/07-sitio-web.md](docs/07-sitio-web.md).
 - **Portafolio** de trabajos terminados (sitios, chatbots, bases de datos, sistemas), con autorización del cliente.
 - **Copia de seguridad** completa (JSON) y aviso si pasó más de una semana desde la última.
 - **Cola de agentes** con reintentos, control de presupuesto, horario y nivel de autonomía,
@@ -93,3 +98,4 @@ npm run typecheck
 | [04 · Permisos y seguridad](docs/04-permisos-y-seguridad.md) | Roles, aprobaciones, OWASP y limitaciones |
 | [05 · Plan](docs/05-plan-implementacion.md) | Etapas, tareas y preguntas pendientes |
 | [06 · Publicar e instalar](docs/06-publicar.md) | Vercel, base de datos, primera cuenta e instalación como app |
+| [07 · Sitio web del cliente](docs/07-sitio-web.md) | Marca, ficha, control de calidad y entrega del sitio |
